@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:nas_masr_app/core/theming/colors.dart';
 
-class CustomTextField extends StatelessWidget {
+class CustomTextField extends StatefulWidget {
   final String labelText;
   final bool isPassword;
   final String? initialValue;
@@ -19,6 +19,9 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffix;
   final TextAlign? textAlign;
   final EdgeInsetsGeometry? contentPadding;
+  final int? maxLines;
+  final int? maxLength;
+  final TextStyle? labelStyle;
 
   const CustomTextField({
     super.key,
@@ -37,43 +40,73 @@ class CustomTextField extends StatelessWidget {
     this.suffix,
     this.textAlign,
     this.contentPadding,
+    this.maxLines,
+    this.maxLength,
+    this.labelStyle,
   });
+
+  @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late bool _obscure;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscure = widget.isPassword;
+  }
 
   @override
   Widget build(BuildContext context) {
     const inputBorder = OutlineInputBorder(
       borderRadius: BorderRadius.all(Radius.circular(8.0)),
-      borderSide: BorderSide(color: Color.fromRGBO(255, 255, 255, 1), width: 1.0),
+      borderSide:
+          BorderSide(color: Color.fromRGBO(255, 255, 255, 1), width: 1.0),
     );
 
-    final String fullLabel = isOptional ? '$labelText (اختياري)' : labelText;
-    final Color effectiveFill = fillColor ?? Color.fromRGBO(255, 255, 255, 1);
+    final String fullLabel =
+        widget.isOptional ? '${widget.labelText} (اختياري)' : widget.labelText;
+    final Color effectiveFill =
+        widget.fillColor ?? Color.fromRGBO(255, 255, 255, 1);
 
+    final int effectiveMaxLines = _obscure ? 1 : (widget.maxLines ?? 1);
     final Widget field = TextFormField(
-      initialValue: initialValue,
-      keyboardType: keyboardType,
-      obscureText: isPassword,
-      readOnly: readOnly,
-      onChanged: onChanged,
+      initialValue: widget.initialValue,
+      keyboardType: widget.keyboardType,
+      obscureText: _obscure,
+      readOnly: widget.readOnly,
+      onChanged: widget.onChanged,
+      maxLines: effectiveMaxLines,
+      maxLength: widget.maxLength,
       style: const TextStyle(fontSize: 16),
-      textAlign: textAlign ?? TextAlign.right,
+      textAlign: widget.textAlign ?? TextAlign.right,
       decoration: InputDecoration(
-        contentPadding:
-            contentPadding ?? const EdgeInsets.symmetric(vertical: 0.0, horizontal: 12.0),
+        contentPadding: widget.contentPadding ??
+            const EdgeInsets.symmetric(vertical: 0.0, horizontal: 12.0),
         border: inputBorder,
         enabledBorder: inputBorder,
         focusedBorder: inputBorder.copyWith(
           borderSide:
               BorderSide(color: Theme.of(context).primaryColor, width: 2.0),
         ),
-        filled: filled,
+        filled: widget.filled,
         fillColor: effectiveFill,
-        // إذا كان الحقل كلمة مرور، نلغي التلميح ونضيف أيقونة بادئة
-        hintText: isPassword ? null : (hintText ?? (isOptional ? 'XXXX' : null)),
-        prefixIcon: isPassword
-            ? Icon(Icons.password_outlined, color: Color.fromRGBO(118, 129, 130, 1))
+        hintText: widget.isPassword
+            ? null
+            : (widget.hintText ?? (widget.isOptional ? 'XXXX' : null)),
+        suffixIcon: widget.isPassword
+            ? IconButton(
+                icon: Icon(
+                    _obscure
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    color: ColorManager.primaryColor),
+                onPressed: () => setState(() => _obscure = !_obscure),
+              )
             : null,
-        suffix: suffix,
+        suffix: widget.suffix,
         hintStyle: TextStyle(color: Color.fromRGBO(118, 129, 130, 1)),
       ),
     );
@@ -89,52 +122,57 @@ class CustomTextField extends StatelessWidget {
     );
 
     final Widget fieldWithDirection = Directionality(
-      textDirection: textDirection ?? Directionality.of(context),
+      textDirection: widget.textDirection ?? Directionality.of(context),
       child: fieldWithShadow,
     );
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: showTopLabel
+      child: widget.showTopLabel
           ? Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                isOptional
-                    ? Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: labelText,
-                              style: const TextStyle(
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: widget.isOptional
+                      ? Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: widget.labelText,
+                                style: widget.labelStyle ??
+                                    const TextStyle(
+                                      fontSize: 14,
+                                      color: ColorManager.primary_font_color,
+                                      fontFamily: 'Tajawal',
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                              ),
+                              const TextSpan(
+                                text: ' (اختياري)',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Color.fromRGBO(1, 22, 24, 0.45),
+                                  fontFamily: 'Tajawal',
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.right,
+                        )
+                      : Text(
+                          fullLabel,
+                          textAlign: TextAlign.right,
+                          style: widget.labelStyle ??
+                              const TextStyle(
                                 fontSize: 14,
                                 color: ColorManager.primary_font_color,
                                 fontFamily: 'Tajawal',
                                 fontWeight: FontWeight.w500,
                               ),
-                            ),
-                            TextSpan(
-                              text: ' (اختياري)',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color.fromRGBO(1, 22, 24, 0.45),
-                                fontFamily: 'Tajawal',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
                         ),
-                        textAlign: TextAlign.right,
-                      )
-                    : Text(
-                        fullLabel,
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: ColorManager.primary_font_color,
-                          fontFamily: 'Tajawal',
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                ),
                 const SizedBox(height: 2),
                 fieldWithDirection,
               ],

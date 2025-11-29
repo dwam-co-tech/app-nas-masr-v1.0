@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:nas_masr_app/core/data/reposetory/home_repository.dart';
 import 'package:nas_masr_app/core/data/web_services/error_handler.dart';
-import 'package:nas_masr_app/core/data/models/category.dart' as Models;
+import 'package:nas_masr_app/core/data/models/category_home.dart' as Models;
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class HomeProvider with ChangeNotifier {
   final HomeRepository _repo;
@@ -30,6 +31,14 @@ class HomeProvider with ChangeNotifier {
       ]);
       _bannerUrl = results[0] as String?;
       _categories = (results[1] as List<Models.Category>);
+      if (_bannerUrl != null && _bannerUrl!.isNotEmpty) {
+        DefaultCacheManager().getSingleFile(_bannerUrl!);
+      }
+      for (final c in _categories) {
+        if (c.iconUrl.isNotEmpty) {
+          DefaultCacheManager().getSingleFile(c.iconUrl);
+        }
+      }
     } catch (e) {
       if (e is AppError) {
         _setError(e.message);

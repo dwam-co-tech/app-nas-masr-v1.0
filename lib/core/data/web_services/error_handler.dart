@@ -127,6 +127,9 @@ class ErrorHandler {
 
   static String _translateGeneralMessage(String message) {
     final lower = message.toLowerCase();
+    if (lower.contains('referral code not found')) {
+      return 'لا يوجد رقم مندوب بهذا الرقم';
+    }
     if (lower.contains('invalid credentials')) {
       return 'بيانات الدخول غير صحيحة';
     }

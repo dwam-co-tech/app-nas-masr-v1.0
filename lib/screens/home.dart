@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nas_masr_app/screens/public/hom&best_ad_screen.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 // Removed direct ColorManager imports in favor of Theme references
 import 'package:nas_masr_app/core/data/providers/home_provider.dart';
 import 'package:nas_masr_app/widgets/category_card.dart';
 import 'package:nas_masr_app/widgets/custom_bottom_nav.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:nas_masr_app/core/data/models/category_home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final home = context.watch<HomeProvider>();
+    final isLand = MediaQuery.of(context).orientation == Orientation.landscape;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -31,13 +37,14 @@ class _HomeScreenState extends State<HomeScreen> {
         bottomNavigationBar: const CustomBottomNav(currentIndex: 0),
         body: SafeArea(
           child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // محتوى بمسافات جانبية
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 16.w, vertical: isLand ? 6.h : 12.h),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -48,8 +55,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 // البانر بعرض الصفحة كامل بدون هوامش جانبية
-                SizedBox(height: 4.h),
-                _BannerSection(bannerUrl: home.bannerUrl, loading: home.loading),
+                SizedBox(height: isLand ? 1.h : 4.h),
+                _BannerSection(
+                    bannerUrl: home.bannerUrl, loading: home.loading),
                 SizedBox(height: 12.h),
                 // بقية المحتوى مع هوامش جانبية
                 Padding(
@@ -58,9 +66,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _HintContainer(),
-                      SizedBox(height: 12.h),
+                      SizedBox(height: isLand ? 8.h : 12.h),
                       if (home.error != null) _ErrorBox(message: home.error!),
-                      _CategoriesGrid( loading: home.loading, categories: home.categories),
+                      _CategoriesGrid(
+                          loading: home.loading, categories: home.categories),
                       SizedBox(height: 24.h),
                     ],
                   ),
@@ -79,25 +88,19 @@ class _TopRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLand = MediaQuery.of(context).orientation == Orientation.landscape;
     return Container(
       decoration: BoxDecoration(
         color: cs.surface,
-        // borderRadius: BorderRadius.circular(12.r),
-        // border: Border.all(color: const Color(0xFFE4E7EB)),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.05),
-        //     blurRadius: 10,
-        //     offset: const Offset(0, 3),
-        //   ),
-        // ],
+      
       ),
-      padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 0.h),
+      padding:
+          EdgeInsets.symmetric(horizontal: 0.w, vertical: isLand ? 0.h : 0.h),
       child: Row(
         children: [
           Image.asset(
             'assets/images/logo.png',
-            height: 80.h,
+            height: isLand ? 70.h : 80.h,
             fit: BoxFit.contain,
           ),
           SizedBox(width: 20.w),
@@ -105,20 +108,21 @@ class _TopRow extends StatelessWidget {
             child: Text(
               'لكل مصر',
               style: tt.titleLarge?.copyWith(
-                fontSize: 22.sp,
+                fontSize: isLand ? 12.sp : 22.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.favorite_rounded, color: cs.onSurface, size: 25.sp),
+            icon: Icon(Icons.favorite_rounded,
+                color: cs.onSurface, size: isLand ? 15.sp : 25.sp),
             tooltip: 'المفضلة',
           ),
-
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.notifications_rounded, color: cs.onSurface, size: 30.sp),
+            icon: Icon(Icons.notifications_rounded,
+                color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
             tooltip: 'المفضلة',
           )
         ],
@@ -140,7 +144,8 @@ class _SearchBar extends StatelessWidget {
     final Widget field = TextField(
       textDirection: TextDirection.rtl,
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 12.0),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 0.0, horizontal: 12.0),
         border: inputBorder,
         enabledBorder: inputBorder,
         focusedBorder: inputBorder.copyWith(
@@ -172,6 +177,7 @@ class _BannerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLand = MediaQuery.of(context).orientation == Orientation.landscape;
     return Container(
       // decoration: BoxDecoration(
       //   borderRadius: BorderRadius.circular(12.r),
@@ -180,7 +186,7 @@ class _BannerSection extends StatelessWidget {
       //   ],
       // ),
       child: AspectRatio(
-        aspectRatio: 16 / 6,
+        aspectRatio: isLand ? (16 / 4.8) : (16 / 5),
         child: Builder(
           builder: (context) {
             if (loading && (bannerUrl == null || bannerUrl!.isEmpty)) {
@@ -192,18 +198,26 @@ class _BannerSection extends StatelessWidget {
                 child: Center(
                   child: Text(
                     'لا توجد صورة متاحة',
-                    style: TextStyle(fontSize: 13.sp, color: const Color(0xFF8A949B)),
+                    style: TextStyle(
+                        fontSize: 13.sp, color: const Color(0xFF8A949B)),
                   ),
                 ),
               );
             }
-            return Image.network(
-              bannerUrl!,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
+            return CachedNetworkImage(
+              imageUrl: bannerUrl!,
+              placeholder: (context, url) =>
+                  Container(color: const Color(0xFFF0F2F5)),
+              imageBuilder: (context, imageProvider) => Image(
+                image: imageProvider,
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.high,
+              ),
+              errorWidget: (context, url, error) => Container(
                 color: const Color(0xFFF0F2F5),
                 child: Center(
-                  child: Icon(Icons.broken_image_outlined, color: Colors.grey.shade400, size: 32.sp),
+                  child: Icon(Icons.broken_image_outlined,
+                      color: Colors.grey.shade400, size: 32.sp),
                 ),
               ),
             );
@@ -231,7 +245,7 @@ class _HintContainer extends StatelessWidget {
             fontSize: 14.sp,
             fontFamily: 'Tajawal',
             fontWeight: FontWeight.w700,
-            color: cs.onPrimary,
+            color: cs.onSurface,
           ),
         ),
       ),
@@ -274,24 +288,31 @@ class _ErrorBox extends StatelessWidget {
 }
 
 class _CategoriesGrid extends StatelessWidget {
- // final String categoriesSectionTitle;
+  // final String categoriesSectionTitle;
   final bool loading;
   final List<dynamic> categories;
   const _CategoriesGrid({
-  //  required this.categoriesSectionTitle,
+    //  required this.categoriesSectionTitle,
     required this.loading,
     required this.categories,
   });
 
-  int _columnsForWidth(double w) {
-    // مطلوب إظهار 4 كروت في الصف دائمًا
+  int _columnsForWidth(double w, bool isLand) {
+    if (isLand) {
+      if (w >= 900) return 6;
+      if (w >= 700) return 5;
+      return 4;
+    }
     return 4;
   }
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final cols = _columnsForWidth(width);
+    final mq = MediaQuery.of(context);
+    final width = mq.size.width;
+    final isLand = mq.orientation == Orientation.landscape;
+    final cols = _columnsForWidth(width, isLand);
+    final double aspect = isLand ? 0.85 : 0.70;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -306,7 +327,7 @@ class _CategoriesGrid extends StatelessWidget {
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
               // قلّل العرض وزد الارتفاع
-              childAspectRatio: 0.60,
+              childAspectRatio: aspect,
             ),
             itemBuilder: (context, index) => Container(
               decoration: BoxDecoration(
@@ -325,11 +346,30 @@ class _CategoriesGrid extends StatelessWidget {
               mainAxisSpacing: 6,
               crossAxisSpacing: 6,
               // أطوّل الكارد وأقلل عرضه لزيادة مساحة الصورة
-              childAspectRatio: 0.70,
+              childAspectRatio: aspect,
             ),
             itemBuilder: (context, index) {
               final cat = categories[index];
-              return CategoryCard(category: cat);
+              return CategoryCard(
+                category: cat,
+                onTap: () async {
+                  final c = cat as Category;
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setString('Selected_category', c.slug);
+                  final saved = prefs.getString('Selected_category');
+                  print('Selected_category: ${c.slug} - ${c.name}');
+                  print('Saved Selected_category: $saved');
+
+                  // 1. اطبعي للتأكد
+                  print('Navigating to category: ${cat.slug}');
+
+                  // 2. انتقلي للصفحة الجديدة ومرري الـ Slug
+                  context.push('/category', extra: {
+                    'categorySlug': cat.slug,
+                    'categoryName': cat.name,
+                  });
+                },
+              );
             },
           ),
       ],

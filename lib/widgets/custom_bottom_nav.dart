@@ -1,36 +1,19 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:nas_masr_app/core/theming/colors.dart';
-import 'package:nas_masr_app/screens/home.dart';
-import 'package:nas_masr_app/screens/setting.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 class CustomBottomNav extends StatefulWidget {
   final int currentIndex;
 
-  const CustomBottomNav({required this.currentIndex});
+  const CustomBottomNav({Key? key, required this.currentIndex}) : super(key: key);
 
   @override
-  _CustomBottomNavState createState() => _CustomBottomNavState();
+  State<CustomBottomNav> createState() => _CustomBottomNavState();
 }
 
 class _CustomBottomNavState extends State<CustomBottomNav> {
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
-  bool _isLoading = false;
-  int? _pendingNavIndex;
-
-  @override
-  void dispose() {
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +31,11 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
           context.go('/home');
             break;
           case 1:
-           // context.push('/favorite');
+            context.go('/manage_ads');
             break;
           case 2:
             {
-             // context.push('/favorite');
+            context.go('/creat_ad');
             }
           case 3:
             {
@@ -87,10 +70,10 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
             width: 26.w,
             height: 26.h,
             child: SvgPicture.asset(
-              "assets/svg/ads.svg",
+              "assets/svg/my_ad.svg",
               fit: BoxFit.contain,
               colorFilter: ColorFilter.mode(
-                widget.currentIndex == 3
+                widget.currentIndex == 1
                     ? cs.secondary // لون المختار
                     : cs.onSurface, // لون غير المختار
                 BlendMode.srcIn,
@@ -139,7 +122,7 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
         ),
         BottomNavigationBarItem(
           icon: FaIcon(FontAwesomeIcons.gear),
-          label:" رسائل",
+          label:"الإعدادات",
         ),
       ],
     );

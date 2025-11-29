@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:nas_masr_app/core/data/models/category.dart';
+import 'package:nas_masr_app/core/data/models/category_home.dart';
 // Use Theme.of(context) colorScheme/textTheme instead of ColorManager
+import 'package:cached_network_image/cached_network_image.dart';
 
 class CategoryCard extends StatelessWidget {
   final Category category;
@@ -31,19 +32,36 @@ class CategoryCard extends StatelessWidget {
             ),
             padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 0.h),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 // مساحة صورة مرنة تمنع أي overflow عمودي
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 0.h),
                     child: Center(
-                      child: Image.network(
-                        category.iconUrl,
-                        fit: BoxFit.contain,
-                        alignment: Alignment.center,
-                        filterQuality: FilterQuality.high,
-                        errorBuilder: (context, error, stackTrace) => Icon(
+                      child: CachedNetworkImage(
+                        imageUrl: category.iconUrl,
+                        imageBuilder: (context, imageProvider) => SizedBox(
+                          width: 70.w,
+                          height: 80.w,
+                          child: Image(
+                            image: imageProvider,
+                            fit: BoxFit.contain,
+                            alignment: Alignment.center,
+                          ),
+                        ),
+                        placeholder: (context, url) => SizedBox(
+                          width: 44.w,
+                          height: 44.w,
+                          child: Center(
+                            child: SizedBox(
+                              width: 16.sp,
+                              height: 16.sp,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Icon(
                           Icons.image_not_supported_outlined,
                           size: 26.sp,
                           color: Colors.grey.shade400,
@@ -58,12 +76,12 @@ class CategoryCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: tt.bodyMedium?.copyWith(
-                    fontSize: 12.sp,
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w500,
                     height: 1.2,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 12.h),
               ],
             ),
           ),

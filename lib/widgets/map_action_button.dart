@@ -33,7 +33,8 @@ class MapActionButton extends StatelessWidget {
         child: Padding(
           padding: padding ?? EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[
                 Icon(icon, color: t, size: 18.sp),

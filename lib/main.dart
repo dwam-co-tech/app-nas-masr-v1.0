@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:nas_masr_app/core/data/providers/auth_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/auth_repository.dart';
 import 'package:nas_masr_app/core/data/web_services/api_services.dart';
+import 'package:nas_masr_app/core/data/providers/profile_provider.dart';
+import 'package:nas_masr_app/core/data/reposetory/profile_repository.dart';
 import 'screens/splash_screen.dart';
 import 'core/router/app_router.dart';
 
@@ -30,6 +32,11 @@ void main() {
         ChangeNotifierProvider(
           create: (_) => HomeProvider(
             repository: HomeRepository(api: ApiService()),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ProfileProvider(
+            repository: ProfileRepository(api: ApiService()),
           ),
         ),
       ],
@@ -62,9 +69,13 @@ class MyApp extends StatelessWidget {
           primaryColor: ColorManager.primaryColor,
           hintColor: ColorManager.secondaryColor,
           scaffoldBackgroundColor: Colors.white,
+          
           // ضبط الخط افتراضياً (لن يؤثر إن لم يكن الخط متاحاً ضمن الأصول)
+          
+          
+          
           fontFamily: 'Tajawal',
-          // نقل الأنماط النصية إلى TextTheme لتسهيل التخصيص عبر التطبيق
+         
           textTheme: TextTheme(
             titleLarge: TextStyle(
               fontSize: 24.sp,

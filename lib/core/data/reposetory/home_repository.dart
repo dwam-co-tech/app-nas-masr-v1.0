@@ -1,7 +1,7 @@
 import 'package:nas_masr_app/core/constatants/string.dart';
 import 'package:nas_masr_app/core/data/web_services/api_services.dart';
-import 'package:nas_masr_app/core/data/models/category.dart';
-import 'package:nas_masr_app/core/data/models/home_model.dart';
+import 'package:nas_masr_app/core/data/models/category_home.dart';
+import 'package:nas_masr_app/core/data/models/home_banar_model.dart';
 
 class HomeRepository {
   final ApiService _api;
@@ -10,7 +10,9 @@ class HomeRepository {
   /// جلب إعدادات النظام Typed
   Future<HomeModel> getSystemSettings() async {
     final res = await _api.get('/api/system-settings');
-    if (res is List) {
+    if (res is Map<String, dynamic>) {
+      return HomeModel.fromMap(res, baseUrl: baseUrl);
+    } else if (res is List) {
       return HomeModel.fromApiList(res, baseUrl: baseUrl);
     }
     return const HomeModel();

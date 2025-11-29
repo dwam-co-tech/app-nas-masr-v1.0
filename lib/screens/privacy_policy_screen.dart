@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:nas_masr_app/core/theming/colors.dart';
-import 'package:nas_masr_app/core/theming/styles.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -64,6 +62,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLand = MediaQuery.of(context).orientation == Orientation.landscape;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -81,8 +80,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+            physics: const ClampingScrollPhysics(),
+               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: isLand ? 10.h : 16.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

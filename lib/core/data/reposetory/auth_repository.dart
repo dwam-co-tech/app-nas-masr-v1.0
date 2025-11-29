@@ -19,6 +19,6 @@ class AuthRepository {
     if (res is Map<String, dynamic>) {
       return res;
     }
-    throw AppError('استجابة غير متوقعة من الخادم');
+    throw AppError('استجابة غير متوقعة من الخادم',);
   }
 }
