@@ -26,31 +26,30 @@ class AdDetailsModel {
   final int? sellerListingsCount;
   final String? banner;
 
-  const AdDetailsModel({
-    required this.id,
-    required this.title,
-    required this.price,
-    required this.description,
-    required this.categorySlug,
-    required this.governorate,
-    required this.city,
-    required this.planType,
-    required this.attributes,
-    required this.contactPhone,
-    this.whatsappPhone,
-    this.mainImageUrl,
-    this.imagesUrls = const [],
-    this.createdAt,
-    this.lat,
-    this.lng,
-    required this.address,
-    this.sellerId,
-    this.sellerName,
-    this.sellerJoinedAt,
-    this.sellerJoinedAtHuman,
-    this.sellerListingsCount,
-    this.banner
-  });
+  const AdDetailsModel(
+      {required this.id,
+      required this.title,
+      required this.price,
+      required this.description,
+      required this.categorySlug,
+      required this.governorate,
+      required this.city,
+      required this.planType,
+      required this.attributes,
+      required this.contactPhone,
+      this.whatsappPhone,
+      this.mainImageUrl,
+      this.imagesUrls = const [],
+      this.createdAt,
+      this.lat,
+      this.lng,
+      required this.address,
+      this.sellerId,
+      this.sellerName,
+      this.sellerJoinedAt,
+      this.sellerJoinedAtHuman,
+      this.sellerListingsCount,
+      this.banner});
 
   factory AdDetailsModel.fromMap(Map<String, dynamic> json) {
     // التأكد من استخراج البيانات بطريقة آمنة
@@ -58,6 +57,15 @@ class AdDetailsModel {
     final createdAtStr = data['created_at'] as String?;
     final user = json['user'] as Map<String, dynamic>?;
     final joinedAtStr = user != null ? user['joined_at'] as String? : null;
+
+    final rawAttributes = data['attributes'] as Map<String, dynamic>? ?? {};
+    final attributes = Map<String, dynamic>.from(rawAttributes);
+
+    // Merge make/model if present in root data (for cars)
+    if (data['make'] != null) attributes['make'] = data['make'];
+    if (data['model'] != null) attributes['model'] = data['model'];
+    if (data['car_make'] != null) attributes['make'] = data['car_make'];
+    if (data['car_model'] != null) attributes['model'] = data['car_model'];
 
     return AdDetailsModel(
       address: data['address'] as String? ?? 'ismailia',
@@ -69,7 +77,7 @@ class AdDetailsModel {
       governorate: data['governorate'] as String? ?? '',
       city: data['city'] as String? ?? '',
       planType: data['plan_type'] as String? ?? 'free',
-      attributes: data['attributes'] as Map<String, dynamic>? ?? {},
+      attributes: attributes,
       contactPhone: data['contact_phone'] as String? ?? 'غير متاح',
       whatsappPhone: data['whatsapp_phone'] as String?,
       mainImageUrl: data['main_image_url'] as String?,
@@ -83,8 +91,8 @@ class AdDetailsModel {
               : int.tryParse('${user['id']}'))
           : null,
       sellerName: user != null ? (user['name']?.toString()) : null,
-       banner: user != null ? (user['banner']?.toString()) : null,
-     
+      banner: user != null ? (user['banner']?.toString()) : null,
+
       sellerJoinedAt:
           joinedAtStr != null ? DateTime.tryParse(joinedAtStr) : null,
       sellerJoinedAtHuman:

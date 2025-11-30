@@ -3,6 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:nas_masr_app/widgets/ad_card_widget.dart/real_estate_ad_card_widget.dart';
 import 'package:nas_masr_app/widgets/ad_card_widget.dart/car_ad_card_widget.dart';
+import 'package:nas_masr_app/widgets/ad_card_widget.dart/unified_ad_card_widget.dart';
+import 'package:nas_masr_app/widgets/ad_card_widget.dart/car_rental_ad_card_widget.dart';
+import 'package:nas_masr_app/widgets/ad_card_widget.dart/car_spare_parts_ad_card_widget.dart';
+import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:nas_masr_app/core/data/models/ad_card_model.dart';
@@ -42,11 +46,18 @@ class MainAdListWrapper extends StatelessWidget {
   });
 
   Widget _selectAdCardWidget(String slug, AdCardModel ad) {
+    if (UnifiedCategories.slugs.contains(slug)) {
+      return UnifiedAdCardWidget(ad: ad);
+    }
     switch (slug) {
       case 'real_estate':
         return RealEstateAdCardWidget(ad: ad);
       case 'cars':
         return CarAdCardWidget(ad: ad);
+      case 'cars_rent':
+        return CarRentalAdCardWidget(ad: ad);
+      case 'spare-parts':
+        return CarSparePartsAdCardWidget(ad: ad);
       case 'doctors':
       case 'teachers':
         return const ServiceAdCardWidget();

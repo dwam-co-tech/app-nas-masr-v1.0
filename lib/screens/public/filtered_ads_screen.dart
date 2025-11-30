@@ -20,6 +20,9 @@ import 'package:nas_masr_app/core/data/providers/category_listing_provider.dart'
 import 'package:provider/provider.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/real_estate_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/car_filters_widget.dart';
+import 'package:nas_masr_app/widgets/filter_widgets/unified_filters_widget.dart';
+import 'package:nas_masr_app/widgets/filter_widgets/car_rental_filters_widget.dart';
+import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
@@ -333,10 +336,20 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
 
   Widget _selectFiltersWidget(BuildContext context, String slug,
       CategoryFieldsResponse config, Function(String, dynamic) onAction) {
+    if (UnifiedCategories.slugs.contains(slug)) {
+      return UnifiedFiltersWidget(
+        config: config,
+        onNavigate: onAction,
+      );
+    }
     switch (slug) {
       case 'cars':
-      case 'car-rental':
         return CarFiltersWidget(
+          config: config,
+          onNavigate: onAction,
+        );
+      case 'cars_rent':
+        return CarRentalFiltersWidget(
           config: config,
           onNavigate: onAction,
         );

@@ -8,6 +8,12 @@ import 'package:nas_masr_app/core/data/models/governorate.dart';
 import 'package:nas_masr_app/core/data/reposetory/filter_repository.dart';
 import 'package:nas_masr_app/widgets/create_Ads/car_creation_form.dart';
 import 'package:nas_masr_app/widgets/create_Ads/real_estate_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/car_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/real_estate_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/unified_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/car_rental_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/car_spare_parts_creation_form.dart';
+import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:nas_masr_app/widgets/create_Ads/custom_dropdown_field.dart';
 import 'package:nas_masr_app/widgets/custom_text_field.dart';
 import 'package:nas_masr_app/widgets/custome_phone_filed.dart';
@@ -100,7 +106,7 @@ class _ImageUploadSectionState extends State<ImageUploadSection> {
         return 9;
       case 'cars':
         return 14;
-      case 'car-rental':
+      case 'cars_rent':
         return 9;
       default:
         return 9;
@@ -982,12 +988,19 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
   final _locationKey = GlobalKey<_LocationFieldsSectionState>();
   final _mapKey = GlobalKey<_MapSelectionWidgetState>();
   final _carFormKey = GlobalKey<CarCreationFormState>();
+  final _carRentalFormKey = GlobalKey<CarRentalCreationFormState>();
+  final _carSparePartsFormKey = GlobalKey<CarSparePartsCreationFormState>();
+
   bool _submitting = false;
   CategoryFieldsResponse? _config;
   bool _loading = true;
   String? _error;
+
   String? _propertyType;
   String? _contractType;
+
+  String? _mainCategory;
+  String? _subCategory;
   String? _selectedPlanType;
   String? _price;
   String? _description;
@@ -1051,14 +1064,39 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
   // Note: قمنا هنا بـ FIX أخطاء الـ Return Values (يجب أن يتم تمرير قيم للحقول)
   Widget _buildDynamicForm(BuildContext context, String slug,
       List<CategoryFieldConfig> fields, TextStyle? labelStyle) {
+    if (UnifiedCategories.slugs.contains(slug)) {
+      return UnifiedCreationForm(
+        fieldsConfig: fields,
+        labelStyle: labelStyle,
+        onMainCategoryChanged: (v) => _mainCategory = v,
+        onSubCategoryChanged: (v) => _subCategory = v,
+      );
+    }
     switch (slug) {
       case 'cars':
-    
         return CarCreationForm(
           key: _carFormKey,
           fieldsConfig: fields,
           makes: _config?.makes ?? const [],
           labelStyle: labelStyle,
+        );
+
+      case 'cars_rent':
+        return CarRentalCreationForm(
+          key: _carRentalFormKey,
+          fieldsConfig: fields,
+          makes: _config?.makes ?? const [],
+          labelStyle: labelStyle,
+          onTitleChanged: (val) => setState(() => _autoTitle = val),
+        );
+
+      case 'spare-parts':
+        return CarSparePartsCreationForm(
+          key: _carSparePartsFormKey,
+          fieldsConfig: fields,
+          makes: _config?.makes ?? const [],
+          labelStyle: labelStyle,
+          onTitleChanged: (val) => setState(() => _autoTitle = val),
         );
 
       case 'real_estate':
@@ -1113,8 +1151,15 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
       if (_contractType == null || _contractType!.isEmpty)
         errors.add('اختر نوع العقد');
     }
+    if (UnifiedCategories.slugs.contains(widget.categorySlug)) {
+      if (_mainCategory == null || _mainCategory!.isEmpty)
+        errors.add('اختر القسم الرئيسي');
+      if (_subCategory == null || _subCategory!.isEmpty)
+        errors.add('اختر القسم الفرعي');
+    }
     // تحقق من الحقول الديناميكية للقسم الحالي
-    if (widget.categorySlug == 'cars' || widget.categorySlug == 'car-rental') {
+    // تحقق من الحقول الديناميكية للقسم الحالي
+    if (widget.categorySlug == 'cars') {
       final carAttrs = _carFormKey.currentState?.getSelectedAttributes() ??
           const <String, String?>{};
       final fields = _config?.categoryFields ?? const <CategoryFieldConfig>[];
@@ -1169,6 +1214,46 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
           .isEmpty) {
         errors.add('اختر الموديل');
       }
+    } else if (widget.categorySlug == 'cars_rent') {
+      final rentalAttrs =
+          _carRentalFormKey.currentState?.getSelectedAttributes() ??
+              const <String, String?>{};
+
+      if ((_carRentalFormKey.currentState?.selectedMake ?? '').trim().isEmpty) {
+        errors.add('اختر الماركة');
+      }
+      if ((_carRentalFormKey.currentState?.selectedModel ?? '')
+          .trim()
+          .isEmpty) {
+        errors.add('اختر الموديل');
+      }
+      if ((rentalAttrs['year'] ?? '').trim().isEmpty) {
+        errors.add('اختر السنة');
+      }
+      if ((rentalAttrs['driver_option'] ?? '').trim().isEmpty) {
+        errors.add('اختر حالة السائق');
+      }
+    } else if (widget.categorySlug == 'spare-parts') {
+      final spareAttrs =
+          _carSparePartsFormKey.currentState?.getSelectedAttributes() ??
+              const <String, String?>{};
+
+      if ((_carSparePartsFormKey.currentState?.selectedMake ?? '')
+          .trim()
+          .isEmpty) {
+        errors.add('اختر الماركة');
+      }
+      if ((_carSparePartsFormKey.currentState?.selectedModel ?? '')
+          .trim()
+          .isEmpty) {
+        errors.add('اختر الموديل');
+      }
+      if ((spareAttrs['main_category'] ?? '').trim().isEmpty) {
+        errors.add('اختر القسم الرئيسي');
+      }
+      if ((spareAttrs['sub_category'] ?? '').trim().isEmpty) {
+        errors.add('اختر القسم الفرعي');
+      }
     }
 
     if (errors.isNotEmpty) {
@@ -1196,8 +1281,19 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
         if (v is double) return v;
         return double.tryParse(v.toString());
       }();
-      final carAttrs = _carFormKey.currentState?.getSelectedAttributes() ??
-          const <String, String?>{};
+      final carAttrs = widget.categorySlug == 'cars'
+          ? (_carFormKey.currentState?.getSelectedAttributes() ??
+              const <String, String?>{})
+          : const <String, String?>{};
+      final rentalAttrs = widget.categorySlug == 'cars_rent'
+          ? (_carRentalFormKey.currentState?.getSelectedAttributes() ??
+              const <String, String?>{})
+          : const <String, String?>{};
+      final spareAttrs = widget.categorySlug == 'spare-parts'
+          ? (_carSparePartsFormKey.currentState?.getSelectedAttributes() ??
+              const <String, String?>{})
+          : const <String, String?>{};
+
       final payload = CreateListingPayload(
         price: _price,
         governorate: gov,
@@ -1209,12 +1305,24 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
         address: loc != null ? (loc['address']?.toString()) : null,
         contactPhone: _contactPhone,
         whatsappPhone: _whatsappPhone,
-        make: _carFormKey.currentState?.selectedMake,
-        model: _carFormKey.currentState?.selectedModel,
+        make: widget.categorySlug == 'cars_rent'
+            ? _carRentalFormKey.currentState?.selectedMake
+            : (widget.categorySlug == 'spare-parts'
+                ? _carSparePartsFormKey.currentState?.selectedMake
+                : _carFormKey.currentState?.selectedMake),
+        model: widget.categorySlug == 'cars_rent'
+            ? _carRentalFormKey.currentState?.selectedModel
+            : (widget.categorySlug == 'spare-parts'
+                ? _carSparePartsFormKey.currentState?.selectedModel
+                : _carFormKey.currentState?.selectedModel),
         attributes: {
           if (_propertyType != null) 'property_type': _propertyType,
           if (_contractType != null) 'contract_type': _contractType,
+          if (_mainCategory != null) 'main_category': _mainCategory,
+          if (_subCategory != null) 'sub_category': _subCategory,
           ...carAttrs.map((k, v) => MapEntry(k, v)),
+          ...rentalAttrs.map((k, v) => MapEntry(k, v)),
+          ...spareAttrs.map((k, v) => MapEntry(k, v)),
         },
       );
       final ok = await provider.submitListing(

@@ -8,6 +8,10 @@ import 'package:nas_masr_app/core/data/providers/ad_details_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/ad_details_repository.dart';
 import 'package:nas_masr_app/widgets/ad_details/car_details_panel.dart';
 import 'package:nas_masr_app/widgets/ad_details/real_estate_details_panel.dart';
+import 'package:nas_masr_app/widgets/ad_details/unified_details_panel.dart';
+import 'package:nas_masr_app/widgets/ad_details/car_rental_details_panel.dart';
+import 'package:nas_masr_app/widgets/ad_details/car_spare_parts_details_panel.dart';
+import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -83,10 +87,17 @@ class AdDetailsScreen extends StatelessWidget {
   // دالة تُحدد أي لوحة خصائص سيتم بناؤها بناءً على الـ Slug
   Widget _buildDynamicDetailsPanel(
       BuildContext context, String slug, Map<String, dynamic> attributes) {
+    if (UnifiedCategories.slugs.contains(slug)) {
+      return UnifiedDetailsPanel(attributes: attributes);
+    }
     if (slug == 'cars') {
       //  return CarDetailsPanel(attributes: attributes);
     } else if (slug == 'real_estate') {
       return RealEstateDetailsPanel(attributes: attributes);
+    } else if (slug == 'cars_rent') {
+      return CarRentalDetailsPanel(attributes: attributes);
+    } else if (slug == 'spare-parts') {
+      return CarSparePartsDetailsPanel(attributes: attributes);
     }
     // لوحة الخصائص الافتراضية
     return const Center(child: Text('لا توجد لوحة تفاصيل لهذا القسم'));

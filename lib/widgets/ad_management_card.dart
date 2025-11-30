@@ -20,6 +20,7 @@ class AdManagementCard extends StatelessWidget {
   final VoidCallback onRenew;
   final VoidCallback onEdit;
   final VoidCallback onUpdate;
+  final VoidCallback? onImageTap;
 
   const AdManagementCard({
     super.key,
@@ -35,6 +36,7 @@ class AdManagementCard extends StatelessWidget {
     required this.onRenew,
     required this.onEdit,
     required this.onUpdate,
+    this.onImageTap,
   });
 
   @override
@@ -80,79 +82,82 @@ class AdManagementCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 1. قسم الصورة (يمين)
-                  SizedBox(
-                    width: 130.w,
-                    height: 110.h,
-                    child: Stack(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10.r),
-                          child: (imageUrl.startsWith('http'))
-                              ? CachedNetworkImage(
-                                  imageUrl: imageUrl,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  placeholder: (context, url) =>
-                                      Container(color: Colors.grey[200]),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(Icons.error),
-                                )
-                              : Image.asset(
-                                  imageUrl,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
+                  GestureDetector(
+                    onTap: onImageTap,
+                    child: SizedBox(
+                      width: 130.w,
+                      height: 110.h,
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10.r),
+                            child: (imageUrl.startsWith('http'))
+                                ? CachedNetworkImage(
+                                    imageUrl: imageUrl,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    placeholder: (context, url) =>
+                                        Container(color: Colors.grey[200]),
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(Icons.error),
+                                  )
+                                : Image.asset(
+                                    imageUrl,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
+                          ),
+                          // بادج الحالة (فوق)
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w, vertical: 4.h),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(8.r),
                                 ),
-                        ),
-                        // بادج الحالة (فوق)
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8.w, vertical: 4.h),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(8.r),
                               ),
-                            ),
-                            child: Text(
-                              statusLabel,
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w500,
-                                color: badgeTextColor,
+                              child: Text(
+                                statusLabel,
+                                style: TextStyle(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: badgeTextColor,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        // السعر (تحت)
-                        Positioned(
-                          bottom: 0.h,
-                          left: 0,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8.w, vertical: 2.h),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(8.r),
-                                bottomRight: Radius.circular(8.r),
+                          // السعر (تحت)
+                          Positioned(
+                            bottom: 0.h,
+                            left: 0,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w, vertical: 2.h),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(8.r),
+                                  bottomRight: Radius.circular(8.r),
+                                ),
                               ),
-                            ),
-                            child: Text(
-                             " ${price} ج",
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w700,
-                                color: ColorManager.secondaryColor, // برتقالي للسعر
+                              child: Text(
+                                " ${price} ج",
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: ColorManager.secondaryColor, // برتقالي للسعر
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(width: 8.w),

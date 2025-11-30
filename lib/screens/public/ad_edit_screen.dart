@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:image_picker/image_picker.dart';
+
 import 'package:provider/provider.dart';
 import 'package:nas_masr_app/core/data/providers/ad_creation_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/ad_creation_repository.dart';
@@ -13,6 +13,10 @@ import 'package:nas_masr_app/core/data/reposetory/filter_repository.dart';
 import 'package:nas_masr_app/core/data/models/All_filter_response.dart';
 import 'package:nas_masr_app/screens/public/ad_creation_screen.dart';
 import 'package:nas_masr_app/widgets/create_Ads/real_estate_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/unified_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/car_rental_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/car_spare_parts_creation_form.dart';
+import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:nas_masr_app/widgets/custome_phone_filed.dart';
 import 'package:nas_masr_app/widgets/custom_text_field.dart';
 import 'package:go_router/go_router.dart';
@@ -45,6 +49,18 @@ class _EditAdScreenState extends State<EditAdScreen> {
   String? _whatsappPhone;
   String? _propertyType;
   String? _contractType;
+
+  // Unified / Car Rental / Spare Parts Fields
+  String? _mainCategory;
+  String? _subCategory;
+  String? _make;
+  String? _model;
+  String? _year;
+  String? _driverOption;
+
+  final _carRentalFormKey = GlobalKey<CarRentalCreationFormState>();
+  final _carSparePartsFormKey = GlobalKey<CarSparePartsCreationFormState>();
+
   late final TextEditingController _priceController = TextEditingController();
   late final TextEditingController _descController = TextEditingController();
   late final TextEditingController _contactController = TextEditingController();
@@ -65,6 +81,52 @@ class _EditAdScreenState extends State<EditAdScreen> {
     _contactController.dispose();
     _whatsController.dispose();
     super.dispose();
+  }
+
+  Widget _buildDynamicForm(BuildContext context, TextStyle? labelStyle) {
+    if (widget.categorySlug == 'spare-parts') {
+      return CarSparePartsCreationForm(
+        key: _carSparePartsFormKey,
+        fieldsConfig: _config?.categoryFields ?? const [],
+        makes: _config?.makes ?? const [],
+        labelStyle: labelStyle,
+        initialMainCategory: _mainCategory,
+        initialSubCategory: _subCategory,
+        initialMake: _make,
+        initialModel: _model,
+      );
+    }
+
+    if (UnifiedCategories.slugs.contains(widget.categorySlug)) {
+      return UnifiedCreationForm(
+        fieldsConfig: _config?.categoryFields ?? const [],
+        labelStyle: labelStyle,
+        initialMainCategory: _mainCategory,
+        initialSubCategory: _subCategory,
+        onMainCategoryChanged: (v) => _mainCategory = v,
+        onSubCategoryChanged: (v) => _subCategory = v,
+      );
+    }
+    if (widget.categorySlug == 'cars_rent') {
+      return CarRentalCreationForm(
+        key: _carRentalFormKey,
+        fieldsConfig: _config?.categoryFields ?? const [],
+        makes: _config?.makes ?? const [],
+        labelStyle: labelStyle,
+        initialMake: _make,
+        initialModel: _model,
+        initialYear: _year,
+        initialDriverOption: _driverOption,
+      );
+    }
+    return RealEstateCreationForm(
+      fieldsConfig: _config?.categoryFields ?? const [],
+      labelStyle: labelStyle,
+      initialPropertyType: _propertyType,
+      initialContractType: _contractType,
+      onPropertyTypeChanged: (v) => _propertyType = v,
+      onContractTypeChanged: (v) => _contractType = v,
+    );
   }
 
   @override
@@ -145,14 +207,7 @@ class _EditAdScreenState extends State<EditAdScreen> {
                         opacity: 0.6,
                         child: AbsorbPointer(
                           absorbing: true,
-                          child: RealEstateCreationForm(
-                            fieldsConfig: _config?.categoryFields ?? const [],
-                            labelStyle: unifiedLabelStyle,
-                            initialPropertyType: _propertyType,
-                            initialContractType: _contractType,
-                            onPropertyTypeChanged: (v) => _propertyType = v,
-                            onContractTypeChanged: (v) => _contractType = v,
-                          ),
+                          child: _buildDynamicForm(context, unifiedLabelStyle),
                         ),
                       ),
                       //  SizedBox(height: 5.h),
@@ -240,11 +295,47 @@ class _EditAdScreenState extends State<EditAdScreen> {
                                     ? (loc?['lng'] as num?)?.toDouble()
                                     : double.tryParse(
                                         loc?['lng']?.toString() ?? '');
+
+                                final Map<String, dynamic> attributes = {
+                                  'contract_type': _contractType,
+                                  'property_type': _propertyType,
+                                  'main_category': _mainCategory,
+                                  'sub_category': _subCategory,
+                                };
+
+                                if (widget.categorySlug == 'cars_rent') {
+                                  attributes.addAll(_carRentalFormKey
+                                          .currentState
+                                          ?.getSelectedAttributes() ??
+                                      {});
+                                } else if (widget.categorySlug ==
+                                    'spare-parts') {
+                                  attributes.addAll(_carSparePartsFormKey
+                                          .currentState
+                                          ?.getSelectedAttributes() ??
+                                      {});
+                                }
+
+                                String? selectedMake;
+                                String? selectedModel;
+
+                                if (widget.categorySlug == 'cars_rent') {
+                                  selectedMake = _carRentalFormKey
+                                      .currentState?.selectedMake;
+                                  selectedModel = _carRentalFormKey
+                                      .currentState?.selectedModel;
+                                } else if (widget.categorySlug ==
+                                    'spare-parts') {
+                                  selectedMake = _carSparePartsFormKey
+                                      .currentState?.selectedMake;
+                                  selectedModel = _carSparePartsFormKey
+                                      .currentState?.selectedModel;
+                                }
+
                                 final payload = CreateListingPayload(
-                                  attributes: {
-                                    'contract_type': _contractType,
-                                    'property_type': _propertyType,
-                                  },
+                                  attributes: attributes,
+                                  make: selectedMake,
+                                  model: selectedModel,
                                   governorate:
                                       (_locationKey.currentState as dynamic)
                                           ?.selectedGov,
@@ -342,6 +433,18 @@ class _EditAdScreenState extends State<EditAdScreen> {
       _config = cfg;
       _propertyType = d.attributes['property_type']?.toString();
       _contractType = d.attributes['contract_type']?.toString();
+
+      // Load Unified / Car Rental / Spare Parts Data
+      _mainCategory = d.attributes['main_category']?.toString();
+      _subCategory = d.attributes['sub_category']?.toString();
+      _make = d.attributes['make']?.toString() ??
+          d.attributes['car_make']?.toString();
+      _model = d.attributes['model']?.toString() ??
+          d.attributes['car_model']?.toString();
+      _year = d.attributes['year']?.toString();
+      _driverOption = d.attributes['driver_option']?.toString() ??
+          d.attributes['driver']?.toString();
+
       _price = d.price.toString();
       _description = d.description.toString();
       _contactPhone = d.contactPhone.toString();

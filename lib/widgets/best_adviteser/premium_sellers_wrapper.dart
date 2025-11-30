@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:nas_masr_app/widgets/best_adviteser/general_grid_premium_sellers.dart';
 import 'package:nas_masr_app/core/data/models/premium_advertiser.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 // المكونات الفرعية: (سيبني هذا الجزء بنفسه عند اللزوم)
 
 // ======== كود Placeholders للمكونات التي لم تُبنى بعد (Doctors/Teachers) =========
@@ -53,8 +54,9 @@ class PremiumSellersWrapper extends StatelessWidget {
     // 1. تحديد Slugs التي تستخدم نمط Grid (النمط الذي بنيناه: العقارات/السيارات)
     final List<String> gridSlugs = [
       'cars',
-      'car-rental',
+      'cars_rent',
       'real_estate',
+      ...UnifiedCategories.slugs,
     ];
 
     if (gridSlugs.contains(slug)) {

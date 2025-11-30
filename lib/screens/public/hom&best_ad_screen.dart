@@ -15,6 +15,10 @@ import 'package:nas_masr_app/widgets/best_adviteser/premium_sellers_wrapper.dart
 import 'package:nas_masr_app/widgets/custom_bottom_nav.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/car_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/real_estate_filters_widget.dart';
+import 'package:nas_masr_app/widgets/filter_widgets/unified_filters_widget.dart';
+import 'package:nas_masr_app/widgets/filter_widgets/car_rental_filters_widget.dart';
+import 'package:nas_masr_app/widgets/filter_widgets/car_spare_parts_filters_widget.dart';
+import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:nas_masr_app/widgets/search_control_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
@@ -35,10 +39,26 @@ class CategoryListingScreen extends StatelessWidget {
       CategoryFieldsResponse? config, Function(String, dynamic) onAction) {
     if (config == null) return const SizedBox.shrink();
 
+    if (UnifiedCategories.slugs.contains(slug)) {
+      return UnifiedFiltersWidget(
+        config: config,
+        onNavigate: onAction,
+      );
+    }
+
     switch (slug) {
       case 'cars':
-      case 'car-rental':
         return CarFiltersWidget(
+          config: config,
+          onNavigate: onAction,
+        );
+      case 'cars_rent':
+        return CarRentalFiltersWidget(
+          config: config,
+          onNavigate: onAction,
+        );
+      case 'spare-parts':
+        return CarSparePartsFiltersWidget(
           config: config,
           onNavigate: onAction,
         );
@@ -47,7 +67,7 @@ class CategoryListingScreen extends StatelessWidget {
       case '3aqarat':
         return RealEstateFiltersWidget(
           config: config,
-          onNavigate: onAction, // <<< ربط الـ Action المباشر
+          onNavigate: onAction,
         );
 
       default:

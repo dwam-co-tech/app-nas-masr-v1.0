@@ -48,8 +48,8 @@ class MyAdsProvider extends ChangeNotifier {
       await repository.setRankOne(categorySlug: ad.category ?? '', id: ad.id);
       await loadMyAds();
     } catch (e) {
-      _error = e.toString();
-      notifyListeners();
+      // _error = e.toString(); // Don't set global error to avoid hiding the list
+      // notifyListeners();
       rethrow;
     }
   }

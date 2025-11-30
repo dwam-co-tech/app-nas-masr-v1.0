@@ -266,12 +266,15 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                               }
                             },
                             onRenew: () {},
-                            onEdit: () {
-                              context.push('/ad/edit', extra: {
+                            onEdit: () async {
+                              await context.push('/ad/edit', extra: {
                                 'categorySlug': ad.category ?? '',
                                 'adId': ad.id.toString(),
                                 'categoryName': ad.categoryName,
                               });
+                              if (context.mounted) {
+                                context.read<MyAdsProvider>().loadMyAds();
+                              }
                             },
                             onUpdate: () async {
                               try {
@@ -283,9 +286,16 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                               } catch (e) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                      content: Text('فشل تحديث الإعلان: $e')),
+                                      content: Text('$e')),
                                 );
                               }
+                            },
+                            onImageTap: () {
+                              context.push('/ad/details', extra: {
+                                'categorySlug': ad.category ?? '',
+                                'adId': ad.id.toString(),
+                                'categoryName': ad.categoryName ?? '',
+                              });
                             },
                           );
                         }),

@@ -59,6 +59,9 @@ class ErrorHandler {
             }
           }
           return AppError("خطأ في التحقق من صحة البيانات.", statusCode: 422);
+        case 429: // Too Many Requests
+          final raw = e.response?.data['message']?.toString();
+          return AppError(raw ?? "لقد تجاوزت الحد المسموح من الطلبات، حاول لاحقاً.", statusCode: 429);
         case 500: // Internal Server Error
         default:
           return AppError("حدث خطأ من الخادم، حاول مرة أخرى لاحقًا.", statusCode: e.response?.statusCode);
