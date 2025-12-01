@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nas_masr_app/core/constatants/unified_categories.dart';
+import 'package:nas_masr_app/widgets/create_Ads/car_rental_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/car_spare_parts_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/unified_creation_form.dart';
 
 import 'package:provider/provider.dart';
 import 'package:nas_masr_app/core/data/providers/ad_creation_provider.dart';
@@ -13,10 +17,7 @@ import 'package:nas_masr_app/core/data/reposetory/filter_repository.dart';
 import 'package:nas_masr_app/core/data/models/All_filter_response.dart';
 import 'package:nas_masr_app/screens/public/ad_creation_screen.dart';
 import 'package:nas_masr_app/widgets/create_Ads/real_estate_creation_form.dart';
-import 'package:nas_masr_app/widgets/create_Ads/unified_creation_form.dart';
-import 'package:nas_masr_app/widgets/create_Ads/car_rental_creation_form.dart';
-import 'package:nas_masr_app/widgets/create_Ads/car_spare_parts_creation_form.dart';
-import 'package:nas_masr_app/core/constatants/unified_categories.dart';
+import 'package:nas_masr_app/widgets/create_Ads/car_creation_form.dart';
 import 'package:nas_masr_app/widgets/custome_phone_filed.dart';
 import 'package:nas_masr_app/widgets/custom_text_field.dart';
 import 'package:go_router/go_router.dart';
@@ -39,6 +40,8 @@ class _EditAdScreenState extends State<EditAdScreen> {
   final _imagesKey = GlobalKey();
   final _locationKey = GlobalKey();
   final _mapKey = GlobalKey();
+  final GlobalKey<CarCreationFormState> _carFormKey =
+      GlobalKey<CarCreationFormState>();
   bool _loading = true;
   String? _error;
   AdDetailsModel? _details;
@@ -117,6 +120,36 @@ class _EditAdScreenState extends State<EditAdScreen> {
         initialModel: _model,
         initialYear: _year,
         initialDriverOption: _driverOption,
+      );
+    }
+    if (widget.categorySlug == 'cars') {
+      final attrs = _details?.attributes ?? const <String, dynamic>{};
+      final initialYear = attrs['year']?.toString();
+      final initialMileage = (attrs['mileage_range'] ??
+              attrs['kilometer'] ??
+              attrs['kilometers'] ??
+              attrs['mileage'])
+          ?.toString();
+      final initialType =
+          (attrs['body_type'] ?? attrs['type'] ?? attrs['car_type'])
+              ?.toString();
+      final initialColor =
+          (attrs['exterior_color'] ?? attrs['color'])?.toString();
+      final initialTransmission = attrs['transmission']?.toString();
+      final initialFuelType = attrs['fuel_type']?.toString();
+      return CarCreationForm(
+        key: _carFormKey,
+        fieldsConfig: _config?.categoryFields ?? const [],
+        makes: _config?.makes ?? const [],
+        labelStyle: labelStyle,
+        initialMake: _details?.make,
+        initialModel: _details?.model,
+        initialYear: initialYear,
+        initialMileage: initialMileage,
+        initialType: initialType,
+        initialColor: initialColor,
+        initialTransmission: initialTransmission,
+        initialFuelType: initialFuelType,
       );
     }
     return RealEstateCreationForm(

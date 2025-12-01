@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:nas_masr_app/core/data/models/premium_advertiser.dart';
 import 'package:nas_masr_app/core/data/models/premium_listing_item.dart';
 import 'package:nas_masr_app/screens/public/ad_details_screen.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nas_masr_app/widgets/price_text.dart';
 
 // هذا هو الشكل رقم (1): الشبكة الأفقية لكروت المعلنين المميزين (للأقسام مثل العقارات والسيارات)
@@ -37,17 +38,26 @@ class GeneralGridPremiumSellersWidget extends StatelessWidget {
                 style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500),
                 textAlign: TextAlign.right,
               ),
-              Text(
-                "عرض كل الاعلانات",
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w400,
-                  color: cs.secondary,
-                  decoration: TextDecoration.underline,
-                  decorationColor: cs.secondary,
-                  decorationThickness: 1.5,
+              InkWell(
+                onTap: () {
+                  context.pushNamed('user_listings', extra: {
+                    'userId': adv.id,
+                    'sellerName': adv.name,
+                    'initialSlug': categorySlug,
+                  });
+                },
+                child: Text(
+                  "عرض كل الاعلانات",
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w400,
+                    color: cs.secondary,
+                    decoration: TextDecoration.underline,
+                    decorationColor: cs.secondary,
+                    decorationThickness: 1.5,
+                  ),
+                  textAlign: TextAlign.left,
                 ),
-                textAlign: TextAlign.left,
               ),
             ],
           ),

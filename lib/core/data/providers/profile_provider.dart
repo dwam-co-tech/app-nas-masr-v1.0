@@ -52,6 +52,31 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> verifyOtp(String otp) async {
+    _setLoading(true);
+    _setError(null);
+    try {
+      final ok = await _repo.verifyOtp(otp);
+      if (ok) {
+        try {
+          await loadProfile();
+        } catch (_) {}
+        print('VERIFY_OTP_PROVIDER_OK');
+      } else {
+        print('VERIFY_OTP_PROVIDER_FALSE otp=$otp');
+      }
+      return ok;
+    } catch (e) {
+      String msg = 'فشل التحقق من الكود';
+      if (e is AppError) msg = e.message;
+      print('VERIFY_OTP_PROVIDER_ERROR: $msg');
+      _setError(msg);
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   void _setLoading(bool v) {
     _loading = v;
     notifyListeners();

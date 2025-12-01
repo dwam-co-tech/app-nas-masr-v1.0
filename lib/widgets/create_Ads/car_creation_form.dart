@@ -14,6 +14,12 @@ class CarCreationForm extends StatefulWidget {
   final TextStyle? labelStyle;
   final String? initialMake;
   final String? initialModel;
+  final String? initialYear;
+  final String? initialMileage;
+  final String? initialType;
+  final String? initialColor;
+  final String? initialTransmission;
+  final String? initialFuelType;
   final ValueChanged<String?>? onMakeChanged;
   final ValueChanged<String?>? onModelChanged;
   final ValueChanged<String?>? onTitleChanged;
@@ -25,6 +31,12 @@ class CarCreationForm extends StatefulWidget {
       this.labelStyle,
       this.initialMake,
       this.initialModel,
+      this.initialYear,
+      this.initialMileage,
+      this.initialType,
+      this.initialColor,
+      this.initialTransmission,
+      this.initialFuelType,
       this.onMakeChanged,
       this.onModelChanged,
       this.onTitleChanged});
@@ -52,6 +64,12 @@ class CarCreationFormState extends State<CarCreationForm> {
     super.initState();
     _selectedMake = widget.initialMake;
     _selectedModel = widget.initialModel;
+    _year = widget.initialYear;
+    _mileage = widget.initialMileage;
+    _type = widget.initialType;
+    _color = widget.initialColor;
+    _transmission = widget.initialTransmission;
+    _fuelType = widget.initialFuelType;
   }
 
   @override

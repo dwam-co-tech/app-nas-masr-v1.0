@@ -25,31 +25,36 @@ class AdDetailsModel {
   final String? sellerJoinedAtHuman;
   final int? sellerListingsCount;
   final String? banner;
+  final String? make;
+  final String? model;
 
-  const AdDetailsModel(
-      {required this.id,
-      required this.title,
-      required this.price,
-      required this.description,
-      required this.categorySlug,
-      required this.governorate,
-      required this.city,
-      required this.planType,
-      required this.attributes,
-      required this.contactPhone,
-      this.whatsappPhone,
-      this.mainImageUrl,
-      this.imagesUrls = const [],
-      this.createdAt,
-      this.lat,
-      this.lng,
-      required this.address,
-      this.sellerId,
-      this.sellerName,
-      this.sellerJoinedAt,
-      this.sellerJoinedAtHuman,
-      this.sellerListingsCount,
-      this.banner});
+  const AdDetailsModel({
+    required this.id,
+    required this.title,
+    required this.price,
+    required this.description,
+    required this.categorySlug,
+    required this.governorate,
+    required this.city,
+    required this.planType,
+    required this.attributes,
+    required this.contactPhone,
+    this.whatsappPhone,
+    this.mainImageUrl,
+    this.imagesUrls = const [],
+    this.createdAt,
+    this.lat,
+    this.lng,
+    required this.address,
+    this.sellerId,
+    this.sellerName,
+    this.sellerJoinedAt,
+    this.sellerJoinedAtHuman,
+    this.sellerListingsCount,
+    this.banner,
+    this.make,
+    this.model,
+  });
 
   factory AdDetailsModel.fromMap(Map<String, dynamic> json) {
     // التأكد من استخراج البيانات بطريقة آمنة
@@ -92,6 +97,8 @@ class AdDetailsModel {
           : null,
       sellerName: user != null ? (user['name']?.toString()) : null,
       banner: user != null ? (user['banner']?.toString()) : null,
+      make: data['make']?.toString(),
+      model: data['model']?.toString(),
 
       sellerJoinedAt:
           joinedAtStr != null ? DateTime.tryParse(joinedAtStr) : null,

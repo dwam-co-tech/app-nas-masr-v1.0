@@ -7,6 +7,8 @@ class Profile {
   final double? lat;
   final double? lng;
   final String? address;
+  final bool? otpVerified;
+  final String? otp;
 
   const Profile({
     required this.id,
@@ -17,6 +19,8 @@ class Profile {
     this.lat,
     this.lng,
     this.address,
+    this.otpVerified,
+    this.otp,
   });
 
   factory Profile.fromApi(Map<String, dynamic> json) {
@@ -29,8 +33,13 @@ class Profile {
     final latStr = data['lat']?.toString();
     final lngStr = data['lng']?.toString();
     final address = data['address']?.toString();
+    final otpVerifiedRaw = data['otp_verified'];
+    final otpVerified = otpVerifiedRaw is bool
+        ? otpVerifiedRaw
+        : (otpVerifiedRaw?.toString().toLowerCase() == 'true');
+    final otp = data['otp']?.toString();
     final lat = (latStr == null || latStr.isEmpty) ? null : double.tryParse(latStr);
     final lng = (lngStr == null || lngStr.isEmpty) ? null : double.tryParse(lngStr);
-    return Profile(id: id, name: name, phone: phone, referralCode: ref, code: code, lat: lat, lng: lng, address: address);
+    return Profile(id: id, name: name, phone: phone, referralCode: ref, code: code, lat: lat, lng: lng, address: address, otpVerified: otpVerified, otp: otp);
   }
 }

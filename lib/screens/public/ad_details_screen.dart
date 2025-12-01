@@ -86,12 +86,13 @@ class AdDetailsScreen extends StatelessWidget {
 
   // دالة تُحدد أي لوحة خصائص سيتم بناؤها بناءً على الـ Slug
   Widget _buildDynamicDetailsPanel(
-      BuildContext context, String slug, Map<String, dynamic> attributes) {
+      BuildContext context, String slug, Map<String, dynamic> attributes,
+      {String? make, String? model}) {
     if (UnifiedCategories.slugs.contains(slug)) {
       return UnifiedDetailsPanel(attributes: attributes);
     }
     if (slug == 'cars') {
-      //  return CarDetailsPanel(attributes: attributes);
+      return CarDetailsPanel(make: make, model: model, attributes: attributes);
     } else if (slug == 'real_estate') {
       return RealEstateDetailsPanel(attributes: attributes);
     } else if (slug == 'cars_rent') {
@@ -99,7 +100,6 @@ class AdDetailsScreen extends StatelessWidget {
     } else if (slug == 'spare-parts') {
       return CarSparePartsDetailsPanel(attributes: attributes);
     }
-    // لوحة الخصائص الافتراضية
     return const Center(child: Text('لا توجد لوحة تفاصيل لهذا القسم'));
   }
 
@@ -152,8 +152,11 @@ class AdDetailsScreen extends StatelessWidget {
                   actions: [
                     Padding(
                       padding: const EdgeInsets.only(left: 12),
-                      child: Icon(Icons.notifications_rounded,
-                          color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                      child: InkWell(
+                        onTap: () => context.pushNamed('notifications'),
+                        child: Icon(Icons.notifications_rounded,
+                            color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                      ),
                     ),
                   ],
                   title: Text(categoryName,
@@ -285,7 +288,8 @@ class AdDetailsScreen extends StatelessWidget {
                           ),
                           // SizedBox(height: 5.h),
                           _buildDynamicDetailsPanel(
-                              context, categorySlug, adDetails.attributes),
+                              context, categorySlug, adDetails.attributes,
+                              make: adDetails.make, model: adDetails.model),
                           SizedBox(height: 15.h),
                           Align(
                             alignment: Alignment.centerRight,
@@ -412,7 +416,20 @@ class AdDetailsScreen extends StatelessWidget {
                                             fontWeight: FontWeight.w500)),
                                     SizedBox(height: 6.h),
                                     GestureDetector(
-                                      onTap: () {},
+                                      onTap: () {
+                                        final uid = adDetails.sellerId;
+                                        if (uid != null) {
+                                          context.pushNamed('user_listings',
+                                              extra: {
+                                                'userId': uid,
+                                                'initialSlug':
+                                                    adDetails.categorySlug,
+                                                'sellerName':
+                                                    adDetails.sellerName ??
+                                                        'المعلن',
+                                              });
+                                        }
+                                      },
                                       child: Text(
                                           'عرض جميع الإعلانات (${_toArabicDigits('${adDetails.sellerListingsCount ?? 0}')} )',
                                           style: TextStyle(

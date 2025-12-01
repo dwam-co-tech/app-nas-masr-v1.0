@@ -114,16 +114,20 @@ class _TopRow extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              context.pushNamed('favorites');
+            },
             icon: Icon(Icons.favorite_rounded,
                 color: cs.onSurface, size: isLand ? 15.sp : 25.sp),
             tooltip: 'المفضلة',
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              context.pushNamed('notifications');
+            },
             icon: Icon(Icons.notifications_rounded,
-                color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
-            tooltip: 'المفضلة',
+                color: cs.onSurface, size: isLand ? 15.sp : 25.sp),
+            tooltip: 'الاشعارات',
           )
         ],
       ),

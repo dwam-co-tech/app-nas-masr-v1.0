@@ -149,8 +149,11 @@ class CategoryListingScreen extends StatelessWidget {
                   actions: [
                     Padding(
                       padding: const EdgeInsets.only(left: 12),
-                      child: Icon(Icons.notifications_rounded,
-                          color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                      child: InkWell(
+                        onTap: () => context.pushNamed('notifications'),
+                        child: Icon(Icons.notifications_rounded,
+                            color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                      ),
                     ),
                   ],
                   title: Text(provider.categoryName,

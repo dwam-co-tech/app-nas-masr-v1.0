@@ -127,6 +127,18 @@ class CarAdCardWidget extends StatelessWidget {
     return out;
   }
 
+  String _toEnglishDigits(String s) {
+    const ar = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    const fa = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    const en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    var out = s;
+    for (var i = 0; i < en.length; i++) {
+      out = out.replaceAll(ar[i], en[i]);
+      out = out.replaceAll(fa[i], en[i]);
+    }
+    return out;
+  }
+
   String _formatArabicDate(DateTime dt) {
     final y = dt.year.toString();
     final m = dt.month.toString();
@@ -144,7 +156,6 @@ class CarAdCardWidget extends StatelessWidget {
 
     final make = (ad.make ??
             ad.attributes['make']?.toString() ??
-        
             ad.attributes['car_make']?.toString() ??
             '')
         .toString();
@@ -154,11 +165,12 @@ class CarAdCardWidget extends StatelessWidget {
             '')
         .toString();
     final year = ad.attributes['year']?.toString() ?? '';
-    final kilometers =" ${ad.attributes['kilometers']} "?.toString() ??
-        ad.attributes['mileage_range']?.toString() ??
-        ad.attributes['kilometer']?.toString() ??
-        ad.attributes['mileage']?.toString() ??
-        '';
+    String kilometers = '';
+    final kmRaw = ad.attributes['kilometers'];
+    if (kmRaw != null) {
+      kilometers = kmRaw.toString().trim();
+      if (kilometers.toLowerCase() == 'null') kilometers = '';
+    }
 
     String createdAt = '';
     if (ad.createdAt != null) {
@@ -173,11 +185,12 @@ class CarAdCardWidget extends StatelessWidget {
 
     final titleLine = [make, model].where((e) => e.trim().isNotEmpty).join(' ');
     final infoLineParts = <String>[];
-    if (year.trim().isNotEmpty) infoLineParts.add(year.trim());
+    if (year.trim().isNotEmpty)
+      infoLineParts.add(_toEnglishDigits(year.trim()));
     if (kilometers.trim().isNotEmpty) {
       final mil = kilometers.trim();
-      final isNum = double.tryParse(mil) != null;
-      infoLineParts.add(isNum ? '$mil ك.م' : mil);
+      final display = _toEnglishDigits(mil);
+      infoLineParts.add('$display ك.م');
     }
     final infoLine = infoLineParts.join(' ، ');
 

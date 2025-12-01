@@ -66,8 +66,11 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                 actions: [
                   Padding(
                     padding: const EdgeInsets.only(left: 12),
-                    child: Icon(Icons.notifications_rounded,
-                        color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                    child: InkWell(
+                      onTap: () => context.pushNamed('notifications'),
+                      child: Icon(Icons.notifications_rounded,
+                          color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                    ),
                   ),
                 ],
                 title: Text("إدارة الاعلانات",
@@ -285,8 +288,7 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                                 );
                               } catch (e) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text('$e')),
+                                  SnackBar(content: Text('$e')),
                                 );
                               }
                             },

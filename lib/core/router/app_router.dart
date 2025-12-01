@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nas_masr_app/screens/ads_nanagement_screen.dart';
 import 'package:nas_masr_app/screens/chose_category_create_ads.dart';
+import 'package:nas_masr_app/screens/public/favorites_screen.dart';
+import 'package:nas_masr_app/screens/public/notifications_screen.dart';
 import 'package:nas_masr_app/screens/splash_screen.dart';
 import 'package:nas_masr_app/screens/on_boarding_screen.dart';
 import 'package:nas_masr_app/screens/login_screen.dart';
@@ -17,6 +19,8 @@ import 'package:nas_masr_app/screens/public/ad_edit_screen.dart';
 import 'package:nas_masr_app/screens/public/ad_details_screen.dart';
 import 'package:nas_masr_app/screens/public/hom&best_ad_screen.dart';
 import 'package:nas_masr_app/screens/public/filtered_ads_screen.dart';
+import 'package:nas_masr_app/screens/public/seller_listings_screen.dart';
+import 'package:nas_masr_app/screens/public/notifications_screen.dart';
 
 // Centralized GoRouter configuration kept separate from main.dart
 class AppRouter {
@@ -174,6 +178,44 @@ class AppRouter {
         path: '/privacy',
         name: 'privacy',
         builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: '/user/listings',
+        name: 'user_listings',
+        builder: (context, state) {
+          final extra = state.extra;
+          int userId = 0;
+          String? initialSlug;
+          String? sellerName;
+          if (extra is Map<String, dynamic>) {
+            final idRaw = extra['userId'];
+            if (idRaw is int) {
+              userId = idRaw;
+            } else if (idRaw != null) {
+              userId = int.tryParse(idRaw.toString()) ?? 0;
+            }
+            initialSlug = extra['initialSlug']?.toString();
+            sellerName = extra['sellerName']?.toString();
+          }
+          return SellerListingsScreen(userId: userId, initialSlug: initialSlug, sellerName: sellerName);
+        },
+      ),
+      GoRoute(
+        path: '/favorites',
+        name: 'favorites',
+        builder: (context, state) {
+          final extra = state.extra;
+          String? initialSlug;
+          if (extra is Map<String, dynamic>) {
+            initialSlug = extra['initialSlug']?.toString();
+          }
+          return FavoritesScreen(initialSlug: initialSlug);
+        },
+      ),
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

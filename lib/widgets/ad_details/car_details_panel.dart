@@ -4,46 +4,132 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CarDetailsPanel extends StatelessWidget {
-  const CarDetailsPanel({super.key});
+  final String? make;
+  final String? model;
+  final Map<String, dynamic> attributes;
 
-  Widget _buildDetailRow(BuildContext context, String label, String value, {IconData icon = Icons.info_outline}) { 
+  const CarDetailsPanel(
+      {super.key,
+      required this.make,
+      required this.model,
+      required this.attributes});
+
+  String _attrValue(List<String> keys) {
+    for (final k in keys) {
+      final v = attributes[k];
+      if (v == null) continue;
+      final s = v.toString().trim();
+      if (s.isNotEmpty) return s;
+    }
+    return '';
+  }
+
+  String _normalizeKilometers(String s) {
+    return s.trim();
+  }
+
+  Widget _buildItem(BuildContext context, String label, String value,
+      {double? valueFontSize}) {
     final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.h),
-      child: Row(
-        children: [
-          Icon(icon, color: cs.primary, size: 20.sp),
-          SizedBox(width: 8.w),
-          Text('$label:', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
-          const Spacer(),
-          Text(value, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: Colors.black87)),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: cs.primary)),
+        SizedBox(height: 6.h),
+        Container(
+          padding: EdgeInsets.symmetric(vertical: 10.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              maxLines: 1,
+              softWrap: false,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: (valueFontSize ?? 14.sp),
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.all(16.w),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('المواصفات الأساسية للسيارة', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
-          Divider(height: 20.h, thickness: 1),
+    final cs = Theme.of(context).colorScheme;
+    final type = _attrValue(['body_type', 'type', 'car_type']);
+    final year = _attrValue(['year']);
+    final km =
+        _attrValue(['mileage_range', 'kilometer', 'kilometers', 'mileage']);
+    final color = _attrValue(['exterior_color', 'color']);
+    final transmission = _attrValue(['transmission']);
+    final fuel = _attrValue(['fuel_type']);
+    final head = [make, model]
+        .where((e) => (e ?? '').trim().isNotEmpty)
+        .map((e) => e!.trim())
+        .join(' ');
 
-          _buildDetailRow(context, 'موديل السيارة', 'توسان'), 
-          _buildDetailRow(context, 'سنة الصنع', '2024', icon: Icons.calendar_month_outlined),
-          _buildDetailRow(context, 'ناقل الحركة', 'أوتوماتيك'),
-          _buildDetailRow(context, 'المسافة المقطوعة', '5,000 كم', icon: Icons.speed),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (head.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.only(top: 8.h, bottom: 12.h),
+            child: Text(
+              head,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface),
+            ),
+          ),
+        SizedBox(width: 8.w),
+        Row(
+          children: [
+            Expanded(
+                child:
+                    _buildItem(context, 'النوع', type.isNotEmpty ? type : '—')),
+            SizedBox(width: 8.w),
+            Expanded(
+                child:
+                    _buildItem(context, 'السنة', year.isNotEmpty ? year : '—')),
+            SizedBox(width: 8.w),
+            Expanded(
+                child: _buildItem(
+                    context, 'الكيلو متر', km.isNotEmpty ? km : '—',
+                    valueFontSize: 12.sp)),
+          ],
+        ),
+        SizedBox(height: 8.h),
+        Row(
+          children: [
+            Expanded(
+                child: _buildItem(
+                    context, 'اللون الخارجي', color.isNotEmpty ? color : '—')),
+            SizedBox(width: 8.w),
+            Expanded(
+                child: _buildItem(context, 'الفتيس',
+                    transmission.isNotEmpty ? transmission : '....')),
+            SizedBox(width: 8.w),
+            Expanded(
+                child: _buildItem(
+                    context, 'نوع الوقود', fuel.isNotEmpty ? fuel : '—')),
+          ],
+        ),
+      ],
     );
   }
 }

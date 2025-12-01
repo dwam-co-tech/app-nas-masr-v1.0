@@ -32,6 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   double? longitude;
   String _mapStyle = 'hot';
   String? _address;
+  bool _phoneVerified = false;
   Map<String, dynamic> get _profileMap => {
         'id': agentCode,
         'name': username,
@@ -176,6 +177,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       latitude = latitude ?? prof.lat;
       longitude = longitude ?? prof.lng;
       _address = _address ?? prof.address;
+      _phoneVerified = prof.otpVerified == true;
     }
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -257,18 +259,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   //     SizedBox(height: 8.h),
-                  GestureDetector(
-                    onTap: _showEditDialog,
-                    child: AbsorbPointer(
-                      child: CustomTextField(
-                        key: ValueKey('phone-$phone'),
-                        labelText: 'رقم الهاتف',
-                        keyboardType: TextInputType.phone,
-                        initialValue: _display(phone, 'phone'),
-                        readOnly: true,
-                        textDirection: TextDirection.rtl,
-                      ),
-                    ),
+                  CustomTextField(
+                    key: ValueKey('phone-$phone'),
+                    labelText: 'رقم الهاتف',
+                    keyboardType: TextInputType.phone,
+                    initialValue: _display(phone, 'phone'),
+                    readOnly: true,
+                    textDirection: TextDirection.rtl,
+                    suffix: _phoneVerified
+                        ? Padding(
+                            padding:
+                                const EdgeInsetsDirectional.only(start: 8.0),
+                            child: Icon(Icons.verified_rounded,
+                                color: Colors.green))
+                        : GestureDetector(
+                            onTap: _showOtpDialog,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsetsDirectional.only(start: 8.0),
+                              child: Text(
+                                'تأكيد',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                              ),
+                            ),
+                          ),
                   ),
                   //   SizedBox(height: 8.h),
                   GestureDetector(
@@ -327,9 +349,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   SizedBox(height: 6.h),
                   _mapWidget(context),
-                  SizedBox(height: 8.h),
+                  SizedBox(height: 10.h),
 
-                  SizedBox(height: 12.h),
                   Row(
                     children: [
                       Expanded(
@@ -504,6 +525,290 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _showOtpDialog() {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final d1 = TextEditingController();
+    final d2 = TextEditingController();
+    final d3 = TextEditingController();
+    final d4 = TextEditingController();
+    final f1 = FocusNode();
+    final f2 = FocusNode();
+    final f3 = FocusNode();
+    final f4 = FocusNode();
+    bool submitting = false;
+    String otpText = '';
+    int activeIndex = 0;
+    final ctrls = [d1, d2, d3, d4];
+    final nodes = [f1, f2, f3, f4];
+    bool initializedFocus = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              if (!initializedFocus) {
+                initializedFocus = true;
+                Future.microtask(() => nodes[activeIndex].requestFocus());
+              }
+              return AlertDialog(
+                backgroundColor: cs.surface,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                titlePadding: const EdgeInsetsDirectional.only(
+                    start: 16, end: 16, top: 12, bottom: 4),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                title: Text('تأكيد رقم الهاتف',
+                    textAlign: TextAlign.center,
+                    style: tt.titleMedium
+                        ?.copyWith(color: cs.onSurface, fontSize: 22.sp)),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('اكتب الكود المكون من 4 أرقام المرسل إلى هاتفك',
+                        textAlign: TextAlign.center,
+                        style: tt.bodyMedium?.copyWith(color: cs.onSurface)),
+                    const SizedBox(height: 12),
+                    Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _otpBox(
+                            d1,
+                            f1,
+                            enabled: activeIndex == 0,
+                            next: f2,
+                            setState: setState,
+                            prev: null,
+                            onChanged: () {
+                              otpText =
+                                  [d1.text, d2.text, d3.text, d4.text].join();
+                              int idx = ctrls.indexWhere((c) => c.text.isEmpty);
+                              if (idx == -1) idx = 3;
+                              activeIndex = idx;
+                              setState(() {});
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                nodes[activeIndex].requestFocus();
+                              });
+                            },
+                            onTapInactive: () {
+                              nodes[activeIndex].requestFocus();
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          _otpBox(
+                            d2,
+                            f2,
+                            enabled: activeIndex == 1,
+                            next: f3,
+                            setState: setState,
+                            prev: f1,
+                            onChanged: () {
+                              otpText =
+                                  [d1.text, d2.text, d3.text, d4.text].join();
+                              int idx = ctrls.indexWhere((c) => c.text.isEmpty);
+                              if (idx == -1) idx = 3;
+                              activeIndex = idx;
+                              setState(() {});
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                nodes[activeIndex].requestFocus();
+                              });
+                            },
+                            onTapInactive: () {
+                              nodes[activeIndex].requestFocus();
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          _otpBox(
+                            d3,
+                            f3,
+                            enabled: activeIndex == 2,
+                            next: f4,
+                            setState: setState,
+                            prev: f2,
+                            onChanged: () {
+                              otpText =
+                                  [d1.text, d2.text, d3.text, d4.text].join();
+                              int idx = ctrls.indexWhere((c) => c.text.isEmpty);
+                              if (idx == -1) idx = 3;
+                              activeIndex = idx;
+                              setState(() {});
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                nodes[activeIndex].requestFocus();
+                              });
+                            },
+                            onTapInactive: () {
+                              nodes[activeIndex].requestFocus();
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          _otpBox(
+                            d4,
+                            f4,
+                            enabled: activeIndex == 3,
+                            setState: setState,
+                            prev: f3,
+                            onChanged: () {
+                              otpText =
+                                  [d1.text, d2.text, d3.text, d4.text].join();
+                              int idx = ctrls.indexWhere((c) => c.text.isEmpty);
+                              if (idx == -1) idx = 3;
+                              activeIndex = idx;
+                              setState(() {});
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                nodes[activeIndex].requestFocus();
+                              });
+                            },
+                            onTapInactive: () {
+                              nodes[activeIndex].requestFocus();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    // const SizedBox(height: 8),
+                    // Align(
+                    //   alignment: Alignment.center,
+                    //   child: Text(
+                    //     otpText.isEmpty ? '' : 'الكود: $otpText',
+                    //     style: tt.bodySmall?.copyWith(color: cs.onSurface),
+                    //   ),
+                    // ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: submitting
+                            ? null
+                            : () async {
+                                final otp =
+                                    [d1.text, d2.text, d3.text, d4.text].join();
+                                if (otp.length != 4 ||
+                                    !RegExp(r'^\d{4}$').hasMatch(otp)) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Directionality(
+                                        textDirection: TextDirection.rtl,
+                                        child: const Text('أدخل 4 أرقام صحيحة',
+                                            textAlign: TextAlign.right),
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                setState(() => submitting = true);
+                                final ok = await context
+                                    .read<ProfileProvider>()
+                                    .verifyOtp(otp);
+                                if (!mounted) return;
+                                setState(() => submitting = false);
+                                if (ok) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Directionality(
+                                        textDirection: TextDirection.rtl,
+                                        child: const Text('تم تأكيد رقم الهاتف',
+                                            textAlign: TextAlign.right),
+                                      ),
+                                    ),
+                                  );
+                                  Navigator.of(ctx).pop();
+                                } else {
+                                  final msg =
+                                      context.read<ProfileProvider>().error ??
+                                          'فشل التحقق من الكود';
+                                  print('VERIFY_OTP_UI_ERROR: $msg');
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Directionality(
+                                        textDirection: TextDirection.rtl,
+                                        child: Text(msg,
+                                            textAlign: TextAlign.right),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorManager.primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: submitting
+                            ? SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2))
+                            : const Text('ارسال'),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _otpBox(TextEditingController c, FocusNode f,
+      {required bool enabled,
+      FocusNode? next,
+      FocusNode? prev,
+      required void Function(void Function()) setState,
+      required VoidCallback onChanged,
+      required VoidCallback onTapInactive}) {
+    final cs = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 50,
+      height: 50,
+      child: TextField(
+        controller: c,
+        focusNode: f,
+        textAlign: TextAlign.center,
+        keyboardType: TextInputType.number,
+        textInputAction: TextInputAction.next,
+        maxLength: 1,
+        style: TextStyle(
+            fontSize: 20, fontWeight: FontWeight.w600, color: cs.secondary),
+        decoration: InputDecoration(
+          counterText: '',
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: cs.secondary)),
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: cs.primary, width: 2)),
+        ),
+        enabled: enabled,
+        onTap: enabled ? null : onTapInactive,
+        onChanged: (v) {
+          if (v.isNotEmpty) {
+            if (next != null) {
+              next.requestFocus();
+            } else {
+              FocusScope.of(context).unfocus(); // إغلاق الكيبورد مع آخر رقم فقط
+            }
+          }
+          if (v.isEmpty) {
+            prev?.requestFocus();
+          }
+          onChanged();
+        },
+      ),
     );
   }
 }

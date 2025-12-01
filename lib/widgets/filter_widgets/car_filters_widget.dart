@@ -77,20 +77,7 @@ class CarFiltersWidget extends StatelessWidget {
                 selectedValue:
                     provider.selectedFilters['governorate_id']?.toString(),
               ),
-              FilterDropdownButton(
-                label: 'الماركة',
-                onTap: () =>
-                    _openFilterModal(context, 'make', 'الماركة', config.makes),
-                isSelected: provider.isFilterSelected('make'),
-                selectedValue: provider.selectedFilters['make']?.toString(),
-              ),
-            ],
-          ),
-
-          // الصف الثاني (2 فلتر)
-          Row(
-            children: [
-              FilterDropdownButton(
+             FilterDropdownButton(
                 label: 'المدينة',
                 onTap: () {
                   final allCities =
@@ -100,7 +87,38 @@ class CarFiltersWidget extends StatelessWidget {
                 isSelected: provider.isFilterSelected('city_id'),
                 selectedValue: provider.selectedFilters['city_id']?.toString(),
               ),
-              FilterDropdownButton(
+             
+            ],
+          ),
+
+          // الصف الثاني (2 فلتر)
+          Row(
+            children: [
+               FilterDropdownButton(
+                label: 'الماركة',
+                onTap: () =>
+                    _openFilterModal(context, 'make', 'الماركة', config.makes),
+                isSelected: provider.isFilterSelected('make'),
+                selectedValue: provider.selectedFilters['make']?.toString(),
+              ),
+             FilterDropdownButton(
+                label: 'الموديل',
+                onTap: () => _openFilterModal(
+                    context, 'model', 'الموديل', modelsForSelectedMake),
+                isSelected: provider.isFilterSelected('model'),
+                selectedValue: provider.selectedFilters['model']?.toString(),
+              ),
+             
+             
+             
+             ],
+          ),
+
+          // الصف الثالث (2 فلتر) - للتغطية لبقية الـ 6 فلاتر
+          Row(
+            children: [
+              
+               FilterDropdownButton(
                 label: 'السنة',
                 onTap: () {
                   CategoryFieldConfig? yearField;
@@ -116,19 +134,9 @@ class CarFiltersWidget extends StatelessWidget {
                 isSelected: provider.isFilterSelected('year'),
                 selectedValue: provider.selectedFilters['year']?.toString(),
               ),
-            ],
-          ),
-
-          // الصف الثالث (2 فلتر) - للتغطية لبقية الـ 6 فلاتر
-          Row(
-            children: [
-              FilterDropdownButton(
-                label: 'الموديل',
-                onTap: () => _openFilterModal(
-                    context, 'model', 'الموديل', modelsForSelectedMake),
-                isSelected: provider.isFilterSelected('model'),
-                selectedValue: provider.selectedFilters['model']?.toString(),
-              ),
+           
+             
+             
               FilterDropdownButton(
                 label: 'الكيلومتر',
                 onTap: () {
