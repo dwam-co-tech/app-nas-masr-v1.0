@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:nas_masr_app/core/data/models/All_filter_response.dart';
-import 'package:nas_masr_app/core/data/models/filter_options.dart';
 import 'package:nas_masr_app/core/data/providers/category_listing_provider.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/filter_dropdown_button.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/filter_options_modal.dart';
@@ -42,29 +41,83 @@ class UnifiedFiltersWidget extends StatelessWidget {
     );
   }
 
-  CategoryFieldConfig? _getField(String fieldName) {
-    try {
-      return config.categoryFields
-          .firstWhere((f) => f.fieldName == fieldName);
-    } catch (_) {
-      return null;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider =
         Provider.of<CategoryListingProvider>(context, listen: true);
 
-    // 1. Location Filters (Always present)
+    // 1. Location Filters
     final governorates = config.governorates;
-    // Simple logic for cities: flatten all cities from all governorates
-    // In a real app, you might want to filter cities based on selected governorate
-    final allCities = config.governorates.expand((g) => g.cities).toList();
 
-    // 2. Dynamic Category Filters
-    final mainCategoryField = _getField('main_category');
-    final subCategoryField = _getField('sub_category');
+    // Logic for Cities: Dependent on Governorate
+    List<dynamic> cities = [];
+    final selectedGovId = provider.selectedFilters['governorate_id'];
+    bool isCityEnabled = false;
+
+    if (selectedGovId != null) {
+      // Find the selected governorate object
+      try {
+        // Try to parse as ID first
+        final govIdInt = int.tryParse(selectedGovId.toString());
+        if (govIdInt != null) {
+          final selectedGov = governorates.firstWhere((g) => g.id == govIdInt,
+              orElse: () => governorates.first);
+          // Verify if we actually found it by ID, if not (orElse returned first), try name
+          if (selectedGov.id == govIdInt) {
+            cities = selectedGov.cities;
+            isCityEnabled = true;
+          }
+        }
+
+        // If not found by ID or parsing failed, try by Name
+        if (!isCityEnabled) {
+          final selectedGov = governorates.firstWhere(
+              (g) => g.name == selectedGovId.toString(),
+              orElse: () => governorates.first);
+          if (selectedGov.name == selectedGovId.toString()) {
+            cities = selectedGov.cities;
+            isCityEnabled = true;
+          }
+        }
+      } catch (e) {
+        cities = [];
+      }
+    }
+
+    // 2. Dynamic Category Filters (Main/Sub Sections)
+    final mainSections = config.mainSections;
+
+    // Logic for Sub Sections: Dependent on Main Section
+    List<dynamic> subSections = [];
+    final selectedMainSectionId = provider
+        .selectedFilters['main_section']; // Changed from main_section_id
+    bool isSubSectionEnabled = false;
+
+    if (selectedMainSectionId != null) {
+      try {
+        final mainIdInt = int.tryParse(selectedMainSectionId.toString());
+        if (mainIdInt != null) {
+          final selectedMain = mainSections.firstWhere((m) => m.id == mainIdInt,
+              orElse: () => mainSections.first);
+          if (selectedMain.id == mainIdInt) {
+            subSections = selectedMain.subSections;
+            isSubSectionEnabled = true;
+          }
+        }
+
+        if (!isSubSectionEnabled) {
+          final selectedMain = mainSections.firstWhere(
+              (m) => m.name == selectedMainSectionId.toString(),
+              orElse: () => mainSections.first);
+          if (selectedMain.name == selectedMainSectionId.toString()) {
+            subSections = selectedMain.subSections;
+            isSubSectionEnabled = true;
+          }
+        }
+      } catch (e) {
+        subSections = [];
+      }
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -83,53 +136,50 @@ class UnifiedFiltersWidget extends StatelessWidget {
               ),
               FilterDropdownButton(
                 label: 'المدينة',
-                onTap: () => _openFilterModal(
-                    context, 'city_id', 'المدينة', allCities),
+                onTap: isCityEnabled
+                    ? () =>
+                        _openFilterModal(context, 'city_id', 'المدينة', cities)
+                    : null,
                 isSelected: provider.isFilterSelected('city_id'),
                 selectedValue: provider.selectedFilters['city_id']?.toString(),
+                // You might want to add a visual cue for disabled state in FilterDropdownButton if supported
               ),
             ],
           ),
 
-          // Row 2: Categories
-          Row(
-            children: [
-              if (mainCategoryField != null)
+          // Row 2: Categories (Main/Sub Sections)
+          if (config.supportsSections)
+            Row(
+              children: [
                 FilterDropdownButton(
-                  label: mainCategoryField.displayName,
+                  label: 'القسم الرئيسي', // Or dynamic label if available
                   onTap: () => _openFilterModal(
                     context,
-                    mainCategoryField.fieldName,
-                    mainCategoryField.displayName,
-                    mainCategoryField.options,
+                    'main_section', // Changed from main_section_id
+                    'القسم الرئيسي',
+                    mainSections,
                   ),
-                  isSelected:
-                      provider.isFilterSelected(mainCategoryField.fieldName),
-                  selectedValue: provider
-                      .selectedFilters[mainCategoryField.fieldName]
-                      ?.toString(),
+                  isSelected: provider.isFilterSelected('main_section'),
+                  selectedValue:
+                      provider.selectedFilters['main_section']?.toString(),
                 ),
-              if (subCategoryField != null)
                 FilterDropdownButton(
-                  label: subCategoryField.displayName,
-                  onTap: () => _openFilterModal(
-                    context,
-                    subCategoryField.fieldName,
-                    subCategoryField.displayName,
-                    subCategoryField.options,
-                  ),
-                  isSelected:
-                      provider.isFilterSelected(subCategoryField.fieldName),
-                  selectedValue: provider
-                      .selectedFilters[subCategoryField.fieldName]
-                      ?.toString(),
+                  label: 'القسم الفرعي', // Or dynamic label
+                  onTap: isSubSectionEnabled
+                      ? () => _openFilterModal(
+                            context,
+                            'sub_section', // Changed from sub_section_id
+                            'القسم الفرعي',
+                            subSections,
+                          )
+                      : null,
+                  isSelected: provider.isFilterSelected('sub_section'),
+                  selectedValue:
+                      provider.selectedFilters['sub_section']?.toString(),
                 ),
-                
-               // Spacer if one is missing to keep alignment
-               if (mainCategoryField == null || subCategoryField == null)
-                 const Spacer(flex: 1),
-            ],
-          ),
+              ],
+            ),
+
           const SizedBox(height: 12.0),
         ],
       ),

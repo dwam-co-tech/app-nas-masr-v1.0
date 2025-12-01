@@ -6,12 +6,12 @@ class FilterDropdownButton extends StatefulWidget {
   final String label;
   final String? selectedValue;
   final bool isSelected;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const FilterDropdownButton({
     super.key,
     required this.label,
-    required this.onTap,
+    this.onTap,
     this.selectedValue,
     this.isSelected = false,
   });
@@ -29,8 +29,11 @@ class _FilterDropdownButtonState extends State<FilterDropdownButton> {
     final Color primaryColor = Theme.of(context).primaryColor;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final bool active = widget.isSelected || _isPressed || _isHovered;
-    final backgroundColor = active ? primaryColor.withOpacity(1) : cs.onSurface;
+    final bool active =
+        (widget.isSelected || _isPressed || _isHovered) && widget.onTap != null;
+    final backgroundColor = active
+        ? primaryColor.withOpacity(1)
+        : (widget.onTap == null ? Colors.grey.withOpacity(0.5) : cs.onSurface);
     final displayLabel = widget.isSelected
         ? (widget.selectedValue ?? widget.label)
         : widget.label;
@@ -66,7 +69,8 @@ class _FilterDropdownButtonState extends State<FilterDropdownButton> {
                   ),
                 ),
                 Spacer(),
-                const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+                const Icon(Icons.keyboard_arrow_down,
+                    color: Colors.white, size: 20),
               ],
             ),
           ),

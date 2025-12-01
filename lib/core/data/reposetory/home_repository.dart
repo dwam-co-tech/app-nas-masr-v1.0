@@ -37,7 +37,10 @@ class HomeRepository {
     final res = await _api.get('/api/categories');
     final data = (res is Map) ? res['data'] : null;
     if (data is List) {
-      return data.map((e) => Category.fromMap(e as Map<String, dynamic>)).toList();
+      return data
+          .where((e) => e is Map)
+          .map((e) => Category.fromMap(e as Map<String, dynamic>))
+          .toList();
     }
     return <Category>[];
   }

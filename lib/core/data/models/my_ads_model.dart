@@ -8,6 +8,7 @@ class MyAdsResponse {
 
   factory MyAdsResponse.fromMap(Map<String, dynamic> map) {
     final list = (map['data'] as List? ?? [])
+        .where((e) => e is Map)
         .map((e) => MyAdItem.fromMap(e as Map<String, dynamic>))
         .toList();
     return MyAdsResponse(
@@ -44,6 +45,8 @@ class MyAdItem {
   final DateTime? expire_at;
   final String? make;
   final String? model;
+  final String? mainSection;
+  final String? subSection;
 
   MyAdItem({
     required this.id,
@@ -72,6 +75,8 @@ class MyAdItem {
     this.expire_at,
     this.make,
     this.model,
+    this.mainSection,
+    this.subSection,
   });
 
   factory MyAdItem.fromMap(Map<String, dynamic> map) {
@@ -90,8 +95,12 @@ class MyAdItem {
     }
 
     return MyAdItem(
-      id: (map['id'] ?? 0) is int ? map['id'] as int : int.tryParse('${map['id']}') ?? 0,
-      categoryId: map['category_id'] is int ? map['category_id'] as int : int.tryParse('${map['category_id']}'),
+      id: (map['id'] ?? 0) is int
+          ? map['id'] as int
+          : int.tryParse('${map['id']}') ?? 0,
+      categoryId: map['category_id'] is int
+          ? map['category_id'] as int
+          : int.tryParse('${map['category_id']}'),
       category: map['category']?.toString(),
       categoryName: map['category_name']?.toString(),
       title: map['title']?.toString(),
@@ -111,16 +120,23 @@ class MyAdItem {
       //         .where((e) => e.isNotEmpty)
       //         .toList()) ??
       //     const [],
-      attributes: (map['attributes'] as Map?)?.map((k, v) => MapEntry(k.toString(), v)) ?? const {},
-      views: map['views'] is int ? map['views'] as int : int.tryParse('${map['views']}'),
-      rank: map['rank'] is int ? map['rank'] as int : int.tryParse('${map['rank']}'),
+      attributes: (map['attributes'] is Map)
+          ? (map['attributes'] as Map).map((k, v) => MapEntry(k.toString(), v))
+          : const {},
+      views: map['views'] is int
+          ? map['views'] as int
+          : int.tryParse('${map['views']}'),
+      rank: map['rank'] is int
+          ? map['rank'] as int
+          : int.tryParse('${map['rank']}'),
       countryCode: map['country_code']?.toString(),
       publishedAt: parseDate(map['published_at']),
       createdAt: parseDate(map['created_at']),
       expire_at: parseDate(map['expire_at']),
       make: map['make']?.toString(),
       model: map['model']?.toString(),
+      mainSection: map['main_section']?.toString(),
+      subSection: map['sub_section']?.toString(),
     );
   }
 }
-

@@ -3,16 +3,22 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class UnifiedDetailsPanel extends StatelessWidget {
   final Map<String, dynamic> attributes;
+  final String? mainSection;
+  final String? subSection;
 
-  const UnifiedDetailsPanel({super.key, required this.attributes});
+  const UnifiedDetailsPanel(
+      {super.key, required this.attributes, this.mainSection, this.subSection});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
     // Extract Data
-    final subCategory = attributes['sub_category']?.toString() ?? 'غير محدد';
-    final mainCategory = attributes['main_category']?.toString() ?? 'غير محدد';
+    // Extract Data
+    final subCategory =
+        subSection ?? attributes['sub_category']?.toString() ?? 'غير محدد';
+    final mainCategory =
+        mainSection ?? attributes['main_category']?.toString() ?? 'غير محدد';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -103,6 +103,7 @@ class _EditAdScreenState extends State<EditAdScreen> {
     if (UnifiedCategories.slugs.contains(widget.categorySlug)) {
       return UnifiedCreationForm(
         fieldsConfig: _config?.categoryFields ?? const [],
+        mainSections: _config?.mainSections ?? [],
         labelStyle: labelStyle,
         initialMainCategory: _mainCategory,
         initialSubCategory: _subCategory,
@@ -332,8 +333,6 @@ class _EditAdScreenState extends State<EditAdScreen> {
                                 final Map<String, dynamic> attributes = {
                                   'contract_type': _contractType,
                                   'property_type': _propertyType,
-                                  'main_category': _mainCategory,
-                                  'sub_category': _subCategory,
                                 };
 
                                 if (widget.categorySlug == 'cars_rent') {
@@ -382,6 +381,8 @@ class _EditAdScreenState extends State<EditAdScreen> {
                                   contactPhone: _contactPhone,
                                   whatsappPhone: _whatsappPhone,
                                   planType: _details?.planType,
+                                  mainSection: _mainCategory,
+                                  subSection: _subCategory,
                                 );
                                 final ok = await provider.updateListing(
                                   categorySlug: widget.categorySlug,

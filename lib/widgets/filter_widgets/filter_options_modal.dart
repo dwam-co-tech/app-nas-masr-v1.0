@@ -5,6 +5,8 @@ import 'package:nas_masr_app/core/data/models/city.dart';
 import 'package:nas_masr_app/core/data/models/governorate.dart';
 import 'package:nas_masr_app/core/data/models/make.dart';
 import 'package:nas_masr_app/core/data/models/car_model.dart';
+import 'package:nas_masr_app/core/data/models/main_section.dart';
+import 'package:nas_masr_app/core/data/models/sub_section.dart';
 
 class FilterOptionsModal extends StatefulWidget {
   final String title;
@@ -50,6 +52,10 @@ class _FilterOptionsModalState extends State<FilterOptionsModal> {
       return item.name;
     } else if (item is CarModel) {
       return item.name;
+    } else if (item is MainSection) {
+      return item.name;
+    } else if (item is SubSection) {
+      return item.name;
     } else if (item is String || item is int) {
       return item.toString();
     }
@@ -85,14 +91,13 @@ class _FilterOptionsModalState extends State<FilterOptionsModal> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                       TextButton(
+                      TextButton(
                         onPressed: () {
                           Navigator.pop(context);
                           widget.onSelected('__RESET__');
                         },
                         child: const Text('إعادة تعيين'),
                       ),
-                      
                       Expanded(
                         child: Text(
                           widget.title,
@@ -103,7 +108,6 @@ class _FilterOptionsModalState extends State<FilterOptionsModal> {
                           ),
                         ),
                       ),
-                     
                       IconButton(
                         icon: const Icon(Icons.close),
                         onPressed: () => Navigator.pop(context),

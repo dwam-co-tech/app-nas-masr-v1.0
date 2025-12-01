@@ -89,16 +89,20 @@ class AdDetailsScreen extends StatelessWidget {
       BuildContext context, String slug, Map<String, dynamic> attributes,
       {String? make, String? model}) {
     if (UnifiedCategories.slugs.contains(slug)) {
-      return UnifiedDetailsPanel(attributes: attributes);
+      return UnifiedDetailsPanel(
+        attributes: details.attributes,
+        mainSection: details.mainSection,
+        subSection: details.subSection,
+      );
     }
     if (slug == 'cars') {
       return CarDetailsPanel(make: make, model: model, attributes: attributes);
     } else if (slug == 'real_estate') {
-      return RealEstateDetailsPanel(attributes: attributes);
+      return RealEstateDetailsPanel(attributes: details.attributes);
     } else if (slug == 'cars_rent') {
-      return CarRentalDetailsPanel(attributes: attributes);
+      return CarRentalDetailsPanel(attributes: details.attributes);
     } else if (slug == 'spare-parts') {
-      return CarSparePartsDetailsPanel(attributes: attributes);
+      return CarSparePartsDetailsPanel(attributes: details.attributes);
     }
     return const Center(child: Text('لا توجد لوحة تفاصيل لهذا القسم'));
   }
@@ -304,82 +308,9 @@ class AdDetailsScreen extends StatelessWidget {
                       ),
                     ),
 
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        bool expanded = false;
-                        final style = TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5,
-                            color: cs.onSurface);
-                        final tp = TextPainter(
-                          text: TextSpan(
-                              text: adDetails.description, style: style),
-                          maxLines: 3,
-                          textDirection: ui.TextDirection.rtl,
-                        );
-                        tp.layout(
-                            maxWidth:
-                                constraints.maxWidth - (16.w * 2) - (12.w * 2));
-                        final needMore = tp.didExceedMaxLines;
-                        final shouldShowMore = needMore;
-                        return StatefulBuilder(
-                          builder: (context, setStateSB) => Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w),
-                            child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: cs.surface,
-                                borderRadius: const BorderRadius.all(
-                                    Radius.circular(8.0)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color.fromRGBO(0, 0, 0, 0.25)
-                                        .withOpacity(.15),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(12.w),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      adDetails.description,
-                                      style: style,
-                                      maxLines: expanded ? null : 3,
-                                      overflow: expanded
-                                          ? TextOverflow.visible
-                                          : TextOverflow.ellipsis,
-                                    ),
-                                    if (shouldShowMore || expanded) ...[
-                                      SizedBox(height: 8.h),
-                                      GestureDetector(
-                                        onTap: () {
-                                          setStateSB(() {
-                                            expanded = !expanded;
-                                          });
-                                        },
-                                        child: Text(
-                                          expanded
-                                              ? 'قراءة أقل'
-                                              : 'قراءة المزيد',
-                                          style: TextStyle(
-                                              color: cs.primary,
-                                              fontSize: 14.sp,
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                    ExpandableDescription(
+                      description: adDetails.description,
+                      colorScheme: cs,
                     ),
 
                     // 3. لوحة التفاصيل الديناميكية
@@ -707,5 +638,109 @@ class AdDetailsScreen extends StatelessWidget {
             ),
           );
         }));
+  }
+}
+
+class ExpandableDescription extends StatefulWidget {
+  final String description;
+  final ColorScheme colorScheme;
+
+  const ExpandableDescription({
+    super.key,
+    required this.description,
+    required this.colorScheme,
+  });
+
+  @override
+  State<ExpandableDescription> createState() => _ExpandableDescriptionState();
+}
+
+class _ExpandableDescriptionState extends State<ExpandableDescription> {
+  bool isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      fontSize: 12.sp,
+      fontWeight: FontWeight.w400,
+      height: 1.5,
+      color: widget.colorScheme.onSurface,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate available width for text
+        // Parent padding: 16.w (horizontal) -> handled by Padding widget below
+        // Inner padding: 12.w (all) -> handled by inner Padding widget
+        // We need to subtract these from constraints.maxWidth which is the full width available to this widget (likely screen width)
+
+        // Wait, if we wrap the Container in Padding(horizontal: 16.w), the Container width is constraints.maxWidth - 32.w
+        // Then inside Container we have Padding(all: 12.w), so text width is Container width - 24.w
+        // Total text width = constraints.maxWidth - 32.w - 24.w = constraints.maxWidth - 56.w
+
+        final double textWidth = constraints.maxWidth - 56.w;
+
+        final tp = TextPainter(
+          text: TextSpan(text: widget.description, style: style),
+          maxLines: 3,
+          textDirection: ui.TextDirection.rtl,
+        );
+
+        tp.layout(maxWidth: textWidth);
+        final isOverflowing = tp.didExceedMaxLines;
+
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: widget.colorScheme.surface,
+              borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color.fromRGBO(0, 0, 0, 0.25).withOpacity(.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(12.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.description,
+                    style: style,
+                    maxLines: isExpanded ? null : 3,
+                    overflow: isExpanded
+                        ? TextOverflow.visible
+                        : TextOverflow.ellipsis,
+                  ),
+                  if (isOverflowing) ...[
+                    SizedBox(height: 8.h),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          isExpanded = !isExpanded;
+                        });
+                      },
+                      child: Text(
+                        isExpanded ? 'قراءة أقل' : 'قراءة المزيد',
+                        style: TextStyle(
+                          color: widget.colorScheme.primary,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

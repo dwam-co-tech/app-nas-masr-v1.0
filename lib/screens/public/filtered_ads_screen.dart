@@ -23,6 +23,8 @@ import 'package:nas_masr_app/widgets/filter_widgets/car_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/unified_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/car_rental_filters_widget.dart';
 import 'package:nas_masr_app/core/constatants/unified_categories.dart';
+import 'package:nas_masr_app/core/data/models/main_section.dart';
+import 'package:nas_masr_app/core/data/models/sub_section.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
@@ -166,10 +168,12 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
                   });
                   return;
                 }
-                final String val =
-                    (selectedValue is Governorate || selectedValue is City)
-                        ? selectedValue.name
-                        : selectedValue.toString();
+                final String val = (selectedValue is Governorate ||
+                        selectedValue is City ||
+                        selectedValue is MainSection ||
+                        selectedValue is SubSection)
+                    ? selectedValue.name
+                    : selectedValue.toString();
                 setState(() {
                   _selected[filterKey] = val;
                   if (filterKey == 'make') {
@@ -266,10 +270,12 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
                     });
                     return;
                   }
-                  final String val =
-                      (selectedValue is Governorate || selectedValue is City)
-                          ? selectedValue.name
-                          : selectedValue.toString();
+                  final String val = (selectedValue is Governorate ||
+                          selectedValue is City ||
+                          selectedValue is MainSection ||
+                          selectedValue is SubSection)
+                      ? selectedValue.name
+                      : selectedValue.toString();
                   provider.setFilter(filterKey, val);
                   setState(() {
                     _selected[filterKey] = val;

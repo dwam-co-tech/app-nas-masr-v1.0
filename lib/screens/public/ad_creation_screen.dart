@@ -1067,6 +1067,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
     if (UnifiedCategories.slugs.contains(slug)) {
       return UnifiedCreationForm(
         fieldsConfig: fields,
+        mainSections: _config?.mainSections ?? [],
         labelStyle: labelStyle,
         onMainCategoryChanged: (v) => _mainCategory = v,
         onSubCategoryChanged: (v) => _subCategory = v,
@@ -1315,11 +1316,11 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
             : (widget.categorySlug == 'spare-parts'
                 ? _carSparePartsFormKey.currentState?.selectedModel
                 : _carFormKey.currentState?.selectedModel),
+        mainSection: _mainCategory,
+        subSection: _subCategory,
         attributes: {
           if (_propertyType != null) 'property_type': _propertyType,
           if (_contractType != null) 'contract_type': _contractType,
-          if (_mainCategory != null) 'main_category': _mainCategory,
-          if (_subCategory != null) 'sub_category': _subCategory,
           ...carAttrs.map((k, v) => MapEntry(k, v)),
           ...rentalAttrs.map((k, v) => MapEntry(k, v)),
           ...spareAttrs.map((k, v) => MapEntry(k, v)),
