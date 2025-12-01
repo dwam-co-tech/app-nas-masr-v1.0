@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:nas_masr_app/core/data/models/ad_details_model.dart';
+
 import 'package:nas_masr_app/core/data/providers/ad_details_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/ad_details_repository.dart';
 import 'package:nas_masr_app/widgets/ad_details/car_details_panel.dart';
@@ -18,7 +18,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/foundation.dart' as foundation;
+
 import 'package:flutter/services.dart';
 import 'package:nas_masr_app/core/constatants/string.dart';
 import 'package:intl/intl.dart';
@@ -87,22 +87,22 @@ class AdDetailsScreen extends StatelessWidget {
   // دالة تُحدد أي لوحة خصائص سيتم بناؤها بناءً على الـ Slug
   Widget _buildDynamicDetailsPanel(
       BuildContext context, String slug, Map<String, dynamic> attributes,
-      {String? make, String? model}) {
+      {String? make, String? model, String? mainSection, String? subSection}) {
     if (UnifiedCategories.slugs.contains(slug)) {
       return UnifiedDetailsPanel(
-        attributes: details.attributes,
-        mainSection: details.mainSection,
-        subSection: details.subSection,
+        attributes: attributes,
+        mainSection: mainSection,
+        subSection: subSection,
       );
     }
     if (slug == 'cars') {
       return CarDetailsPanel(make: make, model: model, attributes: attributes);
     } else if (slug == 'real_estate') {
-      return RealEstateDetailsPanel(attributes: details.attributes);
+      return RealEstateDetailsPanel(attributes: attributes);
     } else if (slug == 'cars_rent') {
-      return CarRentalDetailsPanel(attributes: details.attributes);
+      return CarRentalDetailsPanel(attributes: attributes);
     } else if (slug == 'spare-parts') {
-      return CarSparePartsDetailsPanel(attributes: details.attributes);
+      return CarSparePartsDetailsPanel(attributes: attributes);
     }
     return const Center(child: Text('لا توجد لوحة تفاصيل لهذا القسم'));
   }
@@ -293,7 +293,10 @@ class AdDetailsScreen extends StatelessWidget {
                           // SizedBox(height: 5.h),
                           _buildDynamicDetailsPanel(
                               context, categorySlug, adDetails.attributes,
-                              make: adDetails.make, model: adDetails.model),
+                              make: adDetails.make,
+                              model: adDetails.model,
+                              mainSection: adDetails.mainSection,
+                              subSection: adDetails.subSection),
                           SizedBox(height: 15.h),
                           Align(
                             alignment: Alignment.centerRight,

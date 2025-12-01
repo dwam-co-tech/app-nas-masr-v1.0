@@ -27,6 +27,8 @@ class AdDetailsModel {
   final String? banner;
   final String? make;
   final String? model;
+  final String? mainSection;
+  final String? subSection;
 
   const AdDetailsModel({
     required this.id,
@@ -54,6 +56,8 @@ class AdDetailsModel {
     this.banner,
     this.make,
     this.model,
+    this.mainSection,
+    this.subSection,
   });
 
   factory AdDetailsModel.fromMap(Map<String, dynamic> json) {
