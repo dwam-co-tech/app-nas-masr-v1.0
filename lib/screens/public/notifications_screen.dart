@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui' as ui;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nas_masr_app/core/data/providers/notifications_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/notifications_repository.dart';
+import 'package:intl/intl.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
-  String _timeAgo(DateTime? dt) {
+  String _fmtDate(DateTime? dt) {
     if (dt == null) return '';
-    final diff = DateTime.now().difference(dt);
-    if (diff.inHours >= 1) return '${diff.inHours}h ago';
-    if (diff.inMinutes >= 1) return '${diff.inMinutes}m ago';
-    return '${diff.inSeconds}s ago';
+    return DateFormat('dd/MM/yyyy').format(dt);
   }
 
   @override
@@ -29,7 +28,7 @@ class NotificationsScreen extends StatelessWidget {
       child: Consumer<NotificationsProvider>(
         builder: (context, prov, child) {
           return Directionality(
-            textDirection: TextDirection.rtl,
+            textDirection: ui.TextDirection.rtl,
             child: Scaffold(
               appBar: AppBar(
                 backgroundColor: Colors.transparent,
@@ -93,14 +92,14 @@ class NotificationsScreen extends StatelessWidget {
                                     ),
                                     Expanded(
                                       child: InkWell(
-                                        onTap: () => prov.select('customers'),
+                                        onTap: () => prov.select('view'),
                                         child: Column(
                                           children: [
                                             Text(
                                               'العملاء',
                                               style: TextStyle(
                                                 color: (prov.selected ?? '') ==
-                                                        'customers'
+                                                        'view'
                                                     ? cs.primary
                                                     : cs.onSurface,
                                                 fontSize: 16.sp,
@@ -111,7 +110,7 @@ class NotificationsScreen extends StatelessWidget {
                                             Container(
                                               height: 2.h,
                                               color: (prov.selected ?? '') ==
-                                                      'customers'
+                                                      'view'
                                                   ? cs.primary
                                                   : Colors.transparent,
                                             ),
@@ -153,117 +152,196 @@ class NotificationsScreen extends StatelessWidget {
                             ),
                           ),
                           Expanded(
-                            child: ListView.builder(
-                              itemCount: prov.items.length,
-                              itemBuilder: (context, index) {
-                                final n = prov.items[index];
-                                return Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 12.w, vertical: 6.h),
-                                  child: Card(
-                                    elevation: 1,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10.r)),
+                            child: prov.displayedItems.isEmpty
+                                ? Center(
                                     child: Padding(
-                                      padding: EdgeInsets.all(10.w),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 24.w),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Container(
-                                            width: 36.w,
-                                            height: 36.w,
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(18.w),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black
-                                                      .withOpacity(0.06),
-                                                  blurRadius: 6,
-                                                  offset: const Offset(0, 2),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Icon(
-                                                Icons.notifications_rounded,
-                                                color: cs.primary,
-                                                size: 20.sp),
-                                          ),
-                                          SizedBox(width: 10.w),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                        n.title,
-                                                        style: TextStyle(
-                                                            fontSize: 16.sp,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w600),
-                                                      ),
-                                                    ),
-                                                    Text(_timeAgo(n.createdAt),
-                                                        style: TextStyle(
-                                                            color: const Color
-                                                                .fromRGBO(1, 22,
-                                                                24, 0.45),
-                                                            fontSize: 12.sp)),
-                                                  ],
-                                                ),
-                                                SizedBox(height: 4.h),
-                                                Text(
-                                                  n.body,
-                                                  maxLines: 3,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                      fontSize: 14.sp,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      color: cs.onSurface),
-                                                ),
-                                                SizedBox(height: 8.h),
-                                                Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: Container(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            horizontal: 12.w,
-                                                            vertical: 6.h),
-                                                    decoration: BoxDecoration(
-                                                      color: cs.primary,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              20.r),
-                                                    ),
-                                                    child: Text(
-                                                      n.category == 'admin'
-                                                          ? 'تحدث مع الإدارة'
-                                                          : 'محادثة مع العميل',
-                                                      style: const TextStyle(
-                                                          color: Colors.white),
-                                                    ),
-                                                  ),
-                                                )
-                                              ],
+                                          Icon(Icons.notifications_off,
+                                              color: cs.onSurface
+                                                  .withOpacity(0.35),
+                                              size: 36.sp),
+                                          SizedBox(height: 10.h),
+                                          Text(
+                                            'ليس لديك أي إشعارات',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color:
+                                                  cs.onSurface.withOpacity(0.7),
+                                              fontSize: 16.sp,
+                                              fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
+                                  )
+                                : ListView.builder(
+                                    itemCount: prov.displayedItems.length +
+                                        (prov.hasMore ? 1 : 0),
+                                    itemBuilder: (context, index) {
+                                      if (index >= prov.displayedItems.length) {
+                                        return Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 16.w, vertical: 2.h),
+                                          child: OutlinedButton(
+                                            onPressed: prov.loadingMore
+                                                ? null
+                                                : () => prov.loadMore(),
+                                            style: OutlinedButton.styleFrom(
+                                              side:
+                                                  BorderSide(color: cs.primary),
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 16.w,
+                                                  vertical: 10.h),
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          12.r)),
+                                            ),
+                                            child: prov.loadingMore
+                                                ? SizedBox(
+                                                    height: 18.h,
+                                                    width: 18.h,
+                                                    child:
+                                                        const CircularProgressIndicator(
+                                                            strokeWidth: 2))
+                                                : Text('عرض مزيد من الإشعارات',
+                                                    style: TextStyle(
+                                                        color: cs.primary,
+                                                        fontSize: 14.sp)),
+                                          ),
+                                        );
+                                      }
+                                      final n = prov.displayedItems[index];
+                                      return Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 12.w, vertical: 6.h),
+                                        child: Card(
+                                          elevation: 1,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.r)),
+                                          child: Padding(
+                                            padding: EdgeInsets.all(10.w),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: 36.w,
+                                                  height: 36.w,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            18.w),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.black
+                                                            .withOpacity(0.06),
+                                                        blurRadius: 6,
+                                                        offset:
+                                                            const Offset(0, 2),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Icon(
+                                                      Icons
+                                                          .notifications_rounded,
+                                                      color: cs.primary,
+                                                      size: 20.sp),
+                                                ),
+                                                SizedBox(width: 10.w),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: Text(
+                                                              n.title,
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      16.sp,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                              _fmtDate(
+                                                                  n.createdAt),
+                                                              style: TextStyle(
+                                                                  color: const Color
+                                                                      .fromRGBO(
+                                                                      1,
+                                                                      22,
+                                                                      24,
+                                                                      0.45),
+                                                                  fontSize:
+                                                                      12.sp)),
+                                                        ],
+                                                      ),
+                                                      SizedBox(height: 4.h),
+                                                      Text(
+                                                        n.body,
+                                                        maxLines: 3,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                            fontSize: 14.sp,
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            color:
+                                                                cs.onSurface),
+                                                      ),
+                                                      SizedBox(height: 8.h),
+                                                      Align(
+                                                        alignment: Alignment
+                                                            .centerLeft,
+                                                        child: Container(
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                                  horizontal:
+                                                                      12.w,
+                                                                  vertical:
+                                                                      6.h),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: cs.primary,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        20.r),
+                                                          ),
+                                                          child: Text(
+                                                            (n.type) == 'view'
+                                                                ? 'محادثة مع العميل'
+                                                                : 'تحدث مع الإدارة',
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .white),
+                                                          ),
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                            ),
                           )
                         ],
                       ),

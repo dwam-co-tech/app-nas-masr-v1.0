@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:nas_masr_app/core/data/providers/my_ads_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/my_ads_repository.dart';
 import 'package:nas_masr_app/core/data/models/my_ads_model.dart';
+import 'package:nas_masr_app/core/data/providers/my_packages_provider.dart';
+import 'package:nas_masr_app/core/data/reposetory/my_packages_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:nas_masr_app/screens/public/ad_edit_screen.dart';
 import 'package:nas_masr_app/widgets/price_text.dart';
@@ -42,8 +44,14 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
 
     return Directionality(
         textDirection: ui.TextDirection.rtl,
-        child: ChangeNotifierProvider(
-          create: (_) => MyAdsProvider(repository: MyAdsRepository()),
+        child: MultiProvider(
+          providers: [
+            ChangeNotifierProvider(
+                create: (_) => MyAdsProvider(repository: MyAdsRepository())),
+            ChangeNotifierProvider(
+                create: (_) =>
+                    MyPackagesProvider(repository: MyPackagesRepository())),
+          ],
           child: Scaffold(
             bottomNavigationBar: const CustomBottomNav(currentIndex: 1),
             backgroundColor: const Color(0xFFF5F5F5),
@@ -82,6 +90,40 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(height: 10.h),
+                  Consumer<MyPackagesProvider>(
+                    builder: (context, pkgProv, _) {
+                      final list = pkgProv.packages;
+                      if (pkgProv.loading) {
+                        return const SizedBox.shrink();
+                      }
+                      if (list.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text("باقاتي",
+                                style: TextStyle(
+                                    color: cs.onSurface,
+                                    fontSize: 24.sp,
+                                    fontWeight: FontWeight.w500)),
+                          ),
+                          SizedBox(height: 8.h),
+                          ...list.map((p) => _buildPackageCard(
+                                cs,
+                                title: p.title,
+                                badgeText: p.badgeText,
+                                expiry: p.expiresAtHuman,
+                                color: _packageAccentColor(p.title),
+                                gradient: _packageGradient(p.title),
+                              )),
+                        ],
+                      );
+                    },
+                  ),
                   SizedBox(height: 10.h),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -312,14 +354,73 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
         ));
   }
 
+  Color _packageAccentColor(String title) {
+    final t = title.toLowerCase();
+    if (t.contains('متميز') || t.contains('متميزة')) {
+      return ColorManager.primaryColor;
+    }
+    if (t.contains('قياسي') ||
+        t.contains('القياسية') ||
+        t.contains('ستاندرد')) {
+      return ColorManager.secondaryColor;
+    }
+    return Colors.grey;
+  }
+
+  LinearGradient _packageGradient(String title) {
+    final t = title.toLowerCase();
+    if (t.contains('متميز') || t.contains('متميزة')) {
+      return const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF14876F), Color(0xFF03464A)],
+      );
+    }
+    if (t.contains('قياسي') ||
+        t.contains('القياسية') ||
+        t.contains('ستاندرد')) {
+      return const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF14876F), Color(0xFF03464A)],
+      );
+    }
+    return LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Colors.grey.shade500, Colors.grey.shade700],
+    );
+  }
+
   Widget _buildPackageCard(
     final ColorScheme cs, {
     required String title,
-    required String expiry,
+    required String badgeText,
+    String? expiry,
     required Color color,
+    required LinearGradient gradient,
   }) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+      child: Stack(
+        children: [
+          // Positioned(
+          //   right: 0,
+          //   top: 0,
+          //   bottom: 0,
+          //   child: Container(
+          //     width: 6.w,
+          //     decoration: BoxDecoration(color:cs.primary,
+          //       borderRadius: BorderRadius.only(
+          //         topRight: Radius.circular(16.r),
+          //         bottomRight: Radius.circular(16.r),
+          //       ),
+          //     ),
+          //   ),
+          // ),
+          
+          Container(
+      margin:EdgeInsets.only(right: 0.w),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -332,41 +433,63 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
               offset: const Offset(0, 2)),
         ],
       ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                    color: cs.onSurface),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12.r),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                          color: cs.onSurface),
+                    ),
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: gradient.colors.first.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Text(badgeText,
+                          style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w400,
+                              color: gradient.colors.first)),
+                    )
+                  ],
                 ),
-                child: Text("نشط",
-                    style: TextStyle(fontSize: 12.sp, color: color)),
-              )
-            ],
+                SizedBox(height: 10.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "تنتهي صلاحية الاعلانات و الباقة بتاريخ ${((expiry ?? '').isNotEmpty) ? expiry : '—'}",
+                        style:
+                            TextStyle(fontSize: 14.sp,fontWeight: FontWeight.w500, color: cs.onSurface),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
           ),
-          SizedBox(height: 8.h),
-          Row(
-            children: [
-              Text("تنتهي صلاحية الاعلانات والباقة بتاريخ ",
-                  style: TextStyle(fontSize: 11.sp, color: Colors.grey[600])),
-              Text(expiry,
-                  style: TextStyle(
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87)),
-            ],
-          )
+          Positioned(
+            top: 0,
+            left: 16.w,
+            right: 9.w,
+            child: Container(
+              height: 1.h,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16.r),
+                  topRight: Radius.circular(16.r),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
