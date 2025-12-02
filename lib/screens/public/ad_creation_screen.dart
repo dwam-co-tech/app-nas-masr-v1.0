@@ -8,11 +8,10 @@ import 'package:nas_masr_app/core/data/models/governorate.dart';
 import 'package:nas_masr_app/core/data/reposetory/filter_repository.dart';
 import 'package:nas_masr_app/widgets/create_Ads/car_creation_form.dart';
 import 'package:nas_masr_app/widgets/create_Ads/real_estate_creation_form.dart';
-import 'package:nas_masr_app/widgets/create_Ads/car_creation_form.dart';
-import 'package:nas_masr_app/widgets/create_Ads/real_estate_creation_form.dart';
 import 'package:nas_masr_app/widgets/create_Ads/unified_creation_form.dart';
 import 'package:nas_masr_app/widgets/create_Ads/car_rental_creation_form.dart';
 import 'package:nas_masr_app/widgets/create_Ads/car_spare_parts_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/doctors_creation_form.dart';
 import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:nas_masr_app/widgets/create_Ads/custom_dropdown_field.dart';
 import 'package:nas_masr_app/widgets/custom_text_field.dart';
@@ -30,7 +29,6 @@ import 'package:nas_masr_app/core/theming/colors.dart';
 import 'package:nas_masr_app/widgets/map_round_icon_button.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:nas_masr_app/core/data/providers/profile_provider.dart';
-import 'package:nas_masr_app/screens/map_picker_screen.dart';
 import 'package:nas_masr_app/core/data/models/create_listing_payload.dart';
 import 'package:nas_masr_app/core/data/reposetory/ad_creation_repository.dart';
 import 'package:nas_masr_app/core/data/providers/ad_creation_provider.dart';
@@ -984,32 +982,34 @@ class AdCreationScreen extends StatefulWidget {
 }
 
 class _AdCreationScreenState extends State<AdCreationScreen> {
-  final _imagesKey = GlobalKey<_ImageUploadSectionState>();
-  final _locationKey = GlobalKey<_LocationFieldsSectionState>();
-  final _mapKey = GlobalKey<_MapSelectionWidgetState>();
-  final _carFormKey = GlobalKey<CarCreationFormState>();
-  final _carRentalFormKey = GlobalKey<CarRentalCreationFormState>();
-  final _carSparePartsFormKey = GlobalKey<CarSparePartsCreationFormState>();
-
-  bool _submitting = false;
-  CategoryFieldsResponse? _config;
   bool _loading = true;
   String? _error;
-
-  String? _propertyType;
-  String? _contractType;
+  CategoryFieldsResponse? _config;
+  bool _usernameChecked = false;
+  bool _submitting = false;
 
   String? _mainCategory;
   String? _subCategory;
-  String? _selectedPlanType;
+  String? _autoTitle;
+  String? _propertyType;
+  String? _contractType;
+  String? _specialization;
   String? _price;
   String? _description;
-  String? _autoTitle;
-  final TextEditingController _contactController = TextEditingController();
-  final TextEditingController _whatsappController = TextEditingController();
+  String? _selectedPlanType;
   String? _contactPhone;
   String? _whatsappPhone;
-  bool _usernameChecked = false;
+
+  final TextEditingController _contactController = TextEditingController();
+  final TextEditingController _whatsappController = TextEditingController();
+
+  final GlobalKey<CarCreationFormState> _carFormKey = GlobalKey();
+  final GlobalKey<CarRentalCreationFormState> _carRentalFormKey = GlobalKey();
+  final GlobalKey<CarSparePartsCreationFormState> _carSparePartsFormKey =
+      GlobalKey();
+  final GlobalKey<_ImageUploadSectionState> _imagesKey = GlobalKey();
+  final GlobalKey<_MapSelectionWidgetState> _mapKey = GlobalKey();
+  final GlobalKey<_LocationFieldsSectionState> _locationKey = GlobalKey();
 
   @override
   void initState() {
@@ -1022,6 +1022,8 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
   @override
   void dispose() {
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    _contactController.dispose();
+    _whatsappController.dispose();
     super.dispose();
   }
 
@@ -1096,6 +1098,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
           key: _carSparePartsFormKey,
           fieldsConfig: fields,
           makes: _config?.makes ?? const [],
+          mainSections: _config?.mainSections ?? const [],
           labelStyle: labelStyle,
           onTitleChanged: (val) => setState(() => _autoTitle = val),
         );
@@ -1106,6 +1109,13 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
           labelStyle: labelStyle,
           onPropertyTypeChanged: (v) => _propertyType = v,
           onContractTypeChanged: (v) => _contractType = v,
+        );
+
+      case 'doctors':
+        return DoctorsCreationForm(
+          fieldsConfig: fields,
+          labelStyle: labelStyle,
+          onSpecializationChanged: (v) => _specialization = v,
         );
 
       default:
@@ -1127,8 +1137,8 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
     final gov = _locationKey.currentState?.selectedGov;
     final city = _locationKey.currentState?.selectedCity;
     final errors = <String>[];
-    if (gov == null || gov!.isEmpty) errors.add('اختر المحافظة');
-    if (city == null || city!.isEmpty) errors.add('اختر المدينة');
+    if (gov == null || gov.isEmpty) errors.add('اختر المحافظة');
+    if (city == null || city.isEmpty) errors.add('اختر المدينة');
     if (_price == null || _price!.trim().isEmpty) errors.add('ادخل السعر');
     if (_description == null || _description!.trim().isEmpty)
       errors.add('ادخل الوصف');
@@ -1255,6 +1265,10 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
       if ((spareAttrs['sub_category'] ?? '').trim().isEmpty) {
         errors.add('اختر القسم الفرعي');
       }
+    } else if (widget.categorySlug == 'doctors') {
+      if (_specialization == null || _specialization!.isEmpty) {
+        errors.add('اختر التخصص');
+      }
     }
 
     if (errors.isNotEmpty) {
@@ -1324,6 +1338,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
           ...carAttrs.map((k, v) => MapEntry(k, v)),
           ...rentalAttrs.map((k, v) => MapEntry(k, v)),
           ...spareAttrs.map((k, v) => MapEntry(k, v)),
+          if (_specialization != null) 'specialization': _specialization,
         },
       );
       final ok = await provider.submitListing(
@@ -1522,134 +1537,142 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                       style: TextStyle(color: cs.onSurface))),
               body: _loading
                   ? const Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // 1. الجزء العلوي (المحافظة والمدينة - ثابتة)
-                            LocationFieldsSection(
-                              key: _locationKey,
-                              governorates: _config?.governorates ?? const [],
-                            ),
-
-                            // 2. >>> قلب الصفحة الديناميكي: هنا كل الحقول تُرسم آلياً! <<<
-                            _buildDynamicForm(
-                              context,
-                              widget.categorySlug,
-                              fieldsFromApi,
-                              labelStyle,
-                            ),
-
-                            if (_autoTitle != null &&
-                                _autoTitle!.isNotEmpty) ...[
-                              SizedBox(height: 5.h),
-                              CustomTextField(
-                                labelText: 'عنوان الإعلان',
-                                initialValue: _autoTitle,
-                                readOnly: true,
-                                showTopLabel: true,
-                                labelStyle: labelStyle,
-                              ),
-                            ],
-
-                            // 3. الأجزاء الثابتة التي يجب أن تظهر تحت الـ Dynamic Fields
-                            //  SizedBox(height: 5.h),
-
-                            CustomTextField(
-                              labelText: 'السعر',
-                              keyboardType: TextInputType.number,
-                              showTopLabel: true,
-                              labelStyle: labelStyle,
-                              onChanged: (v) => _price = v,
-                            ),
-                            Column(
+                  : _error != null
+                      ? Center(child: Text(_error!))
+                      : SingleChildScrollView(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w),
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                Text(
-                                  'رقم الهاتف',
-                                  textAlign: TextAlign.right,
-                                  style: labelStyle,
+                                // 1. الجزء العلوي (المحافظة والمدينة - ثابتة)
+                                LocationFieldsSection(
+                                  key: _locationKey,
+                                  governorates:
+                                      _config?.governorates ?? const [],
                                 ),
-                                SizedBox(height: 3.h),
-                                CustomPhoneField(
-                                  controller: _contactController,
-                                  onPhoneNumberChanged: (v) =>
-                                      _contactPhone = v,
+
+                                // 2. >>> قلب الصفحة الديناميكي: هنا كل الحقول تُرسم آلياً! <<<
+                                _buildDynamicForm(
+                                  context,
+                                  widget.categorySlug,
+                                  fieldsFromApi,
+                                  labelStyle,
                                 ),
-                              ],
-                            ),
-                            SizedBox(height: 7.h),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Text(
-                                  'رقم الواتساب',
-                                  textAlign: TextAlign.right,
-                                  style: labelStyle,
+
+                                if (_autoTitle != null &&
+                                    _autoTitle!.isNotEmpty) ...[
+                                  SizedBox(height: 5.h),
+                                  CustomTextField(
+                                    labelText: 'عنوان الإعلان',
+                                    initialValue: _autoTitle,
+                                    readOnly: true,
+                                    showTopLabel: true,
+                                    labelStyle: labelStyle,
+                                  ),
+                                ],
+
+                                // 3. الأجزاء الثابتة التي يجب أن تظهر تحت الـ Dynamic Fields
+                                //  SizedBox(height: 5.h),
+
+                                CustomTextField(
+                                  labelText: 'السعر',
+                                  keyboardType: TextInputType.number,
+                                  showTopLabel: true,
+                                  labelStyle: labelStyle,
+                                  onChanged: (v) => _price = v,
                                 ),
-                                SizedBox(height: 3.h),
-                                CustomPhoneField(
-                                  controller: _whatsappController,
-                                  onPhoneNumberChanged: (v) =>
-                                      _whatsappPhone = v,
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(
+                                      'رقم الهاتف',
+                                      textAlign: TextAlign.right,
+                                      style: labelStyle,
+                                    ),
+                                    SizedBox(height: 3.h),
+                                    CustomPhoneField(
+                                      controller: _contactController,
+                                      onPhoneNumberChanged: (v) =>
+                                          _contactPhone = v,
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                                SizedBox(height: 7.h),
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(
+                                      'رقم الواتساب',
+                                      textAlign: TextAlign.right,
+                                      style: labelStyle,
+                                    ),
+                                    SizedBox(height: 3.h),
+                                    CustomPhoneField(
+                                      controller: _whatsappController,
+                                      onPhoneNumberChanged: (v) =>
+                                          _whatsappPhone = v,
+                                    ),
+                                  ],
+                                ),
 
-                            SizedBox(height: 5.h),
-                            CustomDescriptionField(
-                              label: 'الوصف',
-                              isRequired: true,
-                              labelStyle: labelStyle,
-                              onChanged: (v) => _description = v,
-                            ),
+                                SizedBox(height: 5.h),
+                                CustomDescriptionField(
+                                  label: 'الوصف',
+                                  isRequired: true,
+                                  labelStyle: labelStyle,
+                                  onChanged: (v) => _description = v,
+                                ),
 
-                            SizedBox(height: 12.h),
+                                SizedBox(height: 12.h),
 
-                            ImageUploadSection(
-                                key: _imagesKey, slug: widget.categorySlug),
-                            SizedBox(height: 20.h),
+                                ImageUploadSection(
+                                    key: _imagesKey, slug: widget.categorySlug),
+                                SizedBox(height: 20.h),
 
-                            MapSelectionWidget(key: _mapKey),
-                            SizedBox(height: 20.h),
+                                MapSelectionWidget(key: _mapKey),
+                                SizedBox(height: 20.h),
 
-                            PackageSelectionWidget(
-                                onChanged: (v) =>
-                                    _selectedPlanType = v ?? 'free'),
-                            SizedBox(height: 5.h),
+                                PackageSelectionWidget(
+                                    onChanged: (v) =>
+                                        _selectedPlanType = v ?? 'free'),
+                                SizedBox(height: 5.h),
 
-                            // زر الحفظ والإرسال (ثابت)
-                            Consumer<AdCreationProvider>(
-                              builder: (ctx, provider, _) => ElevatedButton(
-                                onPressed: _submitting
-                                    ? null
-                                    : () => _submitWithProvider(provider),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: ColorManager.primaryColor,
-                                  foregroundColor: Colors.white,
-                                  fixedSize: Size.fromHeight(46.h),
-                                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.r),
+                                // زر الحفظ والإرسال (ثابت)
+                                Consumer<AdCreationProvider>(
+                                  builder: (ctx, provider, _) => ElevatedButton(
+                                    onPressed: _submitting
+                                        ? null
+                                        : () => _submitWithProvider(provider),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          ColorManager.primaryColor,
+                                      foregroundColor: Colors.white,
+                                      fixedSize: Size.fromHeight(46.h),
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 12.h),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8.r),
+                                      ),
+                                    ),
+                                    child: _submitting
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2))
+                                        : Text('حفظ',
+                                            style: TextStyle(fontSize: 14.sp)),
                                   ),
                                 ),
-                                child: _submitting
-                                    ? const SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2))
-                                    : Text('حفظ',
-                                        style: TextStyle(fontSize: 14.sp)),
-                              ),
+                                SizedBox(height: 60.h),
+                              ],
                             ),
-                            SizedBox(height: 60.h),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
             )));
   }
 }

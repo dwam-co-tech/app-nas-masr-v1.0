@@ -17,6 +17,7 @@ import 'package:nas_masr_app/widgets/filter_widgets/real_estate_filters_widget.d
 import 'package:nas_masr_app/widgets/filter_widgets/unified_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/car_rental_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/car_spare_parts_filters_widget.dart';
+import 'package:nas_masr_app/widgets/filter_widgets/doctors_filters_widget.dart';
 import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:nas_masr_app/core/data/models/main_section.dart';
 import 'package:nas_masr_app/core/data/models/sub_section.dart';
@@ -66,6 +67,12 @@ class CategoryListingScreen extends StatelessWidget {
       case 'real_estate':
       case '3aqarat':
         return RealEstateFiltersWidget(
+          config: config,
+          onNavigate: onAction,
+        );
+
+      case 'doctors':
+        return DoctorsFiltersWidget(
           config: config,
           onNavigate: onAction,
         );

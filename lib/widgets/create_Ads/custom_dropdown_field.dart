@@ -12,7 +12,10 @@ class CustomDropdownField extends StatefulWidget {
   final String? initialValue;
   final Function(String? value)? onChanged;
   final String? emptyOptionsHint;
+
   final TextStyle? labelStyle;
+  final bool enabled;
+  final VoidCallback? onDisabledTap;
 
   const CustomDropdownField({
     super.key,
@@ -23,6 +26,8 @@ class CustomDropdownField extends StatefulWidget {
     this.onChanged,
     this.emptyOptionsHint,
     this.labelStyle,
+    this.enabled = true,
+    this.onDisabledTap,
   });
 
   @override
@@ -59,7 +64,8 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
   @override
   Widget build(BuildContext context) {
     final List<String> opts = widget.options.toSet().toList();
-    final bool enabled = opts.isNotEmpty;
+
+    final bool isEnabled = widget.enabled && opts.isNotEmpty;
     // تنسيق الـ Input مشابه للـ CustomTextField
     const inputBorder = OutlineInputBorder(
       borderRadius: BorderRadius.all(Radius.circular(8.0)),
@@ -104,37 +110,44 @@ class _CustomDropdownFieldState extends State<CustomDropdownField> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(8.0)),
       ),
-      child: TextField(
-        controller: _controller,
-        readOnly: true,
-        enableInteractiveSelection: false,
-        onTap: enabled ? _openOptions : null,
-        decoration: InputDecoration(
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-          border: inputBorder,
-          enabledBorder: inputBorder,
-          focusedBorder: inputBorder.copyWith(
-            borderSide:
-                BorderSide(color: Theme.of(context).primaryColor, width: 2.0),
+      child: GestureDetector(
+        onTap: !isEnabled ? widget.onDisabledTap : null,
+        child: AbsorbPointer(
+          absorbing: !isEnabled,
+          child: TextField(
+            controller: _controller,
+            enabled: isEnabled,
+            readOnly: true,
+            enableInteractiveSelection: false,
+            onTap: isEnabled ? _openOptions : null,
+            decoration: InputDecoration(
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+              border: inputBorder,
+              enabledBorder: inputBorder,
+              focusedBorder: inputBorder.copyWith(
+                borderSide: BorderSide(
+                    color: Theme.of(context).primaryColor, width: 2.0),
+              ),
+              filled: true,
+              fillColor: effectiveFill,
+              hintText: isEnabled
+                  ? (_selectedValue == null ? 'اختر...' : null)
+                  : (widget.emptyOptionsHint ?? '—'),
+              hintStyle: isEnabled
+                  ? null
+                  : TextStyle(
+                      fontSize: 12.sp,
+                      color: const Color.fromRGBO(118, 129, 130, 1),
+                      fontWeight: FontWeight.w400,
+                    ),
+              suffixIcon: const Icon(Icons.keyboard_arrow_down,
+                  color: Color.fromRGBO(118, 129, 130, 1)),
+            ),
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontSize: 16, color: Colors.black87),
           ),
-          filled: true,
-          fillColor: effectiveFill,
-          hintText: enabled
-              ? (_selectedValue == null ? 'اختر...' : null)
-              : (widget.emptyOptionsHint ?? '—'),
-          hintStyle: enabled
-              ? null
-              : TextStyle(
-                  fontSize: 12.sp,
-                  color: const Color.fromRGBO(118, 129, 130, 1),
-                  fontWeight: FontWeight.w400,
-                ),
-          suffixIcon: const Icon(Icons.keyboard_arrow_down,
-              color: Color.fromRGBO(118, 129, 130, 1)),
         ),
-        textAlign: TextAlign.right,
-        style: const TextStyle(fontSize: 16, color: Colors.black87),
       ),
     );
 

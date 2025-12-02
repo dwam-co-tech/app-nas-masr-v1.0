@@ -14,12 +14,17 @@ class SearchControlWidget extends StatelessWidget {
   // دالة تُستدعى لما نغيّر حالة أي مفتاح
   final Function(String key, bool value)? onToggleChanged;
 
+  final bool isSortByNearest;
+  final bool isSortByPrice;
+
   const SearchControlWidget({
     super.key,
     required this.totalAdsCount,
     this.showPriceToggle = true,
     this.showDistanceToggle = true,
     this.onToggleChanged,
+    this.isSortByNearest = false,
+    this.isSortByPrice = false,
   });
 
   // مكوّن التوجل الواحد اللي بيضم النص والـ Switch
@@ -31,21 +36,24 @@ class SearchControlWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
-    // هنا يجب ان تكون القيمة الحالية لـ Switch جايالك من State
-    // لكن مؤقتاً هنستخدم قيمة False افتراضية للـ Demo
-    final bool currentValue = false;
+    final bool currentValue =
+        key == 'sort_distance' ? isSortByNearest : isSortByPrice;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 0.w),
       child: Row(
         children: [
-           Text(label,
-              style: TextStyle(fontSize: 12.sp,fontWeight: FontWeight.w600,
-                  color: cs.onSurface),),
-           SizedBox(width: 8.w),
-           Switch(
-             activeColor: cs.primary,
-            inactiveTrackColor:cs.primary,
+          Text(
+            label,
+            style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                color: cs.onSurface),
+          ),
+          SizedBox(width: 8.w),
+          Switch(
+            activeColor: cs.primary,
+            inactiveTrackColor: cs.primary,
             inactiveThumbColor: Colors.white,
             value: currentValue,
             onChanged: (v) {
@@ -54,14 +62,13 @@ class SearchControlWidget extends StatelessWidget {
                 onToggleChanged!(key, v);
               }
             },
-           // activeColor: color, // لون التبديل لما يكون شغال
+            // activeColor: color, // لون التبديل لما يكون شغال
             // التبديل الصغير للتصميم بتاعك
             // thumbColor: MaterialStateProperty.all(
             //     currentValue ? Colors.white : Colors.grey.shade400),
             // trackColor: MaterialStateProperty.all(
             //     currentValue ? color.withOpacity(0.8) : Colors.grey.shade200),
           ),
-        
         ],
       ),
     );
@@ -89,9 +96,8 @@ class SearchControlWidget extends StatelessWidget {
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w400,
                   color: cs.onSurface),
-              textAlign: TextAlign.right
-              ),
-         // SizedBox(height: 2.h),
+              textAlign: TextAlign.right),
+          // SizedBox(height: 2.h),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -55,6 +55,7 @@ class PremiumSellersWrapper extends StatelessWidget {
     final List<String> gridSlugs = [
       'cars',
       'cars_rent',
+      'spare-parts',
       'real_estate',
       ...UnifiedCategories.slugs,
     ];

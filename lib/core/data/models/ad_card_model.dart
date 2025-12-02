@@ -15,6 +15,8 @@ class AdCardModel {
   final String? model;
   final String? mainSection;
   final String? subSection;
+  final double? lat;
+  final double? lng;
 
   final DateTime? createdAt;
   const AdCardModel({
@@ -31,6 +33,8 @@ class AdCardModel {
     this.model,
     this.mainSection,
     this.subSection,
+    this.lat,
+    this.lng,
     this.createdAt,
   });
 
@@ -57,6 +61,10 @@ class AdCardModel {
       model: json['model'] as String?,
       mainSection: json['main_section']?.toString(),
       subSection: json['sub_section']?.toString(),
+      lat: double.tryParse(
+          json['lat']?.toString() ?? attributes['lat']?.toString() ?? ''),
+      lng: double.tryParse(
+          json['lng']?.toString() ?? attributes['lng']?.toString() ?? ''),
       createdAt: createdAtStr != null ? DateTime.tryParse(createdAtStr) : null,
     );
   }

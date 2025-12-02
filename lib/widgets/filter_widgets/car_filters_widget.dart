@@ -53,10 +53,9 @@ class CarFiltersWidget extends StatelessWidget {
     final provider =
         Provider.of<CategoryListingProvider>(context, listen: true);
     final selectedMakeName = provider.selectedFilters['make']?.toString();
-    final List<CarModel> allModels =
-        config.makes.expand((m) => m.models).toList();
+
     final List<CarModel> modelsForSelectedMake = selectedMakeName == null
-        ? allModels
+        ? []
         : (config.makes
             .firstWhere((m) => m.name == selectedMakeName,
                 orElse: () => config.makes.first)
@@ -77,7 +76,7 @@ class CarFiltersWidget extends StatelessWidget {
                 selectedValue:
                     provider.selectedFilters['governorate_id']?.toString(),
               ),
-             FilterDropdownButton(
+              FilterDropdownButton(
                 label: 'المدينة',
                 onTap: () {
                   final allCities =
@@ -87,38 +86,44 @@ class CarFiltersWidget extends StatelessWidget {
                 isSelected: provider.isFilterSelected('city_id'),
                 selectedValue: provider.selectedFilters['city_id']?.toString(),
               ),
-             
             ],
           ),
 
           // الصف الثاني (2 فلتر)
           Row(
             children: [
-               FilterDropdownButton(
+              FilterDropdownButton(
                 label: 'الماركة',
                 onTap: () =>
                     _openFilterModal(context, 'make', 'الماركة', config.makes),
                 isSelected: provider.isFilterSelected('make'),
                 selectedValue: provider.selectedFilters['make']?.toString(),
               ),
-             FilterDropdownButton(
+              FilterDropdownButton(
                 label: 'الموديل',
-                onTap: () => _openFilterModal(
-                    context, 'model', 'الموديل', modelsForSelectedMake),
+                onTap: () {
+                  if (selectedMakeName == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('يرجى اختيار الماركة أولاً'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    return;
+                  }
+                  _openFilterModal(
+                      context, 'model', 'الموديل', modelsForSelectedMake);
+                },
                 isSelected: provider.isFilterSelected('model'),
                 selectedValue: provider.selectedFilters['model']?.toString(),
               ),
-             
-             
-             
-             ],
+            ],
           ),
 
           // الصف الثالث (2 فلتر) - للتغطية لبقية الـ 6 فلاتر
           Row(
             children: [
-              
-               FilterDropdownButton(
+              FilterDropdownButton(
                 label: 'السنة',
                 onTap: () {
                   CategoryFieldConfig? yearField;
@@ -134,9 +139,6 @@ class CarFiltersWidget extends StatelessWidget {
                 isSelected: provider.isFilterSelected('year'),
                 selectedValue: provider.selectedFilters['year']?.toString(),
               ),
-           
-             
-             
               FilterDropdownButton(
                 label: 'الكيلومتر',
                 onTap: () {
@@ -148,8 +150,7 @@ class CarFiltersWidget extends StatelessWidget {
                     mileageField = null;
                   }
                   final options = mileageField?.options ?? [];
-                  _openFilterModal(
-                      context, 'kilometers', 'الكيلومتر', options);
+                  _openFilterModal(context, 'kilometers', 'الكيلومتر', options);
                 },
                 isSelected: provider.isFilterSelected('kilometers'),
                 selectedValue:

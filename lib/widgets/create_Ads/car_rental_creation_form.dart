@@ -57,9 +57,7 @@ class CarRentalCreationFormState extends State<CarRentalCreationForm> {
     final List<String> makeOptions = widget.makes.map((m) => m.name).toList();
     final List<String> modelOptions = () {
       if (_selectedMake == null || _selectedMake!.trim().isEmpty) {
-        return widget.makes
-            .expand((m) => m.models.map((mm) => mm.name))
-            .toList();
+        return const <String>[];
       }
       try {
         final mk = widget.makes.firstWhere((m) =>
@@ -95,6 +93,17 @@ class CarRentalCreationFormState extends State<CarRentalCreationForm> {
       initialValue: _selectedModel,
       emptyOptionsHint:
           _selectedMake == null ? 'اختر الماركة أولاً' : 'لا توجد موديلات',
+      enabled: _selectedMake != null && _selectedMake!.trim().isNotEmpty,
+      onDisabledTap: () {
+        if (_selectedMake == null || _selectedMake!.trim().isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('يرجى اختيار الماركة أولاً'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      },
       onChanged: (val) {
         setState(() => _selectedModel = val);
         widget.onModelChanged?.call(val);

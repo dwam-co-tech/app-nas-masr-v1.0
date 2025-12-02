@@ -6,7 +6,8 @@ import 'package:nas_masr_app/widgets/filter_widgets/filter_options_modal.dart';
 import 'package:provider/provider.dart';
 import 'package:nas_masr_app/core/data/models/All_filter_response.dart';
 import 'package:nas_masr_app/core/data/models/car_model.dart';
-import 'package:nas_masr_app/core/data/models/filter_options.dart';
+import 'package:nas_masr_app/core/data/models/main_section.dart';
+
 import 'package:nas_masr_app/core/data/providers/category_listing_provider.dart';
 
 class CarSparePartsFiltersWidget extends StatelessWidget {
@@ -57,39 +58,33 @@ class CarSparePartsFiltersWidget extends StatelessWidget {
 
     // Make & Model Logic
     final selectedMakeName = provider.selectedFilters['make']?.toString();
-    final List<CarModel> allModels =
-        config.makes.expand((m) => m.models).toList();
+
     final List<CarModel> modelsForSelectedMake = selectedMakeName == null
-        ? allModels
+        ? []
         : (config.makes
             .firstWhere((m) => m.name == selectedMakeName,
                 orElse: () => config.makes.first)
             .models);
 
     // Main & Sub Category Logic
+    // Main & Sub Category Logic
     final selectedMainCat =
         provider.selectedFilters['main_category']?.toString();
-    CategoryFieldConfig? mainCatField;
-    try {
-      mainCatField = config.categoryFields
-          .firstWhere((f) => f.fieldName == 'main_category');
-    } catch (_) {}
 
-    CategoryFieldConfig? subCatField;
-    try {
-      subCatField = config.categoryFields
-          .firstWhere((f) => f.fieldName == 'sub_category');
-    } catch (_) {}
+    final List<dynamic> mainCategories =
+        config.mainSections.map((e) => e.name).toList();
 
-    final List<dynamic> mainCategories = mainCatField?.options ?? [];
-    final List<dynamic> allSubCategories = subCatField?.options ?? [];
-
-    // Filter sub categories based on main category if needed
-    // Assuming sub categories might be linked in a similar way to makes/models
-    // or just flat list. For now, we'll treat them as flat unless we have specific logic.
-    // If the API returns sub-categories nested, we'd need to handle that.
-    // Based on previous Unified logic, they seem to be flat lists in options.
-    final List<dynamic> subCategories = allSubCategories;
+    final List<dynamic> subCategories = () {
+      if (selectedMainCat == null) return [];
+      try {
+        final main = config.mainSections.firstWhere(
+            (e) => e.name == selectedMainCat,
+            orElse: () => const MainSection(id: 0, name: '', subSections: []));
+        return main.subSections.map((e) => e.name).toList();
+      } catch (_) {
+        return [];
+      }
+    }();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -131,8 +126,19 @@ class CarSparePartsFiltersWidget extends StatelessWidget {
               ),
               FilterDropdownButton(
                 label: 'الموديل',
-                onTap: () => _openFilterModal(
-                    context, 'model', 'الموديل', modelsForSelectedMake),
+                onTap: () {
+                  if (selectedMakeName == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('يرجى اختيار الماركة أولاً'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    return;
+                  }
+                  _openFilterModal(
+                      context, 'model', 'الموديل', modelsForSelectedMake);
+                },
                 isSelected: provider.isFilterSelected('model'),
                 selectedValue: provider.selectedFilters['model']?.toString(),
               ),
@@ -152,8 +158,19 @@ class CarSparePartsFiltersWidget extends StatelessWidget {
               ),
               FilterDropdownButton(
                 label: 'فرعي',
-                onTap: () => _openFilterModal(
-                    context, 'sub_category', 'القسم الفرعي', subCategories),
+                onTap: () {
+                  if (selectedMainCat == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('يرجى اختيار القسم الرئيسي أولاً'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    return;
+                  }
+                  _openFilterModal(
+                      context, 'sub_category', 'القسم الفرعي', subCategories);
+                },
                 isSelected: provider.isFilterSelected('sub_category'),
                 selectedValue:
                     provider.selectedFilters['sub_category']?.toString(),

@@ -92,6 +92,7 @@ class _EditAdScreenState extends State<EditAdScreen> {
         key: _carSparePartsFormKey,
         fieldsConfig: _config?.categoryFields ?? const [],
         makes: _config?.makes ?? const [],
+        mainSections: _config?.mainSections ?? const [],
         labelStyle: labelStyle,
         initialMainCategory: _mainCategory,
         initialSubCategory: _subCategory,

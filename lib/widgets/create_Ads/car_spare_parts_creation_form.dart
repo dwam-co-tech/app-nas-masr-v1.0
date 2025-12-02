@@ -3,11 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:nas_masr_app/core/data/models/filter_options.dart';
 import 'package:nas_masr_app/core/data/models/make.dart';
+import 'package:nas_masr_app/core/data/models/main_section.dart';
 import 'package:nas_masr_app/widgets/create_Ads/custom_dropdown_field.dart';
 
 class CarSparePartsCreationForm extends StatefulWidget {
   final List<CategoryFieldConfig> fieldsConfig;
   final List<Make> makes;
+  final List<MainSection> mainSections;
   final TextStyle? labelStyle;
   final String? initialMainCategory;
   final String? initialSubCategory;
@@ -23,6 +25,7 @@ class CarSparePartsCreationForm extends StatefulWidget {
     super.key,
     required this.fieldsConfig,
     required this.makes,
+    this.mainSections = const [],
     this.labelStyle,
     this.initialMainCategory,
     this.initialSubCategory,
@@ -41,10 +44,6 @@ class CarSparePartsCreationForm extends StatefulWidget {
 }
 
 class CarSparePartsCreationFormState extends State<CarSparePartsCreationForm> {
-  CategoryFieldConfig? _getField(String fieldName) => widget.fieldsConfig
-      .cast<CategoryFieldConfig?>()
-      .firstWhere((f) => f?.fieldName == fieldName, orElse: () => null);
-
   String? _selectedMainCategory;
   String? _selectedSubCategory;
   String? _selectedMake;
@@ -62,9 +61,8 @@ class CarSparePartsCreationFormState extends State<CarSparePartsCreationForm> {
   @override
   Widget build(BuildContext context) {
     // 1. Main Category
-    final mainCatFieldConfig = _getField('main_category');
     final List<String> mainCatOptions =
-        mainCatFieldConfig?.options.map((e) => e.toString()).toList() ?? [];
+        widget.mainSections.map((e) => e.name).toList();
 
     final Widget mainCategoryField = CustomDropdownField(
       label: 'القسم الرئيسي',
@@ -75,17 +73,30 @@ class CarSparePartsCreationFormState extends State<CarSparePartsCreationForm> {
       onChanged: (val) {
         setState(() {
           _selectedMainCategory = val;
-          // Logic to clear sub category if needed, though options are flat currently
+          _selectedSubCategory = null;
         });
         widget.onMainCategoryChanged?.call(val);
+        widget.onSubCategoryChanged?.call(null);
         _emitTitle();
       },
     );
 
     // 2. Sub Category
-    final subCatFieldConfig = _getField('sub_category');
-    final List<String> subCatOptions =
-        subCatFieldConfig?.options.map((e) => e.toString()).toList() ?? [];
+    final List<String> subCatOptions = () {
+      if (_selectedMainCategory == null ||
+          _selectedMainCategory!.trim().isEmpty) {
+        return const <String>[];
+      }
+      try {
+        final main = widget.mainSections.firstWhere(
+          (e) => e.name == _selectedMainCategory,
+          orElse: () => const MainSection(id: 0, name: '', subSections: []),
+        );
+        return main.subSections.map((e) => e.name).toList();
+      } catch (_) {
+        return const <String>[];
+      }
+    }();
 
     final Widget subCategoryField = CustomDropdownField(
       label: 'القسم الفرعي',
@@ -93,6 +104,19 @@ class CarSparePartsCreationFormState extends State<CarSparePartsCreationForm> {
       isRequired: true,
       labelStyle: widget.labelStyle,
       initialValue: _selectedSubCategory,
+      enabled: _selectedMainCategory != null &&
+          _selectedMainCategory!.trim().isNotEmpty,
+      onDisabledTap: () {
+        if (_selectedMainCategory == null ||
+            _selectedMainCategory!.trim().isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('يرجى اختيار القسم الرئيسي أولاً'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      },
       onChanged: (val) {
         setState(() => _selectedSubCategory = val);
         widget.onSubCategoryChanged?.call(val);
@@ -121,9 +145,7 @@ class CarSparePartsCreationFormState extends State<CarSparePartsCreationForm> {
     // 4. Model
     final List<String> modelOptions = () {
       if (_selectedMake == null || _selectedMake!.trim().isEmpty) {
-        return widget.makes
-            .expand((m) => m.models.map((mm) => mm.name))
-            .toList();
+        return const <String>[];
       }
       try {
         final mk = widget.makes.firstWhere((m) =>
@@ -143,6 +165,17 @@ class CarSparePartsCreationFormState extends State<CarSparePartsCreationForm> {
       initialValue: _selectedModel,
       emptyOptionsHint:
           _selectedMake == null ? 'اختر الماركة أولاً' : 'لا توجد موديلات',
+      enabled: _selectedMake != null && _selectedMake!.trim().isNotEmpty,
+      onDisabledTap: () {
+        if (_selectedMake == null || _selectedMake!.trim().isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('يرجى اختيار الماركة أولاً'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      },
       onChanged: (val) {
         setState(() => _selectedModel = val);
         widget.onModelChanged?.call(val);

@@ -11,6 +11,7 @@ class AdSearchRepository {
     required String categorySlug,
     required Map<String, dynamic>
         queryParameters, // هذا الـ Map الذي يحمل كل الفلاتر
+    String? token,
   }) async {
     try {
       final endpoint = '/api/v1/$categorySlug/listings';
@@ -31,7 +32,8 @@ class AdSearchRepository {
       });
 
       // 2. API Call
-      final response = await _api.get(endpoint, query: finalQuery);
+      final response =
+          await _api.get(endpoint, query: finalQuery, token: token);
 
       if (response is List) {
         final List<AdCardModel> ads = [];

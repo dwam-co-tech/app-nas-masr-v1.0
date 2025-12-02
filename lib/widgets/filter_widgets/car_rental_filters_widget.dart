@@ -49,10 +49,9 @@ class CarRentalFiltersWidget extends StatelessWidget {
     final provider =
         Provider.of<CategoryListingProvider>(context, listen: true);
     final selectedMakeName = provider.selectedFilters['make']?.toString();
-    final List<CarModel> allModels =
-        config.makes.expand((m) => m.models).toList();
+
     final List<CarModel> modelsForSelectedMake = selectedMakeName == null
-        ? allModels
+        ? []
         : (config.makes
             .firstWhere((m) => m.name == selectedMakeName,
                 orElse: () => config.makes.first)
@@ -98,8 +97,19 @@ class CarRentalFiltersWidget extends StatelessWidget {
               ),
               FilterDropdownButton(
                 label: 'الموديل',
-                onTap: () => _openFilterModal(
-                    context, 'model', 'الموديل', modelsForSelectedMake),
+                onTap: () {
+                  if (selectedMakeName == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('يرجى اختيار الماركة أولاً'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    return;
+                  }
+                  _openFilterModal(
+                      context, 'model', 'الموديل', modelsForSelectedMake);
+                },
                 isSelected: provider.isFilterSelected('model'),
                 selectedValue: provider.selectedFilters['model']?.toString(),
               ),

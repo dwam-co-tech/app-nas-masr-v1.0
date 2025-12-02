@@ -55,7 +55,7 @@ class _FilterDropdownButtonState extends State<FilterDropdownButton> {
             child: Row(
               textDirection: TextDirection.rtl,
               children: [
-                Flexible(
+                Expanded(
                   child: Text(
                     displayLabel,
                     style: const TextStyle(
@@ -68,7 +68,6 @@ class _FilterDropdownButtonState extends State<FilterDropdownButton> {
                     maxLines: 1,
                   ),
                 ),
-                Spacer(),
                 const Icon(Icons.keyboard_arrow_down,
                     color: Colors.white, size: 20),
               ],

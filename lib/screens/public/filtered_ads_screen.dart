@@ -1,27 +1,27 @@
 // screens/filtered_ads_screen.dart (Final Safety Build)
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:nas_masr_app/core/data/models/filter_options.dart';
-import 'package:nas_masr_app/screens/public/ad_details_screen.dart';
 import 'package:nas_masr_app/widgets/custom_bottom_nav.dart';
 import 'package:nas_masr_app/widgets/search_control_widget.dart';
-import 'package:nas_masr_app/core/data/models/ad_card_model.dart';
-import 'package:nas_masr_app/core/data/reposetory/ad_search_repository.dart';
+
 import 'package:nas_masr_app/core/data/models/All_filter_response.dart';
-import 'package:nas_masr_app/core/data/models/filter_options.dart';
 import 'package:nas_masr_app/core/data/models/governorate.dart';
 import 'package:nas_masr_app/core/data/models/city.dart';
 import 'package:nas_masr_app/core/data/reposetory/filter_repository.dart';
-import 'package:nas_masr_app/widgets/filter_widgets/filter_dropdown_button.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/filter_options_modal.dart';
 import 'package:nas_masr_app/widgets/ad_card_widget.dart/main_ad_list_wrapper.dart';
 import 'package:nas_masr_app/core/data/providers/category_listing_provider.dart';
+import 'package:nas_masr_app/core/data/providers/ad_search_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/real_estate_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/car_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/unified_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/car_rental_filters_widget.dart';
+import 'package:nas_masr_app/widgets/filter_widgets/car_spare_parts_filters_widget.dart';
+import 'package:nas_masr_app/widgets/filter_widgets/doctors_filters_widget.dart';
 import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:nas_masr_app/core/data/models/main_section.dart';
 import 'package:nas_masr_app/core/data/models/sub_section.dart';
@@ -47,7 +47,6 @@ class FilteredAdsScreen extends StatefulWidget {
 class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
   CategoryFieldsResponse? _config;
   Map<String, dynamic> _selected = {};
-  Future<List<AdCardModel>>? _future;
   int _adsCount = 0;
 
   @override
@@ -55,7 +54,6 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _selected = Map<String, dynamic>.from(widget.currentFilters);
-    _future = _fetchAds();
     _loadConfig();
   }
 
@@ -72,13 +70,6 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
     setState(() {
       _config = cfg;
     });
-  }
-
-  Future<List<AdCardModel>> _fetchAds() {
-    final repo = AdSearchRepository();
-    final mapped = _normalizeFilters(_selected);
-    return repo.searchAds(
-        categorySlug: widget.categorySlug, queryParameters: mapped);
   }
 
   Map<String, dynamic> _normalizeFilters(Map<String, dynamic> f) {
@@ -150,12 +141,14 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
               onSelected: (selectedValue) {
                 final provider = Provider.of<CategoryListingProvider>(context,
                     listen: false);
+                final adProvider =
+                    Provider.of<AdSearchProvider>(context, listen: false);
                 if (selectedValue == '__RESET__') {
                   provider.clearFilter(filterKey);
                   setState(() {
                     _selected.remove(filterKey);
                     if (filterKey == 'make') _selected.remove('model');
-                    _future = _fetchAds();
+                    _performSearch(adProvider);
                   });
                   return;
                 }
@@ -164,7 +157,7 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
                   setState(() {
                     _selected.remove(filterKey);
                     if (filterKey == 'make') _selected.remove('model');
-                    _future = _fetchAds();
+                    _performSearch(adProvider);
                   });
                   return;
                 }
@@ -179,7 +172,7 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
                   if (filterKey == 'make') {
                     _selected.remove('model');
                   }
-                  _future = _fetchAds();
+                  _performSearch(adProvider);
                 });
               },
             ),
@@ -230,43 +223,64 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
                     fontWeight: FontWeight.w700))),
         bottomNavigationBar: const CustomBottomNav(currentIndex: 0),
         body: SafeArea(
-          child: ChangeNotifierProvider(
-            create: (_) => CategoryListingProvider(
-              repository: CategoryRepository() as dynamic,
-              categorySlug: widget.categorySlug,
-              categoryName: widget.categoryName,
-            ),
-            child: Consumer<CategoryListingProvider>(
-              builder: (context, provider, child) {
-                final cfg = provider.fieldsConfig;
-                if (cfg != null && _selected.isNotEmpty) {
+          child: MultiProvider(
+            providers: [
+              ChangeNotifierProvider(
+                create: (_) => CategoryListingProvider(
+                  repository: CategoryRepository() as dynamic,
+                  categorySlug: widget.categorySlug,
+                  categoryName: widget.categoryName,
+                ),
+              ),
+              ChangeNotifierProvider(
+                create: (_) => AdSearchProvider(),
+              ),
+            ],
+            child: Consumer2<CategoryListingProvider, AdSearchProvider>(
+              builder: (context, catProvider, adProvider, child) {
+                final cfg = catProvider.fieldsConfig;
+
+                // Initial Load
+                if (cfg != null &&
+                    _selected.isNotEmpty &&
+                    adProvider.ads.isEmpty &&
+                    !adProvider.loading &&
+                    adProvider.error == null) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     _selected.forEach((key, value) {
                       final k = _providerKeyFor(key);
-                      if (!provider.isFilterSelected(k)) {
-                        provider.setFilter(k, value.toString());
+                      if (!catProvider.isFilterSelected(k)) {
+                        catProvider.setFilter(k, value.toString());
                       }
                     });
+                    _performSearch(adProvider);
+                  });
+                } else if (adProvider.ads.isEmpty &&
+                    !adProvider.loading &&
+                    adProvider.error == null) {
+                  // Trigger search if no ads and not loading (first run)
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _performSearch(adProvider);
                   });
                 }
 
                 void performFilterChange(
                     String filterKey, dynamic selectedValue) {
                   if (selectedValue == '__RESET__') {
-                    provider.clearFilter(filterKey);
+                    catProvider.clearFilter(filterKey);
                     setState(() {
                       _selected.remove(filterKey);
                       if (filterKey == 'make') _selected.remove('model');
-                      _future = _fetchAds();
+                      _performSearch(adProvider);
                     });
                     return;
                   }
                   if (selectedValue == '__ALL__') {
-                    provider.setFilter(filterKey, 'الكل');
+                    catProvider.setFilter(filterKey, 'الكل');
                     setState(() {
                       _selected.remove(filterKey);
                       if (filterKey == 'make') _selected.remove('model');
-                      _future = _fetchAds();
+                      _performSearch(adProvider);
                     });
                     return;
                   }
@@ -276,11 +290,11 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
                           selectedValue is SubSection)
                       ? selectedValue.name
                       : selectedValue.toString();
-                  provider.setFilter(filterKey, val);
+                  catProvider.setFilter(filterKey, val);
                   setState(() {
                     _selected[filterKey] = val;
                     if (filterKey == 'make') _selected.remove('model');
-                    _future = _fetchAds();
+                    _performSearch(adProvider);
                   });
                 }
 
@@ -294,19 +308,17 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
                             widget.categorySlug, cfg, performFilterChange),
                       ),
                     Expanded(
-                      child: FutureBuilder<List<AdCardModel>>(
-                        future: _future,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
+                      child: Builder(
+                        builder: (context) {
+                          if (adProvider.loading) {
                             return const Center(
                                 child: CircularProgressIndicator());
                           }
-                          if (snapshot.hasError) {
+                          if (adProvider.error != null) {
                             return Center(
-                                child: Text('خطأ: ${snapshot.error}'));
+                                child: Text('خطأ: ${adProvider.error}'));
                           }
-                          final ads = snapshot.data ?? const <AdCardModel>[];
+                          final ads = adProvider.ads;
                           _adsCount = ads.length;
                           if (ads.isEmpty) {
                             return const Center(child: Text('لا توجد نتائج'));
@@ -319,7 +331,15 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
                                   totalAdsCount: _adsCount,
                                   showPriceToggle: true,
                                   showDistanceToggle: true,
-                                  onToggleChanged: (key, value) {},
+                                  isSortByNearest: adProvider.sortByNearest,
+                                  isSortByPrice: adProvider.sortByPrice,
+                                  onToggleChanged: (key, value) {
+                                    if (key == 'sort_distance') {
+                                      adProvider.toggleSortByNearest();
+                                    } else if (key == 'sort_price') {
+                                      adProvider.toggleSortByPrice();
+                                    }
+                                  },
                                 ),
                                 MainAdListWrapper(
                                   categorySlug: widget.categorySlug,
@@ -343,6 +363,14 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
     );
   }
 
+  Future<void> _performSearch(AdSearchProvider provider) async {
+    final mapped = _normalizeFilters(_selected);
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    provider.performSearch(
+        categorySlug: widget.categorySlug, filters: mapped, token: token);
+  }
+
   Widget _selectFiltersWidget(BuildContext context, String slug,
       CategoryFieldsResponse config, Function(String, dynamic) onAction) {
     if (UnifiedCategories.slugs.contains(slug)) {
@@ -362,9 +390,19 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
           config: config,
           onNavigate: onAction,
         );
+      case 'spare-parts':
+        return CarSparePartsFiltersWidget(
+          config: config,
+          onNavigate: onAction,
+        );
       case 'real_estate':
       case '3aqarat':
         return RealEstateFiltersWidget(
+          config: config,
+          onNavigate: onAction,
+        );
+      case 'doctors':
+        return DoctorsFiltersWidget(
           config: config,
           onNavigate: onAction,
         );
