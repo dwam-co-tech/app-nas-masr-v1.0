@@ -9,7 +9,6 @@ import 'package:nas_masr_app/core/data/providers/best_advertisers_provider.dart'
 import 'package:nas_masr_app/core/data/providers/category_listing_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/best_advertisers_repository.dart';
 import 'package:nas_masr_app/core/data/reposetory/filter_repository.dart';
-import 'package:nas_masr_app/screens/public/filtered_ads_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nas_masr_app/widgets/best_adviteser/premium_sellers_wrapper.dart';
 import 'package:nas_masr_app/widgets/custom_bottom_nav.dart';
@@ -19,7 +18,8 @@ import 'package:nas_masr_app/widgets/filter_widgets/unified_filters_widget.dart'
 import 'package:nas_masr_app/widgets/filter_widgets/car_rental_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/car_spare_parts_filters_widget.dart';
 import 'package:nas_masr_app/core/constatants/unified_categories.dart';
-import 'package:nas_masr_app/widgets/search_control_widget.dart';
+import 'package:nas_masr_app/core/data/models/main_section.dart';
+import 'package:nas_masr_app/core/data/models/sub_section.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 
@@ -106,17 +106,19 @@ class CategoryListingScreen extends StatelessWidget {
               return;
             }
             final bool isAll = selectedValue == '__ALL__';
+
             final String selectedName = isAll
                 ? 'الكل'
-                : (selectedValue is Governorate
+                : (selectedValue is Governorate ||
+                        selectedValue is City ||
+                        selectedValue is MainSection ||
+                        selectedValue is SubSection
                     ? selectedValue.name
                     : selectedValue.toString());
+
             final Map<String, dynamic> filtersMap = {};
             if (!isAll) {
-              filtersMap[filterKey] =
-                  selectedValue is Governorate || selectedValue is City
-                      ? selectedValue.name
-                      : selectedValue.toString();
+              filtersMap[filterKey] = selectedName;
             }
             provider.setFilter(filterKey, selectedName);
 

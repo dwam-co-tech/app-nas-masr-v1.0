@@ -193,16 +193,16 @@ class UnifiedAdCardWidget extends StatelessWidget {
     final statusLabel = ad.planType == 'featured'
         ? 'مميز'
         : (ad.planType == 'standard' ? 'ستاندرد' : 'مجاني');
-    final labelColor = statusLabel == 'متميز'
-        ? cs.primary
-        : cs.primary;
-        
+    final labelColor = statusLabel == 'متميز' ? cs.primary : cs.primary;
+
     // Unified Logic:
     // Sub Category -> replaces Property Type (Font Weight 500)
-    final subCategory =
-        ad.attributes['sub_category']?.toString() ?? 'غير محدد';
+    final subCategory = ad.subSection ??
+        ad.attributes['sub_category']?.toString() ??
+        'غير محدد';
     // Main Category -> replaces Contract Type (Font Weight 400)
-    final mainCategory = ad.attributes['main_category']?.toString() ?? '';
+    final mainCategory =
+        ad.mainSection ?? ad.attributes['main_category']?.toString() ?? '';
 
     String createdAt = '';
     if (ad.createdAt != null) {

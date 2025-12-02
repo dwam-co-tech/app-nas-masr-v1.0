@@ -13,6 +13,8 @@ class AdCardModel {
   final String planType; // free, standard, premium (مهم لتصميم الـ Badge)
   final String? make;
   final String? model;
+  final String? mainSection;
+  final String? subSection;
 
   final DateTime? createdAt;
   const AdCardModel({
@@ -27,13 +29,22 @@ class AdCardModel {
     required this.planType,
     this.make,
     this.model,
+    this.mainSection,
+    this.subSection,
     this.createdAt,
   });
 
   factory AdCardModel.fromMap(Map<String, dynamic> json) {
     final createdAtStr = json['created_at'] as String?;
+
+    // Handle attributes being a List (empty) or Map
+    Map<String, dynamic> attributes = {};
+    if (json['attributes'] is Map) {
+      attributes = Map<String, dynamic>.from(json['attributes'] as Map);
+    }
+
     return AdCardModel(
-      attributes: json['attributes'] as Map<String, dynamic>? ?? {},
+      attributes: attributes,
       id: (json['id'] as num?)?.toInt() ?? 0,
       categoryName: json['category_name'] as String? ?? 'غير محدد',
       categorySlug: json['category'] as String? ?? '',
@@ -44,6 +55,8 @@ class AdCardModel {
       planType: json['plan_type'] as String? ?? 'free',
       make: json['make'] as String?,
       model: json['model'] as String?,
+      mainSection: json['main_section']?.toString(),
+      subSection: json['sub_section']?.toString(),
       createdAt: createdAtStr != null ? DateTime.tryParse(createdAtStr) : null,
     );
   }

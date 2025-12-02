@@ -5,9 +5,9 @@ class PremiumListingItem {
   final int id;
   final String? mainImageUrl;
   final String? price;
-  
+
   // لكي نسهل استخراج البيانات التي ستظهر أسفل الصورة
-  final Map<String, dynamic> attributes; 
+  final Map<String, dynamic> attributes;
 
   const PremiumListingItem({
     required this.id,
@@ -22,7 +22,9 @@ class PremiumListingItem {
       mainImageUrl: json['main_image_url'] as String?,
       price: json['price'] as String? ?? 'غير محدد',
       // لحقول مثل property_type لعرضها أسفل الكارت إذا لزم الأمر
-      attributes: json['attributes'] as Map<String, dynamic>? ?? {}, 
+      attributes: json['attributes'] is Map
+          ? Map<String, dynamic>.from(json['attributes'] as Map)
+          : {},
     );
   }
 }

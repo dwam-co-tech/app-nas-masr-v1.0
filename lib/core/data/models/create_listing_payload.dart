@@ -11,6 +11,8 @@ class CreateListingPayload {
   final String? whatsappPhone;
   final String? make;
   final String? model;
+  final String? mainSection;
+  final String? subSection;
   final Map<String, dynamic> attributes;
 
   const CreateListingPayload({
@@ -26,6 +28,8 @@ class CreateListingPayload {
     this.whatsappPhone,
     this.make,
     this.model,
+    this.mainSection,
+    this.subSection,
     this.attributes = const {},
   });
 
@@ -43,6 +47,8 @@ class CreateListingPayload {
     if (whatsappPhone != null) map['whatsapp_phone'] = whatsappPhone;
     if (make != null) map['make'] = make;
     if (model != null) map['model'] = model;
+    if (mainSection != null) map['main_section'] = mainSection;
+    if (subSection != null) map['sub_section'] = subSection;
     attributes.forEach((key, value) {
       if (value != null) {
         map['attributes[$key]'] = value.toString();

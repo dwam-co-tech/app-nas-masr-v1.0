@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:nas_masr_app/core/data/models/ad_details_model.dart';
+
 import 'package:nas_masr_app/core/data/providers/ad_details_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/ad_details_repository.dart';
 import 'package:nas_masr_app/widgets/ad_details/car_details_panel.dart';
@@ -18,7 +18,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/foundation.dart' as foundation;
+
 import 'package:flutter/services.dart';
 import 'package:nas_masr_app/core/constatants/string.dart';
 import 'package:intl/intl.dart';
@@ -87,9 +87,13 @@ class AdDetailsScreen extends StatelessWidget {
   // دالة تُحدد أي لوحة خصائص سيتم بناؤها بناءً على الـ Slug
   Widget _buildDynamicDetailsPanel(
       BuildContext context, String slug, Map<String, dynamic> attributes,
-      {String? make, String? model}) {
+      {String? make, String? model, String? mainSection, String? subSection}) {
     if (UnifiedCategories.slugs.contains(slug)) {
-      return UnifiedDetailsPanel(attributes: attributes);
+      return UnifiedDetailsPanel(
+        attributes: attributes,
+        mainSection: mainSection,
+        subSection: subSection,
+      );
     }
     if (slug == 'cars') {
       return CarDetailsPanel(make: make, model: model, attributes: attributes);
@@ -289,7 +293,10 @@ class AdDetailsScreen extends StatelessWidget {
                           // SizedBox(height: 5.h),
                           _buildDynamicDetailsPanel(
                               context, categorySlug, adDetails.attributes,
-                              make: adDetails.make, model: adDetails.model),
+                              make: adDetails.make,
+                              model: adDetails.model,
+                              mainSection: adDetails.mainSection,
+                              subSection: adDetails.subSection),
                           SizedBox(height: 15.h),
                           Align(
                             alignment: Alignment.centerRight,
@@ -304,82 +311,9 @@ class AdDetailsScreen extends StatelessWidget {
                       ),
                     ),
 
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        bool expanded = false;
-                        final style = TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5,
-                            color: cs.onSurface);
-                        final tp = TextPainter(
-                          text: TextSpan(
-                              text: adDetails.description, style: style),
-                          maxLines: 3,
-                          textDirection: ui.TextDirection.rtl,
-                        );
-                        tp.layout(
-                            maxWidth:
-                                constraints.maxWidth - (16.w * 2) - (12.w * 2));
-                        final needMore = tp.didExceedMaxLines;
-                        final shouldShowMore = needMore;
-                        return StatefulBuilder(
-                          builder: (context, setStateSB) => Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w),
-                            child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: cs.surface,
-                                borderRadius: const BorderRadius.all(
-                                    Radius.circular(8.0)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color.fromRGBO(0, 0, 0, 0.25)
-                                        .withOpacity(.15),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(12.w),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      adDetails.description,
-                                      style: style,
-                                      maxLines: expanded ? null : 3,
-                                      overflow: expanded
-                                          ? TextOverflow.visible
-                                          : TextOverflow.ellipsis,
-                                    ),
-                                    if (shouldShowMore || expanded) ...[
-                                      SizedBox(height: 8.h),
-                                      GestureDetector(
-                                        onTap: () {
-                                          setStateSB(() {
-                                            expanded = !expanded;
-                                          });
-                                        },
-                                        child: Text(
-                                          expanded
-                                              ? 'قراءة أقل'
-                                              : 'قراءة المزيد',
-                                          style: TextStyle(
-                                              color: cs.primary,
-                                              fontSize: 14.sp,
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                    ExpandableDescription(
+                      description: adDetails.description,
+                      colorScheme: cs,
                     ),
 
                     // 3. لوحة التفاصيل الديناميكية
@@ -707,5 +641,109 @@ class AdDetailsScreen extends StatelessWidget {
             ),
           );
         }));
+  }
+}
+
+class ExpandableDescription extends StatefulWidget {
+  final String description;
+  final ColorScheme colorScheme;
+
+  const ExpandableDescription({
+    super.key,
+    required this.description,
+    required this.colorScheme,
+  });
+
+  @override
+  State<ExpandableDescription> createState() => _ExpandableDescriptionState();
+}
+
+class _ExpandableDescriptionState extends State<ExpandableDescription> {
+  bool isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      fontSize: 12.sp,
+      fontWeight: FontWeight.w400,
+      height: 1.5,
+      color: widget.colorScheme.onSurface,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate available width for text
+        // Parent padding: 16.w (horizontal) -> handled by Padding widget below
+        // Inner padding: 12.w (all) -> handled by inner Padding widget
+        // We need to subtract these from constraints.maxWidth which is the full width available to this widget (likely screen width)
+
+        // Wait, if we wrap the Container in Padding(horizontal: 16.w), the Container width is constraints.maxWidth - 32.w
+        // Then inside Container we have Padding(all: 12.w), so text width is Container width - 24.w
+        // Total text width = constraints.maxWidth - 32.w - 24.w = constraints.maxWidth - 56.w
+
+        final double textWidth = constraints.maxWidth - 56.w;
+
+        final tp = TextPainter(
+          text: TextSpan(text: widget.description, style: style),
+          maxLines: 3,
+          textDirection: ui.TextDirection.rtl,
+        );
+
+        tp.layout(maxWidth: textWidth);
+        final isOverflowing = tp.didExceedMaxLines;
+
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: widget.colorScheme.surface,
+              borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color.fromRGBO(0, 0, 0, 0.25).withOpacity(.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(12.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.description,
+                    style: style,
+                    maxLines: isExpanded ? null : 3,
+                    overflow: isExpanded
+                        ? TextOverflow.visible
+                        : TextOverflow.ellipsis,
+                  ),
+                  if (isOverflowing) ...[
+                    SizedBox(height: 8.h),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          isExpanded = !isExpanded;
+                        });
+                      },
+                      child: Text(
+                        isExpanded ? 'قراءة أقل' : 'قراءة المزيد',
+                        style: TextStyle(
+                          color: widget.colorScheme.primary,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

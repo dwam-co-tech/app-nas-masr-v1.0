@@ -27,6 +27,8 @@ class AdDetailsModel {
   final String? banner;
   final String? make;
   final String? model;
+  final String? mainSection;
+  final String? subSection;
 
   const AdDetailsModel({
     required this.id,
@@ -54,16 +56,26 @@ class AdDetailsModel {
     this.banner,
     this.make,
     this.model,
+    this.mainSection,
+    this.subSection,
   });
 
   factory AdDetailsModel.fromMap(Map<String, dynamic> json) {
     // التأكد من استخراج البيانات بطريقة آمنة
-    final data = json['data'] as Map<String, dynamic>? ?? json;
+    // التأكد من استخراج البيانات بطريقة آمنة
+    final data =
+        (json['data'] is Map) ? json['data'] as Map<String, dynamic> : json;
+
     final createdAtStr = data['created_at'] as String?;
-    final user = json['user'] as Map<String, dynamic>?;
+
+    final user =
+        (json['user'] is Map) ? json['user'] as Map<String, dynamic> : null;
+
     final joinedAtStr = user != null ? user['joined_at'] as String? : null;
 
-    final rawAttributes = data['attributes'] as Map<String, dynamic>? ?? {};
+    final rawAttributes = data['attributes'] is Map
+        ? Map<String, dynamic>.from(data['attributes'] as Map)
+        : {};
     final attributes = Map<String, dynamic>.from(rawAttributes);
 
     // Merge make/model if present in root data (for cars)
@@ -109,6 +121,8 @@ class AdDetailsModel {
               ? user['listings_count'] as int
               : int.tryParse('${user['listings_count']}'))
           : null,
+      mainSection: data['main_section']?.toString(),
+      subSection: data['sub_section']?.toString(),
     );
   }
 

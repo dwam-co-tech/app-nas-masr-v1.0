@@ -8,30 +8,66 @@ class AdSearchRepository {
   AdSearchRepository({ApiService? api}) : _api = api ?? ApiService();
 
   Future<List<AdCardModel>> searchAds({
-    required String categorySlug, 
-    required Map<String, dynamic> queryParameters, // هذا الـ Map الذي يحمل كل الفلاتر
+    required String categorySlug,
+    required Map<String, dynamic>
+        queryParameters, // هذا الـ Map الذي يحمل كل الفلاتر
   }) async {
-    final endpoint = '/api/v1/$categorySlug/listings'; 
-    
-    // 1. هنا يحدث سحر تحويل الـ Map الـ بسيط إلى الـ Query String المعقد:
-    // مثلا: 'property_type' -> 'attr[property_type]'
-    final Map<String, dynamic> finalQuery = {};
-    queryParameters.forEach((key, value) {
-      if (key == 'city' || key == 'governorate' || key == 'make' || key == 'model') {
-        finalQuery[key] = value; // المفاتيح الثابتة تذهب كما هي
-      } else {
-        // باقي الـ Dynamic Attributes تذهب كـ attr[]
-        finalQuery['attr[$key]'] = value;
-      }
-    });
+    try {
+      final endpoint = '/api/v1/$categorySlug/listings';
 
-    // 2. عمل الـ API Call
-    final response = await _api.get(endpoint, query: finalQuery); 
-    
-    if (response is List) {
-      // تحويل الـ List الراجع من API إلى Models
-      return response.map((e) => AdCardModel.fromMap(e as Map<String, dynamic>)).toList();
+      // 1. Prepare Query
+      final Map<String, dynamic> finalQuery = {};
+      queryParameters.forEach((key, value) {
+        if (key == 'city' ||
+            key == 'governorate' ||
+            key == 'make' ||
+            key == 'model' ||
+            key == 'main_section' ||
+            key == 'sub_section') {
+          finalQuery[key] = value;
+        } else {
+          finalQuery['attr[$key]'] = value;
+        }
+      });
+
+      // 2. API Call
+      final response = await _api.get(endpoint, query: finalQuery);
+
+      if (response is List) {
+        final List<AdCardModel> ads = [];
+        for (var item in response) {
+          if (item is Map) {
+            try {
+              ads.add(AdCardModel.fromMap(Map<String, dynamic>.from(item)));
+            } catch (e) {
+              print('Error parsing ad item: $e');
+            }
+          }
+        }
+        return ads;
+      } else if (response is Map) {
+        // Handle case where response is a Map (e.g. pagination) but contains data list
+        final data = response['data'];
+        if (data is List) {
+          final List<AdCardModel> ads = [];
+          for (var item in data) {
+            if (item is Map) {
+              try {
+                ads.add(AdCardModel.fromMap(Map<String, dynamic>.from(item)));
+              } catch (e) {
+                print('Error parsing ad item from pagination: $e');
+              }
+            }
+          }
+          return ads;
+        }
+      }
+
+      return [];
+    } catch (e, stack) {
+      print('Error in searchAds: $e');
+      print(stack);
+      rethrow;
     }
-    return [];
   }
 }

@@ -34,9 +34,7 @@ class AdCreationRepository {
         final map = Map<String, dynamic>.from(res as Map);
         final dataNode = map['data'] ?? map;
         if (dataNode is Map) {
-          final rawId = (dataNode as Map)['id'] ??
-              (dataNode as Map)['listing_id'] ??
-              null;
+          final rawId = dataNode['id'] ?? dataNode['listing_id'] ?? null;
           if (rawId != null) {
             id = int.tryParse(rawId.toString());
           }
@@ -109,9 +107,7 @@ class AdCreationRepository {
         final map = Map<String, dynamic>.from(res as Map);
         final dataNode = map['data'] ?? map;
         if (dataNode is Map) {
-          final rawId = (dataNode as Map)['id'] ??
-              (dataNode as Map)['listing_id'] ??
-              null;
+          final rawId = dataNode['id'] ?? dataNode['listing_id'] ?? null;
           if (rawId != null) {
             listingId = int.tryParse(rawId.toString());
           }
