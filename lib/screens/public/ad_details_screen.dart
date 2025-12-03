@@ -6,6 +6,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:nas_masr_app/core/data/providers/ad_details_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/ad_details_repository.dart';
+import 'package:nas_masr_app/core/data/providers/favorites_provider.dart';
+import 'package:nas_masr_app/core/data/reposetory/favorites_repository.dart';
 import 'package:nas_masr_app/widgets/ad_details/car_details_panel.dart';
 import 'package:nas_masr_app/widgets/ad_details/real_estate_details_panel.dart';
 import 'package:nas_masr_app/widgets/ad_details/unified_details_panel.dart';
@@ -115,16 +117,26 @@ class AdDetailsScreen extends StatelessWidget {
     // Note: تم إنشاء AdDetailsRepository هنا مؤقتاً لتتمكن من تشغيل الـ Provider
     // يُفضل وضعها في قمة التطبيق (Main.dart) لو كانت shared service
     final detailsRepo = AdDetailsRepository();
+    final favRepo = FavoritesRepository();
     final isLand = MediaQuery.of(context).orientation == Orientation.landscape;
 
-    return ChangeNotifierProvider(
-        // إنشاء الـ Provider: يقوم بالتحميل بمجرد الـ Create
-        create: (context) => AdDetailsProvider(
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (context) => AdDetailsProvider(
               repository: detailsRepo,
               adId: adId,
               categorySlug: categorySlug,
             ),
-        child: Consumer<AdDetailsProvider>(builder: (context, provider, child) {
+          ),
+          ChangeNotifierProvider(
+            create: (context) => FavoritesProvider(
+              repository: favRepo,
+            ),
+          ),
+        ],
+        child: Consumer2<AdDetailsProvider, FavoritesProvider>(
+            builder: (context, provider, favProvider, child) {
           // التعامل مع الـ Loading state
           if (provider.isLoading || provider.details == null) {
             return const Scaffold(
@@ -211,17 +223,60 @@ class AdDetailsScreen extends StatelessWidget {
                                   Positioned(
                                     top: 10.h,
                                     left: 10.w,
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 5.w, vertical: 5.h),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(15.r),
-                                        // border: Border.all(color: labelColor.withOpacity(0.4)),
+                                    child: InkWell(
+                                      onTap: () async {
+                                        final wasFav = favProvider
+                                            .isFavorite(adDetails.id);
+                                        await favProvider.toggle(adDetails.id);
+                                        if (!context.mounted) return;
+                                        ScaffoldMessenger.of(context)
+                                            .clearSnackBars();
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Directionality(
+                                              textDirection:
+                                                  ui.TextDirection.rtl,
+                                              child: Text(
+                                                wasFav
+                                                    ? 'تم الحذف من المفضلة'
+                                                    : 'تم الإضافة للمفضلة',
+                                                style: TextStyle(
+                                                    fontFamily: 'Tajawal'),
+                                              ),
+                                            ),
+                                            behavior: SnackBarBehavior.floating,
+                                            duration:
+                                                const Duration(seconds: 2),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.r),
+                                            ),
+                                            backgroundColor: wasFav
+                                                ? Colors.grey.shade800
+                                                : cs.primary,
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 5.w, vertical: 5.h),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(15.r),
+                                          // border: Border.all(color: labelColor.withOpacity(0.4)),
+                                        ),
+                                        child: Icon(
+                                            favProvider.isFavorite(adDetails.id)
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: favProvider
+                                                    .isFavorite(adDetails.id)
+                                                ? Colors.red
+                                                : cs.secondary,
+                                            size: 20.sp),
                                       ),
-                                      child: Icon(Icons.favorite_border,
-                                          color: cs.secondary, size: 20.sp),
                                     ),
                                   ),
                                   Positioned(

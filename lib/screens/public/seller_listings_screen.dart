@@ -3,18 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:nas_masr_app/widgets/custom_bottom_nav.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:nas_masr_app/core/data/providers/user_listings_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/user_listings_repository.dart';
-import 'package:nas_masr_app/core/data/models/ad_card_model.dart';
-
-import 'package:nas_masr_app/widgets/ad_card_widget.dart/car_ad_card_widget.dart';
-import 'package:nas_masr_app/widgets/ad_card_widget.dart/car_rental_ad_card_widget.dart';
-import 'package:nas_masr_app/widgets/ad_card_widget.dart/car_spare_parts_ad_card_widget.dart';
-import 'package:nas_masr_app/widgets/ad_card_widget.dart/real_estate_ad_card_widget.dart';
-import 'package:nas_masr_app/widgets/ad_card_widget.dart/unified_ad_card_widget.dart';
+import 'package:nas_masr_app/widgets/ad_card_widget.dart/main_ad_list_wrapper.dart';
+import 'package:nas_masr_app/core/data/providers/favorites_provider.dart';
+import 'package:nas_masr_app/core/data/reposetory/favorites_repository.dart';
 
 class SellerListingsScreen extends StatelessWidget {
   final int userId;
@@ -23,72 +17,33 @@ class SellerListingsScreen extends StatelessWidget {
   const SellerListingsScreen(
       {super.key, required this.userId, this.initialSlug, this.sellerName});
 
-  Widget _buildBanner(BuildContext context, UserListingsProvider prov) {
-    final cs = Theme.of(context).colorScheme;
-    final url = prov.bannerUrl;
-    return ClipRRect(
-      child: SizedBox(
-        width: double.infinity,
-        height: 180.h,
-        child: url == null || url.isEmpty
-            ? Transform.scale(
-                scale: 2,
-                child: Container(color: cs.surface),
-              )
-            : Transform.scale(
-                scale: 1.05,
-                child: CachedNetworkImage(
-                  imageUrl: url,
-                  fit: BoxFit.cover,
-                  placeholder: (context, _) =>
-                      Container(color: const Color(0xFFF0F2F5)),
-                  errorWidget: (context, _, __) => Container(
-                    color: const Color(0xFFF0F2F5),
-                    child: Center(
-                      child: Icon(Icons.broken_image_outlined,
-                          color: Colors.grey.shade400, size: 28.sp),
-                    ),
-                  ),
-                ),
-              ),
-      ),
-    );
-  }
+  // _buildBanner removed as it was unused and causing lint warnings.
 
-  Widget _buildCardByCategory(AdCardModel ad) {
-    switch (ad.categorySlug) {
-      case 'cars':
-        return CarAdCardWidget(ad: ad);
-      case 'cars_rent':
-        return CarRentalAdCardWidget(ad: ad);
-      case 'spare-parts':
-        return CarSparePartsAdCardWidget(ad: ad);
-      case 'real_estate':
-        return RealEstateAdCardWidget(ad: ad);
-      default:
-        return UnifiedAdCardWidget(ad: ad);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     final isLand = MediaQuery.of(context).orientation == Orientation.landscape;
     final cs = Theme.of(context).colorScheme;
 
-    return ChangeNotifierProvider(
-      create: (context) => UserListingsProvider(
-        repository: UserListingsRepository(),
-        userId: userId,
-        initialSlug: initialSlug,
-      ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => UserListingsProvider(
+            repository: UserListingsRepository(),
+            userId: userId,
+            initialSlug: initialSlug,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              FavoritesProvider(repository: FavoritesRepository()),
+        ),
+      ],
       child: Consumer<UserListingsProvider>(
         builder: (context, prov, child) {
           return Directionality(
             textDirection: TextDirection.rtl,
             child: Scaffold(
-                bottomNavigationBar: const CustomBottomNav(currentIndex: 0),
-      
+              bottomNavigationBar: const CustomBottomNav(currentIndex: 0),
               appBar: AppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
@@ -198,18 +153,15 @@ class SellerListingsScreen extends StatelessWidget {
                               ),
                             ),
                             SizedBox(height: 2.h),
-                            ...prov.listings
-                                .map((ad) => GestureDetector(
-                                      onTap: () {
-                                        context.pushNamed('ad_details', extra: {
-                                          'categorySlug': ad.categorySlug,
-                                          'categoryName': ad.categoryName,
-                                          'adId': ad.id.toString(),
-                                        });
-                                      },
-                                      child: _buildCardByCategory(ad),
-                                    ))
-                                .toList(),
+                            SizedBox(height: 2.h),
+                            MainAdListWrapper(
+                              categorySlug: prov.selectedSlug ?? '',
+                              categoryName: prov.selectedSlug != null
+                                  ? (prov.categories[prov.selectedSlug] ?? '')
+                                  : 'الكل',
+                              isLoading: false, // Loading handled by parent
+                              adList: prov.listings,
+                            ),
                             SizedBox(height: 20.h),
                           ],
                         ),

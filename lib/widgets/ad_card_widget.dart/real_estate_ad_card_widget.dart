@@ -8,6 +8,9 @@ import 'package:flutter/foundation.dart' as foundation;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nas_masr_app/core/data/reposetory/ad_details_repository.dart';
 import 'package:nas_masr_app/widgets/price_text.dart';
+import 'package:provider/provider.dart';
+import 'package:nas_masr_app/core/data/providers/favorites_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // هذا الكارد خاص بـ "العقارات" ويغطي أقسام الـ List الأساسية
 class RealEstateAdCardWidget extends StatelessWidget {
@@ -50,9 +53,13 @@ class RealEstateAdCardWidget extends StatelessWidget {
     number ??= ad.attributes['contact_phone']?.toString();
     if (number == null || number.isEmpty) {
       try {
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('auth_token');
         final repo = AdDetailsRepository();
         final details = await repo.fetchAdDetails(
-            categorySlug: ad.categorySlug, adId: ad.id.toString());
+            categorySlug: ad.categorySlug,
+            adId: ad.id.toString(),
+            token: token);
         number = details.whatsappPhone ?? details.contactPhone;
       } catch (_) {}
     }
@@ -133,9 +140,13 @@ class RealEstateAdCardWidget extends StatelessWidget {
     number ??= ad.attributes['whatsapp_phone']?.toString();
     if (number == null || number.isEmpty) {
       try {
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('auth_token');
         final repo = AdDetailsRepository();
         final details = await repo.fetchAdDetails(
-            categorySlug: ad.categorySlug, adId: ad.id.toString());
+            categorySlug: ad.categorySlug,
+            adId: ad.id.toString(),
+            token: token);
         number = details.contactPhone;
         number ??= details.whatsappPhone;
       } catch (_) {}
@@ -198,9 +209,7 @@ class RealEstateAdCardWidget extends StatelessWidget {
     final statusLabel = ad.planType == 'featured'
         ? 'مميز'
         : (ad.planType == 'standard' ? 'ستاندرد' : 'مجاني');
-    final labelColor = statusLabel == 'متميز'
-        ? cs.primary
-        : cs.primary;
+    final labelColor = statusLabel == 'متميز' ? cs.primary : cs.primary;
     final propertyType =
         ad.attributes['property_type']?.toString() ?? 'غير محدد';
     final contractType = ad.attributes['contract_type']?.toString() ?? '';
@@ -268,16 +277,51 @@ class RealEstateAdCardWidget extends StatelessWidget {
                   Positioned(
                     top: 8.h,
                     left: 8.w,
-                    child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 5.w, vertical: 5.h),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15.r),
-                        // border: Border.all(color: labelColor.withOpacity(0.4)),
-                      ),
-                      child: Icon(Icons.favorite_border,
-                          color: cs.secondary, size: 20.sp),
+                    child: Consumer<FavoritesProvider>(
+                      builder: (context, favProvider, child) {
+                        final isFav = favProvider.isFavorite(ad.id);
+                        return InkWell(
+                          onTap: () async {
+                            final wasFav = favProvider.isFavorite(ad.id);
+                            await favProvider.toggle(ad.id);
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).clearSnackBars();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Directionality(
+                                  textDirection: TextDirection.rtl,
+                                  child: Text(
+                                    wasFav
+                                        ? 'تم الحذف من المفضلة'
+                                        : 'تم الإضافة للمفضلة',
+                                    style: TextStyle(fontFamily: 'Tajawal'),
+                                  ),
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                                duration: const Duration(seconds: 2),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                ),
+                                backgroundColor:
+                                    wasFav ? Colors.grey.shade800 : cs.primary,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 5.w, vertical: 5.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15.r),
+                            ),
+                            child: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: isFav ? Colors.red : cs.secondary,
+                              size: 20.sp,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   Positioned(

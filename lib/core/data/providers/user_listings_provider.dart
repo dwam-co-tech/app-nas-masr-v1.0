@@ -32,28 +32,40 @@ class UserListingsProvider with ChangeNotifier {
   String? get bannerUrl =>
       _listings.isNotEmpty ? _listings.first.mainImageUrl : null;
 
+  List<AdCardModel> _allListings = const [];
+
   Future<void> load(String? slug) async {
     _setLoading(true);
     _setError(null);
     try {
-      if (_allCategories.isEmpty) {
+      if (_allListings.isEmpty) {
         final allRes = await _repo.getUserListings(userId: userId);
+        _allListings = allRes;
+        print('DEBUG: Fetched ${allRes.length} listings');
+
         final allMap = <String, String>{};
         for (final ad in allRes) {
           if (ad.categorySlug.isNotEmpty) {
             allMap[ad.categorySlug] = ad.categoryName;
+            print(
+                'DEBUG: Found category: ${ad.categorySlug} -> ${ad.categoryName}');
           }
         }
         _allCategories = allMap;
+        print('DEBUG: Total categories extracted: ${_allCategories.length}');
       }
-      final res = await _repo.getUserListings(
-        userId: userId,
-        categorySlug: slug,
-      );
-      _listings = res;
+
+      if (slug != null && slug.isNotEmpty) {
+        _listings =
+            _allListings.where((ad) => ad.categorySlug == slug).toList();
+      } else {
+        _listings = _allListings;
+      }
+
       _selectedSlug = slug;
       _categories = _allCategories;
     } catch (e) {
+      print('DEBUG: Error loading listings: $e');
       _setError('فشل تحميل إعلانات المعلن');
     } finally {
       _setLoading(false);

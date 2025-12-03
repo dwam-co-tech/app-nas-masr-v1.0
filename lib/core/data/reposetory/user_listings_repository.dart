@@ -14,7 +14,17 @@ class UserListingsRepository {
         ? {'category_slugs': categorySlug}
         : null;
 
+    print('DEBUG: UserListingsRepository fetching: $endpoint, query: $query');
     final response = await _api.get(endpoint, query: query);
+    print(
+        'DEBUG: UserListingsRepository response type: ${response.runtimeType}');
+    if (response is Map) {
+      print('DEBUG: Response keys: ${response.keys}');
+      if (response.containsKey('listings')) {
+        print(
+            'DEBUG: Listings count in response: ${(response['listings'] as List).length}');
+      }
+    }
 
     if (response is Map<String, dynamic>) {
       final list = response['listings'] as List<dynamic>? ?? const [];
@@ -30,4 +40,3 @@ class UserListingsRepository {
     return const [];
   }
 }
-

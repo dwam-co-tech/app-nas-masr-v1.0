@@ -15,6 +15,8 @@ import 'package:nas_masr_app/widgets/filter_widgets/filter_options_modal.dart';
 import 'package:nas_masr_app/widgets/ad_card_widget.dart/main_ad_list_wrapper.dart';
 import 'package:nas_masr_app/core/data/providers/category_listing_provider.dart';
 import 'package:nas_masr_app/core/data/providers/ad_search_provider.dart';
+import 'package:nas_masr_app/core/data/providers/favorites_provider.dart';
+import 'package:nas_masr_app/core/data/reposetory/favorites_repository.dart';
 import 'package:provider/provider.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/real_estate_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/car_filters_widget.dart';
@@ -234,6 +236,11 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
               ),
               ChangeNotifierProvider(
                 create: (_) => AdSearchProvider(),
+              ),
+              ChangeNotifierProvider(
+                create: (_) => FavoritesProvider(
+                  repository: FavoritesRepository(),
+                ),
               ),
             ],
             child: Consumer2<CategoryListingProvider, AdSearchProvider>(

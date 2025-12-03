@@ -46,10 +46,13 @@ class MainAdListWrapper extends StatelessWidget {
   });
 
   Widget _selectAdCardWidget(String slug, AdCardModel ad) {
-    if (UnifiedCategories.slugs.contains(slug)) {
+    // Use ad.categorySlug as the primary source of truth for the card type
+    final targetSlug = ad.categorySlug.isNotEmpty ? ad.categorySlug : slug;
+
+    if (UnifiedCategories.slugs.contains(targetSlug)) {
       return UnifiedAdCardWidget(ad: ad);
     }
-    switch (slug) {
+    switch (targetSlug) {
       case 'real_estate':
         return RealEstateAdCardWidget(ad: ad);
       case 'cars':
@@ -62,8 +65,7 @@ class MainAdListWrapper extends StatelessWidget {
       case 'teachers':
         return const ServiceAdCardWidget();
       default:
-        return const SizedBox(
-            height: 150, child: Center(child: Text('Default Ad Card')));
+        return UnifiedAdCardWidget(ad: ad);
     }
   }
 

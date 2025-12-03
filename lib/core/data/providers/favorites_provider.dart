@@ -57,6 +57,36 @@ class FavoritesProvider with ChangeNotifier {
     load(slug);
   }
 
+  bool isFavorite(int id) {
+    return _items.any((ad) => ad.id == id);
+  }
+
+  Future<void> toggle(int id) async {
+    // Optimistic update
+    final isFav = isFavorite(id);
+    if (isFav) {
+      _items.removeWhere((ad) => ad.id == id);
+    } else {
+      // We don't have the full AdCardModel here to add it back immediately if we are just toggling by ID.
+      // But usually we toggle from a screen where we have the details.
+      // For now, let's just rely on the API call and reload, or handle removal optimistically.
+      // Adding optimistically is harder without the object.
+      // Let's just notify listeners for now, assuming the UI handles the "optimistic" state locally or we reload.
+      // Actually, if we remove, it's gone. If we add, we need to fetch.
+    }
+    notifyListeners();
+
+    try {
+      await _repo.toggleFavorite(id: id);
+      // Reload to get the updated list and correct data
+      await load(_selectedSlug);
+    } catch (e) {
+      // Revert if failed (complex without the object, but reloading handles it)
+      _setError('فشل تحديث المفضلة');
+      await load(_selectedSlug);
+    }
+  }
+
   Future<bool> remove(int id) async {
     final before = List<AdCardModel>.from(_items);
     _items = _items.where((ad) => ad.id != id).toList();
