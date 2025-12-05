@@ -25,6 +25,7 @@ class AdsManagementScreen extends StatefulWidget {
 }
 
 class _AdsManagementScreenState extends State<AdsManagementScreen> {
+  String _selectedStatus = 'valid';
   @override
   void initState() {
     super.initState();
@@ -163,10 +164,24 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                         }
                         return Row(
                           children: [
-                            _buildFilterChip("فعال ($valid)", true),
-                            _buildFilterChip("معلق ($pending)", false),
-                            _buildFilterChip("منتهي ($expired)", false),
-                            _buildFilterChip("مرفوض ($rejected)", false),
+                            _buildFilterChip(
+                                "فعال ($valid)", _selectedStatus == 'valid',
+                                () {
+                              setState(() => _selectedStatus = 'valid');
+                            }),
+                            _buildFilterChip(
+                                "معلق ($pending)", _selectedStatus == 'pending',
+                                () {
+                              setState(() => _selectedStatus = 'pending');
+                            }),
+                            _buildFilterChip("منتهي ($expired)",
+                                _selectedStatus == 'expired', () {
+                              setState(() => _selectedStatus = 'expired');
+                            }),
+                            _buildFilterChip("مرفوض ($rejected)",
+                                _selectedStatus == 'rejected', () {
+                              setState(() => _selectedStatus = 'rejected');
+                            }),
                           ],
                         );
                       },
@@ -251,12 +266,16 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                               style: const TextStyle(color: Colors.red)),
                         );
                       }
-                      final ads = prov.ads;
+                      final ads = prov.ads
+                          .where((a) =>
+                              (a.status ?? '').trim().toLowerCase() ==
+                              _selectedStatus)
+                          .toList();
                       if (ads.isEmpty) {
                         return Padding(
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.w, vertical: 12.h),
-                          child: const Text('لا توجد إعلانات حتى الآن'),
+                          child: const Text('لا توجد إعلانات في هذا التصنيف'),
                         );
                       }
                       return Column(
@@ -418,21 +437,21 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
           //     ),
           //   ),
           // ),
-          
+
           Container(
-      margin:EdgeInsets.only(right: 0.w),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border(right: BorderSide(color: color, width: 4.w)),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 5,
-              offset: const Offset(0, 2)),
-        ],
-      ),
+            margin: EdgeInsets.only(right: 0.w),
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border(right: BorderSide(color: color, width: 4.w)),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2)),
+              ],
+            ),
             child: Column(
               children: [
                 Row(
@@ -466,8 +485,10 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                     Expanded(
                       child: Text(
                         "تنتهي صلاحية الاعلانات و الباقة بتاريخ ${((expiry ?? '').isNotEmpty) ? expiry : '—'}",
-                        style:
-                            TextStyle(fontSize: 14.sp,fontWeight: FontWeight.w500, color: cs.onSurface),
+                        style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                            color: cs.onSurface),
                       ),
                     ),
                   ],
@@ -495,21 +516,26 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, bool isSelected) {
-    return Container(
-      margin: EdgeInsets.only(left: 8.w),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: isSelected ? ColorManager.primaryColor : Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Color.fromRGBO(3, 110, 120, 1),
-          fontSize: 12.sp,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+  Widget _buildFilterChip(String label, bool isSelected, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.only(left: 8.w),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: isSelected ? ColorManager.primaryColor : Colors.white,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected
+                ? Colors.white
+                : const Color.fromRGBO(3, 110, 120, 1),
+            fontSize: 12.sp,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );

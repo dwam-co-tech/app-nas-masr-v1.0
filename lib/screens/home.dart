@@ -236,20 +236,25 @@ class _HintContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      height: 45.h,
-      decoration: BoxDecoration(
-        color: cs.primary,
-        borderRadius: BorderRadius.circular(10.r),
-      ),
-      child: Center(
-        child: Text(
-          'للاشتراك وسداد الباقات اضغط هنا',
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontFamily: 'Tajawal',
-            fontWeight: FontWeight.w700,
-            color: cs.onSurface,
+    return InkWell(
+      onTap: () {
+        context.push('/packages/subscribe');
+      },
+      child: Container(
+        height: 45.h,
+        decoration: BoxDecoration(
+          color: cs.primary,
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Center(
+          child: Text(
+            'للاشتراك وسداد الباقات اضغط هنا',
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontFamily: 'Tajawal',
+              fontWeight: FontWeight.w700,
+              color: cs.onSurface,
+            ),
           ),
         ),
       ),

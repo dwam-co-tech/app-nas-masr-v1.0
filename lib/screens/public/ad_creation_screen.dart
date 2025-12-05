@@ -738,7 +738,7 @@ class PackageSelectionWidget extends StatefulWidget {
 }
 
 class _PackageSelectionWidgetState extends State<PackageSelectionWidget> {
-  String? _selectedId = 'premium';
+  String? _selectedId = 'featured';
 
   @override
   void initState() {
@@ -1350,8 +1350,68 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
       if (!ok) {
         final msg = provider.error ?? 'فشل الإرسال';
         if (!mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(msg)));
+        final bool isPaymentRequired = (provider.lastErrorCode == 402) ||
+            msg.contains('لا تملك باقة فعّالة') ||
+            msg.contains('payment_required');
+        if (isPaymentRequired) {
+          final cs = Theme.of(context).colorScheme;
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: true,
+            builder: (ctx) {
+              return Directionality(
+                textDirection: TextDirection.rtl,
+                child: AlertDialog(
+                  title: const Text('تنبيه'),
+                  content: Text(msg),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        context.go('/home');
+                      },
+                      child: const Text('إلغاء'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        context.push('/packages/subscribe', extra: {
+                          'initialSlug': widget.categorySlug,
+                          'initialName': widget.categoryName,
+                          'listingId': provider.pendingListingId,
+                        });
+                      },
+                      style: TextButton.styleFrom(foregroundColor: cs.primary),
+                      child: const Text('اشترك في باقة'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        context.push('/payment/checkout', extra: {
+                          'categorySlug': widget.categorySlug,
+                          'planType': _selectedPlanType,
+                          'listingId': provider.pendingListingId,
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: cs.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('ادفع قيمة الإعلان'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Directionality(
+                  textDirection: TextDirection.rtl, child: Text(msg)),
+            ),
+          );
+        }
         return;
       }
       if (!mounted) return;

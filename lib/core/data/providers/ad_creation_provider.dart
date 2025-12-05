@@ -10,6 +10,8 @@ class AdCreationProvider with ChangeNotifier {
   String? _error;
   int? _lastCreatedId;
   dynamic _lastResponse;
+  int? _lastErrorCode;
+  int? _pendingListingId;
 
   AdCreationProvider({required AdCreationRepository repository})
       : _repo = repository;
@@ -18,6 +20,8 @@ class AdCreationProvider with ChangeNotifier {
   String? get error => _error;
   int? get lastCreatedId => _lastCreatedId;
   dynamic get lastResponse => _lastResponse;
+  int? get lastErrorCode => _lastErrorCode;
+  int? get pendingListingId => _pendingListingId;
 
   Future<bool> submitListing({
     required String categorySlug,
@@ -41,14 +45,19 @@ class AdCreationProvider with ChangeNotifier {
         final v = res['id'];
         _lastCreatedId = int.tryParse(v.toString());
       }
+      _pendingListingId = null;
       _setSubmitting(false);
       return true;
     } on AppError catch (e) {
       _setError(e.message);
+      _lastErrorCode = e.statusCode;
+      _pendingListingId = e.listingId;
       _setSubmitting(false);
       return false;
     } catch (e) {
       _setError('حدث خطأ أثناء إضافة الإعلان');
+      _lastErrorCode = null;
+      _pendingListingId = null;
       _setSubmitting(false);
       return false;
     }
@@ -82,14 +91,19 @@ class AdCreationProvider with ChangeNotifier {
         final v = res['id'];
         _lastCreatedId = int.tryParse(v.toString());
       }
+      _pendingListingId = null;
       _setSubmitting(false);
       return true;
     } on AppError catch (e) {
       _setError(e.message);
+      _lastErrorCode = e.statusCode;
+      _pendingListingId = e.listingId;
       _setSubmitting(false);
       return false;
     } catch (e) {
       _setError('حدث خطأ أثناء تعديل الإعلان');
+      _lastErrorCode = null;
+      _pendingListingId = null;
       _setSubmitting(false);
       return false;
     }

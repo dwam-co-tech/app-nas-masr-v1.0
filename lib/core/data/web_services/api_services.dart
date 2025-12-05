@@ -361,6 +361,24 @@ class ApiService {
     }
   }
 
+  Future<dynamic> patch(String endpoint,
+      {required dynamic data,
+      Map<String, dynamic>? query,
+      String? token}) async {
+    if (token != null) {
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+    }
+    final Options jsonOptions = Options(contentType: Headers.jsonContentType);
+
+    try {
+      final response = await _dio.patch(endpoint,
+          data: data, queryParameters: query, options: jsonOptions);
+      return response.data;
+    } on DioException catch (e) {
+      throw ErrorHandler.handleDioError(e);
+    }
+  }
+
   // Future<dynamic> delete(String endpoint,
   //     {dynamic data, Map<String, dynamic>? query, String? token}) async {
   //   if (token != null) {

@@ -11,6 +11,9 @@ import 'package:nas_masr_app/screens/home.dart';
 import 'package:nas_masr_app/screens/setting.dart';
 import 'package:nas_masr_app/screens/profile_screen.dart';
 import 'package:nas_masr_app/screens/edit_profile_screen.dart';
+import 'package:nas_masr_app/screens/subscribe_packages_screen.dart';
+import 'package:nas_masr_app/screens/payment_methods_screen.dart';
+import 'package:nas_masr_app/screens/payment_success_screen.dart';
 import 'package:nas_masr_app/screens/terms_screen.dart';
 import 'package:nas_masr_app/screens/privacy_policy_screen.dart';
 import 'package:nas_masr_app/screens/map_picker_screen.dart';
@@ -180,6 +183,89 @@ class AppRouter {
         builder: (context, state) => const PrivacyPolicyScreen(),
       ),
       GoRoute(
+        path: '/packages/subscribe',
+        name: 'packages_subscribe',
+        builder: (context, state) {
+          final extra = state.extra;
+          String? initialSlug;
+          String? initialName;
+          int? listingId;
+          if (extra is Map<String, dynamic>) {
+            initialSlug = extra['initialSlug']?.toString();
+            initialName = extra['initialName']?.toString();
+            final rawId = extra['listingId'];
+            if (rawId is int) {
+              listingId = rawId;
+            } else if (rawId != null) {
+              listingId = int.tryParse(rawId.toString());
+            }
+          }
+          return SubscribePackagesScreen(
+            initialSlug: initialSlug,
+            initialName: initialName,
+            listingId: listingId,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/payment/checkout',
+        name: 'payment_checkout',
+        builder: (context, state) {
+          final extra = state.extra;
+          String? categorySlug;
+          String? planType;
+          int? listingId;
+          int? price;
+          if (extra is Map<String, dynamic>) {
+            categorySlug = extra['categorySlug']?.toString() ??
+                extra['initialSlug']?.toString();
+            planType = extra['planType']?.toString();
+            final rawListing = extra['listingId'];
+            if (rawListing is int) {
+              listingId = rawListing;
+            } else if (rawListing != null) {
+              listingId = int.tryParse(rawListing.toString());
+            }
+            final rawPrice = extra['price'];
+            if (rawPrice is int) {
+              price = rawPrice;
+            } else if (rawPrice != null) {
+              price = int.tryParse(rawPrice.toString());
+            }
+          }
+          return PaymentMethodsScreen(
+            categorySlug: categorySlug,
+            planType: planType,
+            listingId: listingId,
+            initialPrice: price,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/payment/success',
+        name: 'payment_success',
+        builder: (context, state) {
+          final extra = state.extra;
+          int? amount;
+          String? datetime;
+          bool isSubscription = false;
+          if (extra is Map<String, dynamic>) {
+            final rawAmount = extra['amount'];
+            if (rawAmount is int) {
+              amount = rawAmount;
+            } else if (rawAmount != null) {
+              amount = int.tryParse(rawAmount.toString());
+            }
+            datetime = extra['datetime']?.toString();
+            isSubscription = (extra['subscription'] == true);
+          }
+          return PaymentSuccessScreen(
+              amount: amount,
+              datetime: datetime,
+              isSubscription: isSubscription);
+        },
+      ),
+      GoRoute(
         path: '/user/listings',
         name: 'user_listings',
         builder: (context, state) {
@@ -197,7 +283,8 @@ class AppRouter {
             initialSlug = extra['initialSlug']?.toString();
             sellerName = extra['sellerName']?.toString();
           }
-          return SellerListingsScreen(userId: userId, initialSlug: initialSlug, sellerName: sellerName);
+          return SellerListingsScreen(
+              userId: userId, initialSlug: initialSlug, sellerName: sellerName);
         },
       ),
       GoRoute(

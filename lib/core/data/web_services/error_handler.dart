@@ -3,9 +3,10 @@ import 'package:dio/dio.dart';
 class AppError implements Exception {
   final String message;
   final int? statusCode;
-  AppError(this.message, {this.statusCode});
+  final int? listingId;
+  AppError(this.message, {this.statusCode, this.listingId});
   @override
-  String toString() => message; // منع بادئة "Exception:" في العرض
+  String toString() => message;
 }
 
 // يمكن تحويل هذه لفئة لمعالجة أخطاء أكثر تعقيدًا في المستقبل
@@ -17,29 +18,45 @@ class ErrorHandler {
     'email': 'البريد الإلكتروني',
     'username': 'اسم المستخدم',
   };
-  
+
   // دالة ثابتة يمكن استدعاؤها مباشرة من الكلاس
   static Exception handleDioError(DioException e) {
     // لو السيرفر رد علينا بخطأ (زي 404, 500, 401)
     if (e.response != null) {
       print('Error Response Data: ${e.response?.data}');
       print('Error Response Status Code: ${e.response?.statusCode}');
-      
+
       // هنا ممكن تفصل الأخطاء بناءً على status code
       switch (e.response?.statusCode) {
+        case 402:
+          final data = e.response?.data;
+          String? msg;
+          int? listingId;
+          if (data is Map) {
+            msg = data['message']?.toString();
+            final rawId = data['listing_id'] ?? data['id'];
+            if (rawId != null) listingId = int.tryParse(rawId.toString());
+          }
+          msg ??=
+              "لا تملك باقة فعّالة، يجب عليك دفع قيمة هذا الإعلان.او الاشتراك في باقه";
+          return AppError(msg, statusCode: 402, listingId: listingId);
         case 400: // Bad Request
-          return AppError("طلب غير صالح، تحقق من البيانات المدخلة.", statusCode: 400);
+          return AppError("طلب غير صالح، تحقق من البيانات المدخلة.",
+              statusCode: 400);
         case 401: // Unauthorized
         case 403: // Forbidden
           // افترض أن الباك اند بيرجع رسالة الخطأ في 'message'
           final raw = e.response?.data['message']?.toString();
-          final msg = _translateGeneralMessage(raw ?? "بيانات الدخول غير صحيحة.");
+          final msg =
+              _translateGeneralMessage(raw ?? "بيانات الدخول غير صحيحة.");
           return AppError(msg, statusCode: e.response?.statusCode);
         case 404: // Not Found
           // For search/browse endpoints, return a more specific error
           // This will help identify if the API endpoints are actually missing
           final endpoint = e.requestOptions.path;
-          return AppError("API endpoint not found: $endpoint - البيانات المطلوبة غير موجودة.", statusCode: 404);
+          return AppError(
+              "API endpoint not found: $endpoint - البيانات المطلوبة غير موجودة.",
+              statusCode: 404);
         case 422: // Validation Error
           // للأخطاء التحقق من صحة البيانات، نحتفظ بالرسالة الأصلية
           final responseData = e.response?.data;
@@ -51,26 +68,34 @@ class ErrorHandler {
             }
             // إذا كان هناك رسالة عامة
             if (responseData['message'] != null) {
-              return AppError(_translateGeneralMessage(responseData['message'].toString()), statusCode: 422);
+              return AppError(
+                  _translateGeneralMessage(responseData['message'].toString()),
+                  statusCode: 422);
             }
             // بعض الـ APIs ترجع الحقل 'error' بدلاً من 'message'
             if (responseData['error'] != null) {
-              return AppError(_translateGeneralMessage(responseData['error'].toString()), statusCode: 422);
+              return AppError(
+                  _translateGeneralMessage(responseData['error'].toString()),
+                  statusCode: 422);
             }
           }
           return AppError("خطأ في التحقق من صحة البيانات.", statusCode: 422);
         case 429: // Too Many Requests
           final raw = e.response?.data['message']?.toString();
-          return AppError(raw ?? "لقد تجاوزت الحد المسموح من الطلبات، حاول لاحقاً.", statusCode: 429);
+          return AppError(
+              raw ?? "لقد تجاوزت الحد المسموح من الطلبات، حاول لاحقاً.",
+              statusCode: 429);
         case 500: // Internal Server Error
         default:
-          return AppError("حدث خطأ من الخادم، حاول مرة أخرى لاحقًا.", statusCode: e.response?.statusCode);
+          return AppError("حدث خطأ من الخادم، حاول مرة أخرى لاحقًا.",
+              statusCode: e.response?.statusCode);
       }
     } else {
       // لو مفيش رد من السيرفر أساسًا (مشكلة في الاتصال أو مهلة)
       print('Error sending request: $e');
-      if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout) {
-          return AppError("انتهت مهلة الاتصال بالخادم.");
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        return AppError("انتهت مهلة الاتصال بالخادم.");
       }
       return AppError("لا يمكن الاتصال بالخادم، تحقق من اتصالك بالإنترنت.");
     }
@@ -85,10 +110,12 @@ class ErrorHandler {
         final fieldAr = _arabicFieldNames[key] ?? key;
         if (value is List) {
           for (final m in value) {
-            msgs.add(_translateValidationMessageForField(fieldAr, m.toString()));
+            msgs.add(
+                _translateValidationMessageForField(fieldAr, m.toString()));
           }
         } else if (value != null) {
-          msgs.add(_translateValidationMessageForField(fieldAr, value.toString()));
+          msgs.add(
+              _translateValidationMessageForField(fieldAr, value.toString()));
         }
       });
       if (msgs.isNotEmpty) {
@@ -98,7 +125,8 @@ class ErrorHandler {
     return 'خطأ في التحقق من صحة البيانات.';
   }
 
-  static String _translateValidationMessageForField(String fieldAr, String message) {
+  static String _translateValidationMessageForField(
+      String fieldAr, String message) {
     final lower = message.toLowerCase();
     final reAtLeast = RegExp(r'must be at least\s*(\d+)\s*characters');
     final mAtLeast = reAtLeast.firstMatch(lower);
@@ -109,7 +137,8 @@ class ErrorHandler {
     if (lower.contains('has already been taken')) {
       return '$fieldAr مستخدم بالفعل';
     }
-    if (RegExp(r'the selected .* is invalid').hasMatch(lower) || lower.contains('is invalid')) {
+    if (RegExp(r'the selected .* is invalid').hasMatch(lower) ||
+        lower.contains('is invalid')) {
       return '$fieldAr غير صحيح';
     }
     final reRequired = RegExp(r'the .* field is required|is required');
