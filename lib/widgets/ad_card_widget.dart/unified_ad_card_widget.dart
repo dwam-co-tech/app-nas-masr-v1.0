@@ -202,7 +202,7 @@ class UnifiedAdCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final statusLabel = ad.planType == 'featured'
-        ? 'مميز'
+        ? 'متميز'
         : (ad.planType == 'standard' ? 'ستاندرد' : 'مجاني');
     final labelColor = statusLabel == 'متميز' ? cs.primary : cs.primary;
 
@@ -325,29 +325,31 @@ class UnifiedAdCardWidget extends StatelessWidget {
                       },
                     ),
                   ),
-                  Positioned(
-                    bottom: 0.h,
-                    left: 0.w,
-                    child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(8),
-                            bottomLeft: Radius.circular(8)),
-                      ),
-                      child: PriceText(
-                        price: ad.price,
-                        currencySuffix: 'ج',
-                        style: TextStyle(
-                          color: cs.secondary,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
+                  if (ad.categorySlug != 'missing' &&
+                      (ad.attributes['category']?.toString() != 'missing'))
+                    Positioned(
+                      bottom: 0.h,
+                      left: 0.w,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(8),
+                              bottomLeft: Radius.circular(8)),
+                        ),
+                        child: PriceText(
+                          price: ad.price,
+                          currencySuffix: 'ج',
+                          style: TextStyle(
+                            color: cs.secondary,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),

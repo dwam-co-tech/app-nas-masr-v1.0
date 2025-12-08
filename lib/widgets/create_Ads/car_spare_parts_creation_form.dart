@@ -187,9 +187,9 @@ class CarSparePartsCreationFormState extends State<CarSparePartsCreationForm> {
       children: [
         Row(
           children: [
-            Expanded(child: subCategoryField),
-            const SizedBox(width: 12),
             Expanded(child: mainCategoryField),
+            const SizedBox(width: 12),
+            Expanded(child: subCategoryField),
           ],
         ),
         const SizedBox(height: 12),
@@ -228,8 +228,8 @@ class CarSparePartsCreationFormState extends State<CarSparePartsCreationForm> {
 
   Map<String, String?> getSelectedAttributes() {
     return {
-      'main_category': _selectedMainCategory,
-      'sub_category': _selectedSubCategory,
+      'main_section': _selectedMainCategory,
+      'sub_section': _selectedSubCategory,
     };
   }
 

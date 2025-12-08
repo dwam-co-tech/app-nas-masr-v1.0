@@ -28,6 +28,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late String phone;
   String password = '';
   String? delegateNumber;
+  bool _hasExistingDelegate = false;
   String? _address;
   double? _lat;
   double? _lng;
@@ -81,6 +82,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _initialLat = _lat;
       _initialLng = _lng;
     }
+
+    _hasExistingDelegate = (delegateNumber ?? '').trim().isNotEmpty;
   }
 
   @override
@@ -162,13 +165,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     onChanged: (v) => password = v,
                   ),
                   //  SizedBox(height: 8.h),
-                  CustomTextField(
-                    labelText: 'رقم المندوب',
-                    isOptional: true,
-                    hintText: 'XXXX',
-                    initialValue: delegateNumber,
-                    onChanged: (v) => delegateNumber = v,
-                  ),
+                  _hasExistingDelegate
+                      ? AbsorbPointer(
+                          child: CustomTextField(
+                            labelText: 'رقم المندوب',
+                            isOptional: true,
+                            hintText: 'XXXX',
+                            initialValue: delegateNumber,
+                            readOnly: true,
+                            onChanged: (v) => delegateNumber = v,
+                          ),
+                        )
+                      : CustomTextField(
+                          labelText: 'رقم المندوب',
+                          isOptional: true,
+                          hintText: 'XXXX',
+                          initialValue: delegateNumber,
+                          onChanged: (v) => delegateNumber = v,
+                        ),
                   SizedBox(height: 12.h),
                   Align(
                     alignment: Alignment.centerRight,

@@ -12,10 +12,17 @@ class AuthProvider with ChangeNotifier {
   bool get loading => _loading;
   String? get token => _token;
 
-  Future<String?> register({required String phone, required String password}) async {
+  Future<String?> register(
+      {required String phone,
+      required String password,
+      String? referralCode}) async {
     _setLoading(true);
     try {
-      final res = await _repository.register(phone: phone, password: password);
+      final res = await _repository.register(
+        phone: phone,
+        password: password,
+        referralCode: referralCode,
+      );
       final t = res['token'];
       if (t is String && t.isNotEmpty) {
         _token = t;

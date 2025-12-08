@@ -307,7 +307,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   //   SizedBox(height: 8.h),
                   GestureDetector(
-                    onTap: _showEditDialog,
+                    onTap: ((delegateNumber ?? '').trim().isEmpty)
+                        ? _showEditDialog
+                        : null,
                     child: AbsorbPointer(
                       child: CustomTextField(
                         key: ValueKey('ref-$delegateNumber'),
@@ -566,10 +568,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     start: 16, end: 16, top: 12, bottom: 4),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                title: Text('تأكيد رقم الهاتف',
-                    textAlign: TextAlign.center,
-                    style: tt.titleMedium
-                        ?.copyWith(color: cs.onSurface, fontSize: 22.sp)),
+                title: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        'تأكيد رقم الهاتف',
+                        textAlign: TextAlign.center,
+                        style: tt.titleMedium
+                            ?.copyWith(color: cs.onSurface, fontSize: 22.sp),
+                      ),
+                    ),
+                    Align(
+                      alignment: AlignmentDirectional.topStart,
+                      child: SizedBox(
+                        width: 26,
+                        height: 26,
+                        child: IconButton(
+                          iconSize: 20,
+                          padding: EdgeInsets.zero,
+                          icon: Icon(Icons.close_rounded, color: cs.onSurface),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

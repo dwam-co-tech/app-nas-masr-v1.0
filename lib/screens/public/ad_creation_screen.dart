@@ -68,7 +68,7 @@ class CustomDescriptionField extends StatelessWidget {
           const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
       keyboardType: TextInputType.multiline,
       maxLines: 4,
-      maxLength: 200,
+      maxLength: 2000,
       filled: true,
       onChanged: onChanged,
       // fillColor: const Color.fromRGBO(255, 255, 255, 1), // يفضل استمداد الـ Fill Color من الثيم
@@ -732,7 +732,9 @@ class _MapSelectionWidgetState extends State<MapSelectionWidget> {
 class PackageSelectionWidget extends StatefulWidget {
   final ValueChanged<String?>? onChanged;
   final String? initialValue;
-  const PackageSelectionWidget({super.key, this.onChanged, this.initialValue});
+  final List<String>? allowedIds;
+  const PackageSelectionWidget(
+      {super.key, this.onChanged, this.initialValue, this.allowedIds});
   @override
   State<PackageSelectionWidget> createState() => _PackageSelectionWidgetState();
 }
@@ -744,6 +746,11 @@ class _PackageSelectionWidgetState extends State<PackageSelectionWidget> {
   void initState() {
     super.initState();
     _selectedId = widget.initialValue ?? _selectedId;
+    if (widget.allowedIds != null && widget.allowedIds!.isNotEmpty) {
+      if (!widget.allowedIds!.contains(_selectedId)) {
+        _selectedId = widget.allowedIds!.first;
+      }
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onChanged?.call(_selectedId);
     });
@@ -770,6 +777,10 @@ class _PackageSelectionWidgetState extends State<PackageSelectionWidget> {
           price: 0,
           validityDays: 365),
     ];
+    final visibleItems = items
+        .where((i) =>
+            widget.allowedIds == null || widget.allowedIds!.contains(i.id))
+        .toList();
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -783,7 +794,7 @@ class _PackageSelectionWidgetState extends State<PackageSelectionWidget> {
                   color: Colors.black)),
           SizedBox(height: 8.h),
           Column(
-            children: items.map((item) {
+            children: visibleItems.map((item) {
               final selected = _selectedId == item.id;
               return InkWell(
                 onTap: () {
@@ -990,7 +1001,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
 
   String? _mainCategory;
   String? _subCategory;
-  String? _autoTitle;
+
   String? _propertyType;
   String? _contractType;
   String? _specialization;
@@ -1090,7 +1101,6 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
           fieldsConfig: fields,
           makes: _config?.makes ?? const [],
           labelStyle: labelStyle,
-          onTitleChanged: (val) => setState(() => _autoTitle = val),
         );
 
       case 'spare-parts':
@@ -1100,7 +1110,8 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
           makes: _config?.makes ?? const [],
           mainSections: _config?.mainSections ?? const [],
           labelStyle: labelStyle,
-          onTitleChanged: (val) => setState(() => _autoTitle = val),
+          onMainCategoryChanged: (v) => _mainCategory = v,
+          onSubCategoryChanged: (v) => _subCategory = v,
         );
 
       case 'real_estate':
@@ -1139,11 +1150,15 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
     final errors = <String>[];
     if (gov == null || gov.isEmpty) errors.add('اختر المحافظة');
     if (city == null || city.isEmpty) errors.add('اختر المدينة');
-    if (_price == null || _price!.trim().isEmpty) errors.add('ادخل السعر');
+    if (widget.categorySlug != 'missing') {
+      if (_price == null || _price!.trim().isEmpty) errors.add('ادخل السعر');
+    }
     if (_description == null || _description!.trim().isEmpty)
       errors.add('ادخل الوصف');
-    if (_selectedPlanType == null || _selectedPlanType!.isEmpty)
-      errors.add('اختر نوع الإعلان');
+    if (widget.categorySlug != 'missing') {
+      if (_selectedPlanType == null || _selectedPlanType!.isEmpty)
+        errors.add('اختر نوع الإعلان');
+    }
     if (_contactPhone == null || _contactPhone!.trim().isEmpty)
       errors.add('ادخل رقم الهاتف');
     if (_whatsappPhone == null || _whatsappPhone!.trim().isEmpty)
@@ -1259,10 +1274,10 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
           .isEmpty) {
         errors.add('اختر الموديل');
       }
-      if ((spareAttrs['main_category'] ?? '').trim().isEmpty) {
+      if ((spareAttrs['main_section'] ?? '').trim().isEmpty) {
         errors.add('اختر القسم الرئيسي');
       }
-      if ((spareAttrs['sub_category'] ?? '').trim().isEmpty) {
+      if ((spareAttrs['sub_section'] ?? '').trim().isEmpty) {
         errors.add('اختر القسم الفرعي');
       }
     } else if (widget.categorySlug == 'doctors') {
@@ -1314,7 +1329,9 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
         governorate: gov,
         city: city,
         description: _description,
-        planType: _selectedPlanType ?? 'free',
+        planType: widget.categorySlug == 'missing'
+            ? 'free'
+            : (_selectedPlanType ?? 'free'),
         lat: latVal,
         lng: lngVal,
         address: loc != null ? (loc['address']?.toString()) : null,
@@ -1352,7 +1369,11 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
         if (!mounted) return;
         final bool isPaymentRequired = (provider.lastErrorCode == 402) ||
             msg.contains('لا تملك باقة فعّالة') ||
-            msg.contains('payment_required');
+            msg.contains('payment_required') ||
+            msg.contains('لقد تجاوزت الحد الأقصى') ||
+            msg.contains('الإعلانات المجانية');
+        final bool isFreePlanSelected =
+            (_selectedPlanType ?? 'free').toLowerCase() == 'free';
         if (isPaymentRequired) {
           final cs = Theme.of(context).colorScheme;
           await showDialog<void>(
@@ -1363,7 +1384,24 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                 textDirection: TextDirection.rtl,
                 child: AlertDialog(
                   title: const Text('تنبيه'),
-                  content: Text(msg),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(msg),
+                      if (isFreePlanSelected)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            'لا يمكنك المتابعة بالدفع لخطة مجانية. برجاء اختيار خطة ستاندرد أو مميزة ثم المتابعة.',
+                            style: TextStyle(
+                              color: cs.secondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () {
@@ -1385,14 +1423,16 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                       child: const Text('اشترك في باقة'),
                     ),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(ctx).pop();
-                        context.push('/payment/checkout', extra: {
-                          'categorySlug': widget.categorySlug,
-                          'planType': _selectedPlanType,
-                          'listingId': provider.pendingListingId,
-                        });
-                      },
+                      onPressed: isFreePlanSelected
+                          ? null
+                          : () {
+                              Navigator.of(ctx).pop();
+                              context.push('/payment/checkout', extra: {
+                                'categorySlug': widget.categorySlug,
+                                'planType': _selectedPlanType,
+                                'listingId': provider.pendingListingId,
+                              });
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: cs.primary,
                         foregroundColor: Colors.white,
@@ -1620,28 +1660,17 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                                   labelStyle,
                                 ),
 
-                                if (_autoTitle != null &&
-                                    _autoTitle!.isNotEmpty) ...[
-                                  SizedBox(height: 5.h),
-                                  CustomTextField(
-                                    labelText: 'عنوان الإعلان',
-                                    initialValue: _autoTitle,
-                                    readOnly: true,
-                                    showTopLabel: true,
-                                    labelStyle: labelStyle,
-                                  ),
-                                ],
-
                                 // 3. الأجزاء الثابتة التي يجب أن تظهر تحت الـ Dynamic Fields
                                 //  SizedBox(height: 5.h),
 
-                                CustomTextField(
-                                  labelText: 'السعر',
-                                  keyboardType: TextInputType.number,
-                                  showTopLabel: true,
-                                  labelStyle: labelStyle,
-                                  onChanged: (v) => _price = v,
-                                ),
+                                if (widget.categorySlug != 'missing')
+                                  CustomTextField(
+                                    labelText: 'السعر',
+                                    keyboardType: TextInputType.number,
+                                    showTopLabel: true,
+                                    labelStyle: labelStyle,
+                                    onChanged: (v) => _price = v,
+                                  ),
                                 Column(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
@@ -1696,8 +1725,15 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                                 SizedBox(height: 20.h),
 
                                 PackageSelectionWidget(
-                                    onChanged: (v) =>
-                                        _selectedPlanType = v ?? 'free'),
+                                  onChanged: (v) =>
+                                      _selectedPlanType = v ?? 'free',
+                                  initialValue: widget.categorySlug == 'missing'
+                                      ? 'free'
+                                      : _selectedPlanType,
+                                  allowedIds: widget.categorySlug == 'missing'
+                                      ? const ['free']
+                                      : null,
+                                ),
                                 SizedBox(height: 5.h),
 
                                 // زر الحفظ والإرسال (ثابت)

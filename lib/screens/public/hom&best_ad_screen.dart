@@ -21,6 +21,8 @@ import 'package:nas_masr_app/widgets/filter_widgets/doctors_filters_widget.dart'
 import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:nas_masr_app/core/data/models/main_section.dart';
 import 'package:nas_masr_app/core/data/models/sub_section.dart';
+import 'package:nas_masr_app/core/data/models/make.dart';
+import 'package:nas_masr_app/core/data/models/car_model.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 
@@ -119,7 +121,9 @@ class CategoryListingScreen extends StatelessWidget {
                 : (selectedValue is Governorate ||
                         selectedValue is City ||
                         selectedValue is MainSection ||
-                        selectedValue is SubSection
+                        selectedValue is SubSection ||
+                        selectedValue is Make ||
+                        selectedValue is CarModel
                     ? selectedValue.name
                     : selectedValue.toString());
 

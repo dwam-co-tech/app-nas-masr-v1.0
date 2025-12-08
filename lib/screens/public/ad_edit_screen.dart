@@ -98,6 +98,8 @@ class _EditAdScreenState extends State<EditAdScreen> {
         initialSubCategory: _subCategory,
         initialMake: _make,
         initialModel: _model,
+        onMainCategoryChanged: (v) => _mainCategory = v,
+        onSubCategoryChanged: (v) => _subCategory = v,
       );
     }
 
@@ -470,8 +472,12 @@ class _EditAdScreenState extends State<EditAdScreen> {
       _contractType = d.attributes['contract_type']?.toString();
 
       // Load Unified / Car Rental / Spare Parts Data
-      _mainCategory = d.attributes['main_category']?.toString();
-      _subCategory = d.attributes['sub_category']?.toString();
+      _mainCategory = d.mainSection?.toString() ??
+          d.attributes['main_section']?.toString() ??
+          d.attributes['main_category']?.toString();
+      _subCategory = d.subSection?.toString() ??
+          d.attributes['sub_section']?.toString() ??
+          d.attributes['sub_category']?.toString();
       _make = d.attributes['make']?.toString() ??
           d.attributes['car_make']?.toString();
       _model = d.attributes['model']?.toString() ??

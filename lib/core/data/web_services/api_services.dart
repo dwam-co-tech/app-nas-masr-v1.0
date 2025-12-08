@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:nas_masr_app/core/constatants/string.dart';
 import 'package:nas_masr_app/core/data/web_services/error_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   final Dio _dio;
@@ -20,10 +21,20 @@ class ApiService {
               }),
         );
 
+  Future<String?> _loadToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('auth_token');
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<dynamic> get(String endpoint,
       {Map<String, dynamic>? query, String? token}) async {
-    if (token != null) {
-      _dio.options.headers['Authorization'] = 'Bearer $token';
+    final String? authToken = token ?? await _loadToken();
+    if (authToken != null && authToken.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $authToken';
     }
 
     try {
@@ -48,8 +59,9 @@ class ApiService {
       {required dynamic data,
       Map<String, dynamic>? query,
       String? token}) async {
-    if (token != null) {
-      _dio.options.headers['Authorization'] = 'Bearer $token';
+    final String? authToken = token ?? await _loadToken();
+    if (authToken != null && authToken.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $authToken';
     }
     // Ensure JSON content type for normal POST requests (do not rely on global header)
     final Options jsonOptions = Options(contentType: Headers.jsonContentType);
@@ -89,8 +101,9 @@ class ApiService {
 
   Future<dynamic> delete(String endpoint,
       {Map<String, dynamic>? query, String? token}) async {
-    if (token != null) {
-      _dio.options.headers['Authorization'] = 'Bearer $token';
+    final String? authToken = token ?? await _loadToken();
+    if (authToken != null && authToken.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $authToken';
     }
     try {
       final response = await _dio.delete(endpoint, queryParameters: query);
@@ -114,8 +127,9 @@ class ApiService {
     String? token,
     String imagesFieldName = 'images[]',
   }) async {
-    if (token != null) {
-      _dio.options.headers['Authorization'] = 'Bearer $token';
+    final String? authToken = token ?? await _loadToken();
+    if (authToken != null && authToken.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $authToken';
     }
     // Use per-request content type for multipart/form-data
     final Options multipartOptions =
@@ -194,8 +208,9 @@ class ApiService {
     String? token,
     Map<String, dynamic>? additionalData,
   }) async {
-    if (token != null) {
-      _dio.options.headers['Authorization'] = 'Bearer $token';
+    final String? authToken = token ?? await _loadToken();
+    if (authToken != null && authToken.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $authToken';
     }
     final Options multipartOptions =
         Options(contentType: Headers.multipartFormDataContentType);
@@ -255,8 +270,9 @@ class ApiService {
     List<File>? thumbnailImages,
     String? token,
   }) async {
-    if (token != null) {
-      _dio.options.headers['Authorization'] = 'Bearer $token';
+    final String? authToken = token ?? await _loadToken();
+    if (authToken != null && authToken.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $authToken';
     }
     final Options multipartOptions =
         Options(contentType: Headers.multipartFormDataContentType);
@@ -323,8 +339,9 @@ class ApiService {
       {required dynamic data,
       Map<String, dynamic>? query,
       String? token}) async {
-    if (token != null) {
-      _dio.options.headers['Authorization'] = 'Bearer $token';
+    final String? authToken = token ?? await _loadToken();
+    if (authToken != null && authToken.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $authToken';
     }
     final Options jsonOptions = Options(contentType: Headers.jsonContentType);
 
@@ -365,8 +382,9 @@ class ApiService {
       {required dynamic data,
       Map<String, dynamic>? query,
       String? token}) async {
-    if (token != null) {
-      _dio.options.headers['Authorization'] = 'Bearer $token';
+    final String? authToken = token ?? await _loadToken();
+    if (authToken != null && authToken.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $authToken';
     }
     final Options jsonOptions = Options(contentType: Headers.jsonContentType);
 
@@ -417,6 +435,4 @@ class ApiService {
   //     rethrow;
   //   }
   // }
-
-
 }

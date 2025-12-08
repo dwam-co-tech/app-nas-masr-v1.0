@@ -104,7 +104,11 @@ class AdDetailsScreen extends StatelessWidget {
     } else if (slug == 'cars_rent') {
       return CarRentalDetailsPanel(attributes: attributes);
     } else if (slug == 'spare-parts') {
-      return CarSparePartsDetailsPanel(attributes: attributes);
+      return CarSparePartsDetailsPanel(
+        attributes: attributes,
+        mainSection: mainSection,
+        subSection: subSection,
+      );
     }
     return const Center(child: Text('لا توجد لوحة تفاصيل لهذا القسم'));
   }

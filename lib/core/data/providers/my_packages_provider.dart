@@ -8,10 +8,12 @@ class MyPackagesProvider with ChangeNotifier {
   bool _loading = false;
   String? _error;
   List<MyPackage> _packages = const [];
+  List<MySubscription> _subscriptions = const [];
 
   bool get loading => _loading;
   String? get error => _error;
   List<MyPackage> get packages => _packages;
+  List<MySubscription> get subscriptions => _subscriptions;
 
   MyPackagesProvider({required MyPackagesRepository repository})
       : _repo = repository {
@@ -22,11 +24,13 @@ class MyPackagesProvider with ChangeNotifier {
     _setLoading(true);
     _error = null;
     try {
-      final list = await _repo.getMyPackages();
-      _packages = list;
+      final res = await _repo.getMyPlans();
+      _packages = res.packages;
+      _subscriptions = res.subscriptions;
     } catch (e) {
       _error = e.toString();
       _packages = const [];
+      _subscriptions = const [];
     } finally {
       _setLoading(false);
     }

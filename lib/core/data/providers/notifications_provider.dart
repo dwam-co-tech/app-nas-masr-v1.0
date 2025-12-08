@@ -32,6 +32,7 @@ class NotificationsProvider with ChangeNotifier {
   String? get selected => _selected;
   bool get hasMore => _page < _lastPage;
   bool get loadingMore => _loadingMore;
+  int get unreadCount => _items.where((n) => !n.isRead).length;
 
   Future<void> loadFirst() async {
     _setLoading(true);
@@ -67,6 +68,44 @@ class NotificationsProvider with ChangeNotifier {
   void select(String? category) {
     _selected = category;
     notifyListeners();
+  }
+
+  Future<void> markItemRead(int id) async {
+    try {
+      await _repo.markAsRead(id);
+      _items = _items.map((n) => n.id == id
+          ? NotificationItem(
+              id: n.id,
+              title: n.title,
+              body: n.body,
+              category: n.category,
+              type: n.type,
+              data: n.data,
+              createdAt: n.createdAt,
+              isRead: true,
+            )
+          : n).toList();
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  Future<void> markAllRead() async {
+    try {
+      await _repo.markAllAsRead();
+      _items = _items
+          .map((n) => NotificationItem(
+                id: n.id,
+                title: n.title,
+                body: n.body,
+                category: n.category,
+                type: n.type,
+                data: n.data,
+                createdAt: n.createdAt,
+                isRead: true,
+              ))
+          .toList();
+      notifyListeners();
+    } catch (_) {}
   }
 
   void _setLoading(bool v) {

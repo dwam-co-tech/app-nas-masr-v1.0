@@ -148,6 +148,52 @@ class NotificationsScreen extends StatelessWidget {
                                     ),
                                   ],
                                 ),
+                                SizedBox(height: 5.h),
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 250),
+                                  child: prov.unreadCount > 0
+                                      ? Container(
+                                          key: const ValueKey('unread_banner'),
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 12.w, vertical: 8.h),
+                                          decoration: BoxDecoration(
+                                            color: cs.primary.withOpacity(0.08),
+                                            borderRadius:
+                                                BorderRadius.circular(12.r),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  'لديك ${prov.unreadCount} إشعار غير مقروء',
+                                                  style: TextStyle(
+                                                    color: cs.onSurface,
+                                                    fontSize: 14.sp,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                              TextButton.icon(
+                                                onPressed: () =>
+                                                    prov.markAllRead(),
+                                                icon: Icon(
+                                                  Icons.mark_email_read,
+                                                  color: cs.primary,
+                                                  size: 18.sp,
+                                                ),
+                                                label: Text(
+                                                  'قراءة الكل',
+                                                  style: TextStyle(
+                                                    color: cs.primary,
+                                                    fontSize: 13.sp,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : const SizedBox.shrink(),
+                                ),
                               ],
                             ),
                           ),
@@ -219,123 +265,133 @@ class NotificationsScreen extends StatelessWidget {
                                       final n = prov.displayedItems[index];
                                       return Padding(
                                         padding: EdgeInsets.symmetric(
-                                            horizontal: 12.w, vertical: 6.h),
-                                        child: Card(
-                                          elevation: 1,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.r)),
-                                          child: Padding(
-                                            padding: EdgeInsets.all(10.w),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Container(
-                                                  width: 36.w,
-                                                  height: 36.w,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            18.w),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.black
-                                                            .withOpacity(0.06),
-                                                        blurRadius: 6,
-                                                        offset:
-                                                            const Offset(0, 2),
-                                                      ),
-                                                    ],
+                                            horizontal: 12.w, vertical: 3.h),
+                                        child: InkWell(
+                                          onTap: () => prov.markItemRead(n.id),
+                                          borderRadius:
+                                              BorderRadius.circular(10.r),
+                                          child: Card(
+                                            elevation: 1,
+                                            color: n.isRead
+                                                ? Theme.of(context).cardColor
+                                                : cs.primary.withOpacity(0.08),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        10.r)),
+                                            child: Padding(
+                                              padding: EdgeInsets.all(10.w),
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    width: 36.w,
+                                                    height: 36.w,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              18.w),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.black
+                                                              .withOpacity(
+                                                                  0.06),
+                                                          blurRadius: 6,
+                                                          offset: const Offset(
+                                                              0, 2),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    child: Icon(
+                                                        Icons
+                                                            .notifications_rounded,
+                                                        color: cs.primary,
+                                                        size: 20.sp),
                                                   ),
-                                                  child: Icon(
-                                                      Icons
-                                                          .notifications_rounded,
-                                                      color: cs.primary,
-                                                      size: 20.sp),
-                                                ),
-                                                SizedBox(width: 10.w),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          Expanded(
+                                                  SizedBox(width: 10.w),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Expanded(
+                                                              child: Text(
+                                                                n.title,
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        16.sp,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600),
+                                                              ),
+                                                            ),
+                                                            Text(
+                                                                _fmtDate(n
+                                                                    .createdAt),
+                                                                style: TextStyle(
+                                                                    color: const Color
+                                                                        .fromRGBO(
+                                                                        1,
+                                                                        22,
+                                                                        24,
+                                                                        0.45),
+                                                                    fontSize:
+                                                                        12.sp)),
+                                                          ],
+                                                        ),
+                                                        SizedBox(height: 4.h),
+                                                        Text(
+                                                          n.body,
+                                                          maxLines: 3,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                              fontSize: 14.sp,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              color:
+                                                                  cs.onSurface),
+                                                        ),
+                                                        SizedBox(height: 8.h),
+                                                        Align(
+                                                          alignment: Alignment
+                                                              .centerLeft,
+                                                          child: Container(
+                                                            padding: EdgeInsets
+                                                                .symmetric(
+                                                                    horizontal:
+                                                                        12.w,
+                                                                    vertical:
+                                                                        6.h),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: cs.primary,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          20.r),
+                                                            ),
                                                             child: Text(
-                                                              n.title,
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      16.sp,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600),
+                                                              (n.type) == 'view'
+                                                                  ? 'محادثة مع العميل'
+                                                                  : 'تحدث مع الإدارة',
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white),
                                                             ),
                                                           ),
-                                                          Text(
-                                                              _fmtDate(
-                                                                  n.createdAt),
-                                                              style: TextStyle(
-                                                                  color: const Color
-                                                                      .fromRGBO(
-                                                                      1,
-                                                                      22,
-                                                                      24,
-                                                                      0.45),
-                                                                  fontSize:
-                                                                      12.sp)),
-                                                        ],
-                                                      ),
-                                                      SizedBox(height: 4.h),
-                                                      Text(
-                                                        n.body,
-                                                        maxLines: 3,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                            fontSize: 14.sp,
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            color:
-                                                                cs.onSurface),
-                                                      ),
-                                                      SizedBox(height: 8.h),
-                                                      Align(
-                                                        alignment: Alignment
-                                                            .centerLeft,
-                                                        child: Container(
-                                                          padding: EdgeInsets
-                                                              .symmetric(
-                                                                  horizontal:
-                                                                      12.w,
-                                                                  vertical:
-                                                                      6.h),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: cs.primary,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        20.r),
-                                                          ),
-                                                          child: Text(
-                                                            (n.type) == 'view'
-                                                                ? 'محادثة مع العميل'
-                                                                : 'تحدث مع الإدارة',
-                                                            style:
-                                                                const TextStyle(
-                                                                    color: Colors
-                                                                        .white),
-                                                          ),
-                                                        ),
-                                                      )
-                                                    ],
+                                                        )
+                                                      ],
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),

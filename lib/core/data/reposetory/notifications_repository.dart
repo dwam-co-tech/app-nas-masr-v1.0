@@ -24,6 +24,7 @@ class NotificationItem {
   final String? type; // e.g., view
   final Map<String, dynamic>? data;
   final DateTime? createdAt;
+  final bool isRead;
   NotificationItem({
     required this.id,
     required this.title,
@@ -32,6 +33,7 @@ class NotificationItem {
     this.type,
     this.data,
     this.createdAt,
+    this.isRead = false,
   });
 }
 
@@ -68,6 +70,9 @@ class NotificationsRepository {
           createdAt: m['created_at'] != null
               ? DateTime.tryParse(m['created_at'].toString())
               : null,
+          isRead: (m['read'] as bool?) ??
+              (m['is_read'] as bool?) ??
+              (m['read_at'] != null),
         );
       }).toList();
     } catch (_) {
@@ -102,6 +107,9 @@ class NotificationsRepository {
         createdAt: m['created_at'] != null
             ? DateTime.tryParse(m['created_at'].toString())
             : null,
+        isRead: (m['read'] as bool?) ??
+            (m['is_read'] as bool?) ??
+            (m['read_at'] != null),
       );
     }).toList();
 
@@ -135,6 +143,7 @@ class NotificationsRepository {
         body: 'تحديث هام بالنظام، يرجى مراجعة التفاصيل.',
         category: 'admin',
         createdAt: now.subtract(const Duration(hours: 2)),
+        isRead: false,
       ),
       NotificationItem(
         id: 2,
@@ -142,7 +151,26 @@ class NotificationsRepository {
         body: 'وصل طلب جديد من عميل، راجع الطلب في لوحة التحكم.',
         category: 'customers',
         createdAt: now.subtract(const Duration(hours: 2)),
+        isRead: true,
       ),
     ];
+  }
+
+  Future<void> markAsRead(int id) async {
+    String? token;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      token = prefs.getString('auth_token');
+    } catch (_) {}
+    await _api.patch('/api/notifications/$id/read', data: {}, token: token);
+  }
+
+  Future<void> markAllAsRead() async {
+    String? token;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      token = prefs.getString('auth_token');
+    } catch (_) {}
+    await _api.patch('/api/notifications/read-all', data: {}, token: token);
   }
 }

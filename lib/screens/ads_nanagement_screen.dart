@@ -95,32 +95,64 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                   Consumer<MyPackagesProvider>(
                     builder: (context, pkgProv, _) {
                       final list = pkgProv.packages;
+                      final subs = pkgProv.subscriptions;
                       if (pkgProv.loading) {
-                        return const SizedBox.shrink();
-                      }
-                      if (list.isEmpty) {
                         return const SizedBox.shrink();
                       }
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text("باقاتي",
-                                style: TextStyle(
-                                    color: cs.onSurface,
-                                    fontSize: 24.sp,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                          SizedBox(height: 8.h),
-                          ...list.map((p) => _buildPackageCard(
+                          if (list.isNotEmpty) ...[
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text("باقاتي",
+                                  style: TextStyle(
+                                      color: cs.onSurface,
+                                      fontSize: 24.sp,
+                                      fontWeight: FontWeight.w500)),
+                            ),
+                            SizedBox(height: 8.h),
+                            ...list.map((p) => _buildPackageCard(
+                                  cs,
+                                  title: p.title,
+                                  badgeText: p.badgeText,
+                                  expiry: p.expiresAtHuman,
+                                  color: _packageAccentColor(p.title),
+                                  gradient: _packageGradient(p.title),
+                                )),
+                          ],
+                          if (subs.isNotEmpty) ...[
+                            SizedBox(height: 10.h),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text("اشتراكاتي",
+                                  style: TextStyle(
+                                      color: cs.onSurface,
+                                      fontSize: 22.sp,
+                                      fontWeight: FontWeight.w500)),
+                            ),
+                            SizedBox(height: 8.h),
+                            ...subs.map((s) {
+                              final planLabel = _planLabel(s.planType);
+                              final title =
+                                  "اشتراك $planLabel - ${s.categoryName}";
+                              final badgeText = s.active ? 'نشط' : 'غير نشط';
+                              final expiryStr = s.expiresAt != null
+                                  ? DateFormat('dd/MM/yyyy')
+                                      .format(s.expiresAt!)
+                                  : null;
+                              return _buildPackageCard(
                                 cs,
-                                title: p.title,
-                                badgeText: p.badgeText,
-                                expiry: p.expiresAtHuman,
-                                color: _packageAccentColor(p.title),
-                                gradient: _packageGradient(p.title),
-                              )),
+                                title: title,
+                                badgeText: badgeText,
+                                expiry: expiryStr,
+                                color: _packageAccentColor(title),
+                                gradient: _packageGradient(title),
+                              );
+                            }),
+                          ],
                         ],
                       );
                     },
@@ -409,6 +441,19 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
       end: Alignment.bottomCenter,
       colors: [Colors.grey.shade500, Colors.grey.shade700],
     );
+  }
+
+  String _planLabel(String? p) {
+    switch ((p ?? '').toLowerCase()) {
+      case 'featured':
+        return 'متميز';
+      case 'standard':
+        return 'ستاندرد';
+      case 'free':
+        return 'مجاني';
+      default:
+        return p ?? '';
+    }
   }
 
   Widget _buildPackageCard(

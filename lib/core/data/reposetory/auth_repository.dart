@@ -6,13 +6,12 @@ class AuthRepository {
 
   AuthRepository({ApiService? apiService}) : _api = apiService ?? ApiService();
 
-  /// يستدعي واجهة التسجيل ويُرجع البيانات كما هي من الخادم
-  /// Endpoint: /api/register
-  /// Body: { "phone": phone, "password": password }
-  Future<Map<String, dynamic>> register({required String phone, required String password}) async {
+  Future<Map<String, dynamic>> register({required String phone, required String password, String? referralCode}) async {
     final payload = {
       'phone': phone,
       'password': password,
+      if (referralCode != null && referralCode.trim().isNotEmpty)
+        'referral_code': referralCode.trim(),
     };
 
     final res = await _api.post('/api/register', data: payload);

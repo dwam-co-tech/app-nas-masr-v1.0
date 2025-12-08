@@ -82,11 +82,13 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                   },
                 ),
               ),
-              body: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+              body: SingleChildScrollView(
+                child: Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                     _MethodTile(
                       title: 'انستا باي',
                       selected: _method == 'instapay',
@@ -98,7 +100,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                       selected: _method == 'wallet',
                       onTap: () => setState(() => _method = 'wallet'),
                     ),
-                    SizedBox(height: 50.h),
+                    SizedBox(height: 20.h),
                     Text('تفاصيل الدفع',
                         style: TextStyle(
                             fontSize: 16.sp,
@@ -140,7 +142,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                         ],
                       ),
                     ),
-                  SizedBox(height: 160.h),
+                  SizedBox(height: 20.h),
                     ElevatedButton(
                       onPressed: (displayedPrice == null || payProv.loading)
                           ? null
@@ -214,8 +216,9 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                       ),
                       child: const Text('تأكيد الدفع'),
                     ),
-                    SizedBox(height: 60.h),
-                  ],
+                    SizedBox(height: 20.h),
+                    ],
+                  ),
                 ),
               ),
             ),

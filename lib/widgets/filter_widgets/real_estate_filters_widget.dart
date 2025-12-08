@@ -24,6 +24,8 @@ class RealEstateFiltersWidget extends StatelessWidget {
   // دالة تُجهز بيانات العرض لـ Modal و تتلقى الـ Action (المختصر)
   void _openFilterModal(BuildContext context, String filterKey, String label,
       List<dynamic> optionsToDisplay) {
+    final listingProvider =
+        Provider.of<CategoryListingProvider>(context, listen: false);
     // الطباعة قبل فتح الـ Modal (كالعادة)
     print('--- Filter Action ---');
     print('Opening modal for $label (Key: $filterKey)');
@@ -47,6 +49,9 @@ class RealEstateFiltersWidget extends StatelessWidget {
               showAllOption: true,
               onSelected: (selectedValue) {
                 onNavigate(filterKey, selectedValue);
+                if (filterKey == 'governorate_id') {
+                  listingProvider.clearFilter('city_id');
+                }
               },
             ),
           ),
@@ -70,6 +75,36 @@ class RealEstateFiltersWidget extends StatelessWidget {
         Provider.of<CategoryListingProvider>(context, listen: true);
     final propertyType = _getCustomField('property_type');
     final contractType = _getCustomField('contract_type');
+    final governorates = config.governorates;
+
+    List<dynamic> cities = [];
+    final selectedGovId = provider.selectedFilters['governorate_id'];
+    bool isCityEnabled = false;
+
+    if (selectedGovId != null) {
+      try {
+        final govIdInt = int.tryParse(selectedGovId.toString());
+        if (govIdInt != null) {
+          final selectedGov = governorates.firstWhere((g) => g.id == govIdInt,
+              orElse: () => governorates.first);
+          if (selectedGov.id == govIdInt) {
+            cities = selectedGov.cities;
+            isCityEnabled = true;
+          }
+        }
+        if (!isCityEnabled) {
+          final selectedGov = governorates.firstWhere(
+              (g) => g.name == selectedGovId.toString(),
+              orElse: () => governorates.first);
+          if (selectedGov.name == selectedGovId.toString()) {
+            cities = selectedGov.cities;
+            isCityEnabled = true;
+          }
+        }
+      } catch (e) {
+        cities = [];
+      }
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -90,12 +125,10 @@ class RealEstateFiltersWidget extends StatelessWidget {
               ),
               FilterDropdownButton(
                 label: 'المدينة',
-                onTap: () {
-                  // الـ Logic هنا لا يزال بسيط (نجمع كل المدن من كل المحافظات لقائمة واحدة مؤقتة)
-                  final allCities =
-                      config.governorates.expand((g) => g.cities).toList();
-                  _openFilterModal(context, 'city_id', 'المدينة', allCities);
-                },
+                onTap: isCityEnabled
+                    ? () => _openFilterModal(
+                        context, 'city_id', 'المدينة', cities)
+                    : null,
                 isSelected: provider.isFilterSelected('city_id'),
                 selectedValue: provider.selectedFilters['city_id']?.toString(),
               ),

@@ -155,9 +155,12 @@ class CarSparePartsAdCardWidget extends StatelessWidget {
         : (ad.planType == 'standard' ? 'ستاندرد' : 'مجاني');
     final labelColor = cs.primary;
 
-    // Extract attributes
-    final subCategory = ad.attributes['sub_category']?.toString() ?? '';
-    final mainCategory = ad.attributes['main_category']?.toString() ?? '';
+    final mainSection =
+        (ad.mainSection ?? ad.attributes['main_section']?.toString() ?? '')
+            .toString();
+    final subSection =
+        (ad.subSection ?? ad.attributes['sub_section']?.toString() ?? '')
+            .toString();
     final make = (ad.make ??
             ad.attributes['make']?.toString() ??
             ad.attributes['car_make']?.toString() ??
@@ -180,9 +183,23 @@ class CarSparePartsAdCardWidget extends StatelessWidget {
       }
     }
 
+    final gov = ad.governorate.trim().isNotEmpty
+        ? ad.governorate.trim()
+        : (ad.attributes['governorate']?.toString() ??
+                ad.attributes['governorate_name']?.toString() ??
+                '')
+            .trim();
+    final cty = ad.city.trim().isNotEmpty
+        ? ad.city.trim()
+        : (ad.attributes['city']?.toString() ??
+                ad.attributes['city_name']?.toString() ??
+                '')
+            .trim();
+    final locationText = [gov, cty].where((e) => e.isNotEmpty).join('، ');
+
     // Line 3: Make - Model
-    final makeModel =
-        [make, model].where((e) => e.trim().isNotEmpty).join(' - ');
+    // final makeModel =
+    //     [make, model].where((e) => e.trim().isNotEmpty).join(' - ');
 
     return Card(
       elevation: 2,
@@ -314,50 +331,57 @@ class CarSparePartsAdCardWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Line 1: Sub Category
-                  if (subCategory.isNotEmpty)
+                  if (subSection.trim().isNotEmpty)
                     Text(
-                      subCategory,
+                      subSection,
                       style: TextStyle(
                           fontWeight: FontWeight.w500, fontSize: 16.sp),
                     ),
-                  // Line 2: Main Category
-                  if (mainCategory.isNotEmpty)
+                  if (subSection.trim().isNotEmpty &&
+                      mainSection.trim().isNotEmpty)
+                    SizedBox(height: 2.h),
+                  if (mainSection.trim().isNotEmpty)
                     Text(
-                      mainCategory,
+                      mainSection,
                       style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14.sp,
-                          color: Colors.grey.shade700),
-                    ),
-                  // Line 3: Make - Model
-                  if (makeModel.isNotEmpty)
-                    Text(
-                      makeModel,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14.sp,
-                          color: Colors.grey.shade600),
-                    ),
-
-                  SizedBox(height: 6.h),
-                  Row(
-                    children: [
-                      Icon(Icons.location_on_rounded,
-                          size: 16.sp, color: cs.primary),
-                      SizedBox(width: 4.w),
-                      Expanded(
-                        child: Text(
-                          '${ad.governorate}، ${ad.city}',
-                          style: const TextStyle(
-                              color: Color.fromRGBO(1, 22, 24, 0.45),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14.sp,
                       ),
-                    ],
-                  ),
+                    ),
+                  if (make.trim().isNotEmpty || model.trim().isNotEmpty)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${make.trim()}  ${model.trim()}',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 14.sp,
+                                color: Colors.grey.shade600),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  SizedBox(height: 6.h),
+                  if (locationText.isNotEmpty)
+                    Row(
+                      children: [
+                        Icon(Icons.location_on_rounded,
+                            size: 16.sp, color: cs.primary),
+                        SizedBox(width: 4.w),
+                        Expanded(
+                          child: Text(
+                            locationText,
+                            style: const TextStyle(
+                                color: Color.fromRGBO(1, 22, 24, 0.45),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   SizedBox(height: 4.h),
                   if (createdAt.isNotEmpty)
                     Text(

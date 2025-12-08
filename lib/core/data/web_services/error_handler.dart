@@ -15,6 +15,7 @@ class ErrorHandler {
     'password': 'كلمة المرور',
     'phone': 'رقم الهاتف',
     'code': 'كود المندوب',
+    'referral_code': 'كود المندوب',
     'email': 'البريد الإلكتروني',
     'username': 'اسم المستخدم',
   };
@@ -159,6 +160,10 @@ class ErrorHandler {
 
   static String _translateGeneralMessage(String message) {
     final lower = message.toLowerCase();
+    if (lower.contains('invalid referral code') ||
+        lower.contains('referral code is invalid')) {
+      return 'كود المندوب غير صحيح';
+    }
     if (lower.contains('referral code not found')) {
       return 'لا يوجد رقم مندوب بهذا الرقم';
     }

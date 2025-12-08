@@ -64,7 +64,7 @@ class CustomPhoneField extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
-            hintText: "01030623153",
+            hintText: "1030623153",
             hintStyle: const TextStyle(
                 color: Color.fromRGBO(129, 126, 126, 1),
                 fontSize: 14,

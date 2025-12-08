@@ -5,26 +5,37 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CarSparePartsDetailsPanel extends StatelessWidget {
   final Map<String, dynamic> attributes;
-  const CarSparePartsDetailsPanel({super.key, required this.attributes});
+  final String? mainSection;
+  final String? subSection;
+  const CarSparePartsDetailsPanel(
+      {super.key, required this.attributes, this.mainSection, this.subSection});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    final subCategory = attributes['sub_category']?.toString() ?? '';
-    final mainCategory = attributes['main_category']?.toString() ?? '';
-    final make = attributes['make']?.toString() ?? '';
-    final model = attributes['model']?.toString() ?? '';
+    final subSec =
+        ((subSection ?? attributes['sub_section'] ?? attributes['sub_category'])
+                ?.toString()) ??
+            '';
+    final mainSec = ((mainSection ??
+                attributes['main_section'] ??
+                attributes['main_category'])
+            ?.toString()) ??
+        '';
+    final make =
+        (attributes['make'] ?? attributes['car_make'])?.toString() ?? '';
+    final model =
+        (attributes['model'] ?? attributes['car_model'])?.toString() ?? '';
 
-    final makeModel = [make, model].where((e) => e.isNotEmpty).join(' - ');
+    final makeModel = [make, model].where((e) => e.isNotEmpty).join('  ');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Sub Category
-        if (subCategory.isNotEmpty)
+        if (subSec.isNotEmpty)
           Text(
-            subCategory,
+            subSec,
             style: TextStyle(
               fontSize: 24.sp,
               fontWeight: FontWeight.w500,
@@ -32,10 +43,9 @@ class CarSparePartsDetailsPanel extends StatelessWidget {
             ),
           ),
 
-        // Main Category
-        if (mainCategory.isNotEmpty)
+        if (mainSec.isNotEmpty)
           Text(
-            mainCategory,
+            mainSec,
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w500,
@@ -48,9 +58,9 @@ class CarSparePartsDetailsPanel extends StatelessWidget {
           Text(
             makeModel,
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w500,
-              color: cs.onSurface,
+              color: Color.fromRGBO(1, 22, 24, 0.45),
             ),
           ),
       ],

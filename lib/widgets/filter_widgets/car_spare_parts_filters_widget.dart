@@ -6,6 +6,7 @@ import 'package:nas_masr_app/widgets/filter_widgets/filter_options_modal.dart';
 import 'package:provider/provider.dart';
 import 'package:nas_masr_app/core/data/models/All_filter_response.dart';
 import 'package:nas_masr_app/core/data/models/car_model.dart';
+import 'package:nas_masr_app/core/data/models/make.dart';
 import 'package:nas_masr_app/core/data/models/main_section.dart';
 
 import 'package:nas_masr_app/core/data/providers/category_listing_provider.dart';
@@ -19,6 +20,8 @@ class CarSparePartsFiltersWidget extends StatelessWidget {
 
   void _openFilterModal(BuildContext context, String filterKey, String label,
       List<dynamic> options) {
+    final listingProvider =
+        Provider.of<CategoryListingProvider>(context, listen: false);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -36,12 +39,13 @@ class CarSparePartsFiltersWidget extends StatelessWidget {
               onSelected: (selectedValue) {
                 onNavigate(filterKey, selectedValue);
                 if (filterKey == 'make') {
-                  Provider.of<CategoryListingProvider>(context, listen: false)
-                      .clearFilter('model');
+                  listingProvider.clearFilter('model');
                 }
                 if (filterKey == 'main_category') {
-                  Provider.of<CategoryListingProvider>(context, listen: false)
-                      .clearFilter('sub_category');
+                  listingProvider.clearFilter('sub_category');
+                }
+                if (filterKey == 'governorate_id') {
+                  listingProvider.clearFilter('city_id');
                 }
               },
             ),
@@ -86,6 +90,36 @@ class CarSparePartsFiltersWidget extends StatelessWidget {
       }
     }();
 
+    final governorates = config.governorates;
+    List<dynamic> cities = [];
+    final selectedGovId = provider.selectedFilters['governorate_id'];
+    bool isCityEnabled = false;
+
+    if (selectedGovId != null) {
+      try {
+        final govIdInt = int.tryParse(selectedGovId.toString());
+        if (govIdInt != null) {
+          final selectedGov = governorates.firstWhere((g) => g.id == govIdInt,
+              orElse: () => governorates.first);
+          if (selectedGov.id == govIdInt) {
+            cities = selectedGov.cities;
+            isCityEnabled = true;
+          }
+        }
+        if (!isCityEnabled) {
+          final selectedGov = governorates.firstWhere(
+              (g) => g.name == selectedGovId.toString(),
+              orElse: () => governorates.first);
+          if (selectedGov.name == selectedGovId.toString()) {
+            cities = selectedGov.cities;
+            isCityEnabled = true;
+          }
+        }
+      } catch (e) {
+        cities = [];
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Column(
@@ -103,11 +137,10 @@ class CarSparePartsFiltersWidget extends StatelessWidget {
               ),
               FilterDropdownButton(
                 label: 'المدينة',
-                onTap: () {
-                  final allCities =
-                      config.governorates.expand((g) => g.cities).toList();
-                  _openFilterModal(context, 'city_id', 'المدينة', allCities);
-                },
+                onTap: isCityEnabled
+                    ? () => _openFilterModal(
+                        context, 'city_id', 'المدينة', cities)
+                    : null,
                 isSelected: provider.isFilterSelected('city_id'),
                 selectedValue: provider.selectedFilters['city_id']?.toString(),
               ),
@@ -122,7 +155,10 @@ class CarSparePartsFiltersWidget extends StatelessWidget {
                 onTap: () =>
                     _openFilterModal(context, 'make', 'الماركة', config.makes),
                 isSelected: provider.isFilterSelected('make'),
-                selectedValue: provider.selectedFilters['make']?.toString(),
+                selectedValue: (() {
+                  final mv = provider.selectedFilters['make'];
+                  return mv is Make ? mv.name : mv?.toString();
+                })(),
               ),
               FilterDropdownButton(
                 label: 'الموديل',
@@ -140,7 +176,10 @@ class CarSparePartsFiltersWidget extends StatelessWidget {
                       context, 'model', 'الموديل', modelsForSelectedMake);
                 },
                 isSelected: provider.isFilterSelected('model'),
-                selectedValue: provider.selectedFilters['model']?.toString(),
+                selectedValue: (() {
+                  final mv = provider.selectedFilters['model'];
+                  return mv is CarModel ? mv.name : mv?.toString();
+                })(),
               ),
             ],
           ),

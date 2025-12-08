@@ -224,6 +224,20 @@ class RealEstateAdCardWidget extends StatelessWidget {
       }
     }
 
+    final gov = ad.governorate.trim().isNotEmpty
+        ? ad.governorate.trim()
+        : (ad.attributes['governorate']?.toString() ??
+                ad.attributes['governorate_name']?.toString() ??
+                '')
+            .trim();
+    final cty = ad.city.trim().isNotEmpty
+        ? ad.city.trim()
+        : (ad.attributes['city']?.toString() ??
+                ad.attributes['city_name']?.toString() ??
+                '')
+            .trim();
+    final locationText = [gov, cty].where((e) => e.isNotEmpty).join('، ');
+
     return Card(
       elevation: 2,
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -368,23 +382,24 @@ class RealEstateAdCardWidget extends StatelessWidget {
                         TextStyle(fontWeight: FontWeight.w400, fontSize: 14.sp),
                   ),
                   SizedBox(height: 6.h),
-                  Row(
-                    children: [
-                      Icon(Icons.location_on_rounded,
-                          size: 16.sp, color: cs.primary),
-                      SizedBox(width: 4.w),
-                      Expanded(
-                        child: Text(
-                          '${ad.governorate}، ${ad.city}',
-                          style: TextStyle(
-                              color: Color.fromRGBO(1, 22, 24, 0.45),
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w400),
-                          overflow: TextOverflow.ellipsis,
+                  if (locationText.isNotEmpty)
+                    Row(
+                      children: [
+                        Icon(Icons.location_on_rounded,
+                            size: 16.sp, color: cs.primary),
+                        SizedBox(width: 4.w),
+                        Expanded(
+                          child: Text(
+                            locationText,
+                            style: TextStyle(
+                                color: Color.fromRGBO(1, 22, 24, 0.45),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w400),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                   SizedBox(height: 4.h),
                   if (createdAt.isNotEmpty)
                     Text(

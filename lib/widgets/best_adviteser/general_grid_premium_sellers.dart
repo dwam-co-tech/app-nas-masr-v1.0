@@ -65,7 +65,7 @@ class GeneralGridPremiumSellersWidget extends StatelessWidget {
 
           // 2. صف العرض الأفقي للإعلانات المصغرة
           SizedBox(
-            height: 140.h,
+            height: 125.h,
             child: ListView.builder(
               itemCount: adv.listings.length,
               scrollDirection: Axis.horizontal,

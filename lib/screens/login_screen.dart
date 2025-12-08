@@ -1,5 +1,4 @@
 // screens/login_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -29,6 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _loading = false;
   final TextEditingController _phoneController = TextEditingController();
   String? _countryIso;
+  String? _referralCode;
 
   Future<void> _submit() async {
     final phone = _phone.trim();
@@ -85,7 +85,11 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       final auth = context.read<AuthProvider>();
-      final token = await auth.register(phone: phone, password: pass);
+      final token = await auth.register(
+        phone: phone,
+        password: pass,
+        referralCode: _referralCode,
+      );
       if (token != null && token.isNotEmpty) {
         if (!mounted) return;
         // استبدال Navigator بـ go_router
@@ -239,6 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     hintText: 'XXXX',
                     showTopLabel: true,
                     textDirection: TextDirection.rtl,
+                    onChanged: (v) => _referralCode = v,
                   ),
                   SizedBox(height: isLand ? 10.h : 16.h),
                   ElevatedButton(
