@@ -173,4 +173,25 @@ class NotificationsRepository {
     } catch (_) {}
     await _api.patch('/api/notifications/read-all', data: {}, token: token);
   }
+
+  Future<int> getStatusUnreadCount() async {
+    String? token;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      token = prefs.getString('auth_token');
+    } catch (_) {}
+    final res = await _api.get('/api/notifications/status', token: token);
+    if (res is Map) {
+      final map = Map<String, dynamic>.from(res as Map);
+      final dataNode = map['data'];
+      final source = dataNode is Map<String, dynamic> ? dataNode : map;
+      final raw = source['unread_count'] ?? source['unread'] ?? source['count'];
+      final has = source['has_unread'] ?? source['hasUnread'] ?? null;
+      if (raw is int) return raw;
+      if (has is bool) return has ? 1 : 0;
+      return int.tryParse(raw?.toString() ?? '') ?? 0;
+    }
+    if (res is int) return res;
+    return 0;
+  }
 }

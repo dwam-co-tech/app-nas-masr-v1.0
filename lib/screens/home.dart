@@ -10,6 +10,8 @@ import 'package:nas_masr_app/widgets/custom_bottom_nav.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:nas_masr_app/core/data/models/category_home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'package:nas_masr_app/core/data/reposetory/notifications_repository.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -125,8 +127,7 @@ class _TopRow extends StatelessWidget {
             onPressed: () {
               context.pushNamed('notifications');
             },
-            icon: Icon(Icons.notifications_rounded,
-                color: cs.onSurface, size: isLand ? 15.sp : 25.sp),
+            icon: _NotificationsBadgeIconTop(isLand: isLand),
             tooltip: 'الاشعارات',
           )
         ],
@@ -170,6 +171,72 @@ class _SearchBar extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(8.0)),
       ),
       child: field,
+    );
+  }
+}
+
+class _NotificationsBadgeIconTop extends StatefulWidget {
+  final bool isLand;
+  const _NotificationsBadgeIconTop({required this.isLand});
+  @override
+  State<_NotificationsBadgeIconTop> createState() => _NotificationsBadgeIconTopState();
+}
+
+class _NotificationsBadgeIconTopState extends State<_NotificationsBadgeIconTop> {
+  final NotificationsRepository _repo = NotificationsRepository();
+  int _count = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      _load();
+    });
+  }
+
+  Future<void> _load() async {
+    try {
+      final c = await _repo.getStatusUnreadCount();
+      if (mounted) setState(() => _count = c);
+    } catch (_) {
+      if (mounted) setState(() => _count = 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Icon(Icons.notifications_rounded,
+            color: cs.onSurface, size: widget.isLand ? 15.sp : 25.sp),
+        if (_count > 0)
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+              decoration: BoxDecoration(
+                color: cs.secondary,
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Text(
+                _count.toString(),
+                style: const TextStyle(color: Colors.white, fontSize: 11),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

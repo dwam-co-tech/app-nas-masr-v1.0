@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nas_masr_app/core/data/providers/notifications_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/notifications_repository.dart';
 import 'package:intl/intl.dart';
+import 'package:nas_masr_app/widgets/notifications_badge_icon.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -41,8 +42,7 @@ class NotificationsScreen extends StatelessWidget {
                 actions: [
                   Padding(
                     padding: const EdgeInsets.only(left: 12),
-                    child: Icon(Icons.notifications_rounded,
-                        color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                    child: NotificationsBadgeIcon(isLand: isLand),
                   ),
                 ],
                 title: Text('الإشعارات', style: TextStyle(color: cs.onSurface)),
@@ -120,14 +120,14 @@ class NotificationsScreen extends StatelessWidget {
                                     ),
                                     Expanded(
                                       child: InkWell(
-                                        onTap: () => prov.select('admin'),
+                                        onTap: () => prov.select('الاداره'),
                                         child: Column(
                                           children: [
                                             Text(
                                               'الإدارة',
                                               style: TextStyle(
                                                 color: (prov.selected ?? '') ==
-                                                        'admin'
+                                                        'الاداره'
                                                     ? cs.primary
                                                     : cs.onSurface,
                                                 fontSize: 16.sp,
@@ -362,28 +362,82 @@ class NotificationsScreen extends StatelessWidget {
                                                         Align(
                                                           alignment: Alignment
                                                               .centerLeft,
-                                                          child: Container(
-                                                            padding: EdgeInsets
-                                                                .symmetric(
-                                                                    horizontal:
-                                                                        12.w,
-                                                                    vertical:
-                                                                        6.h),
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: cs.primary,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          20.r),
-                                                            ),
-                                                            child: Text(
-                                                              (n.type) == 'view'
-                                                                  ? 'محادثة مع العميل'
-                                                                  : 'تحدث مع الإدارة',
-                                                              style: const TextStyle(
-                                                                  color: Colors
-                                                                      .white),
+                                                          child: InkWell(
+                                                            onTap: () async {
+                                                              final isView =
+                                                                  (n.type) ==
+                                                                      'view';
+                                                              int? viewerId;
+                                                              final data =
+                                                                  n.data;
+                                                              if (isView &&
+                                                                  data !=
+                                                                      null) {
+                                                                final raw = data[
+                                                                    'viewer_id'];
+                                                                if (raw
+                                                                    is int) {
+                                                                  viewerId =
+                                                                      raw;
+                                                                } else if (raw !=
+                                                                    null) {
+                                                                  viewerId = int
+                                                                      .tryParse(
+                                                                          raw.toString());
+                                                                }
+                                                              }
+                                                              if (isView &&
+                                                                  (viewerId ??
+                                                                          0) >
+                                                                      0) {
+                                                                context.push(
+                                                                    '/chat',
+                                                                    extra: {
+                                                                      'peerId':
+                                                                          viewerId,
+                                                                      'peerName':
+                                                                          'العميل #${viewerId}',
+                                                                    });
+                                                              } else {
+                                                                context.push(
+                                                                    '/chat',
+                                                                    extra: {
+                                                                      'support':
+                                                                          true,
+                                                                      'peerName':
+                                                                          'الدعم',
+                                                                    });
+                                                              }
+                                                            },
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        20.r),
+                                                            child: Container(
+                                                              padding: EdgeInsets
+                                                                  .symmetric(
+                                                                      horizontal:
+                                                                          12.w,
+                                                                      vertical:
+                                                                          6.h),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color:
+                                                                    cs.primary,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            20.r),
+                                                              ),
+                                                              child: Text(
+                                                                (n.type) ==
+                                                                        'view'
+                                                                    ? 'محادثة مع العميل'
+                                                                    : 'تحدث مع الإدارة',
+                                                                style: const TextStyle(
+                                                                    color: Colors
+                                                                        .white),
+                                                              ),
                                                             ),
                                                           ),
                                                         )

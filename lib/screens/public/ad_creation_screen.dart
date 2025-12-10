@@ -33,6 +33,7 @@ import 'package:nas_masr_app/core/data/models/create_listing_payload.dart';
 import 'package:nas_masr_app/core/data/reposetory/ad_creation_repository.dart';
 import 'package:nas_masr_app/core/data/providers/ad_creation_provider.dart';
 import 'package:flutter/services.dart';
+import 'package:nas_masr_app/widgets/notifications_badge_icon.dart';
 // Note: يرجى التحقق من وجود FilterOptions و FilterRepository
 // (تم استبدالهما بـ Models النهائية لتجنب أخطاء البناء)
 // import '../core/data/models/filter_options.dart';
@@ -1627,8 +1628,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                       padding: const EdgeInsets.only(left: 12),
                       child: InkWell(
                         onTap: () => context.pushNamed('notifications'),
-                        child: Icon(Icons.notifications_rounded,
-                            color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                        child: NotificationsBadgeIcon(isLand: isLand),
                       ),
                     ),
                   ],

@@ -14,6 +14,7 @@ import 'package:nas_masr_app/core/data/reposetory/my_packages_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:nas_masr_app/screens/public/ad_edit_screen.dart';
 import 'package:nas_masr_app/widgets/price_text.dart';
+import 'package:nas_masr_app/widgets/notifications_badge_icon.dart';
 import 'package:go_router/go_router.dart';
 // import 'path_to/ad_management_card.dart'; // لا تنس استدعاء الملف السابق
 
@@ -77,8 +78,7 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                     padding: const EdgeInsets.only(left: 12),
                     child: InkWell(
                       onTap: () => context.pushNamed('notifications'),
-                      child: Icon(Icons.notifications_rounded,
-                          color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                      child: NotificationsBadgeIcon(isLand: isLand),
                     ),
                   ),
                 ],

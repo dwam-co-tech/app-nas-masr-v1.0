@@ -4,6 +4,8 @@ import 'package:nas_masr_app/screens/ads_nanagement_screen.dart';
 import 'package:nas_masr_app/screens/chose_category_create_ads.dart';
 import 'package:nas_masr_app/screens/public/favorites_screen.dart';
 import 'package:nas_masr_app/screens/public/notifications_screen.dart';
+import 'package:nas_masr_app/screens/public/chat_screen.dart';
+import 'package:nas_masr_app/screens/public/chat_inbox_screen.dart';
 import 'package:nas_masr_app/screens/splash_screen.dart';
 import 'package:nas_masr_app/screens/on_boarding_screen.dart';
 import 'package:nas_masr_app/screens/login_screen.dart';
@@ -303,6 +305,45 @@ class AppRouter {
         path: '/notifications',
         name: 'notifications',
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/inbox',
+        name: 'inbox',
+        builder: (context, state) => const ChatInboxScreen(),
+      ),
+      GoRoute(
+        path: '/chat',
+        name: 'chat',
+        builder: (context, state) {
+          final extra = state.extra;
+          int peerId = 0;
+          bool support = false;
+          String? peerName;
+          String? initialMessage;
+          if (extra is Map) {
+            final rawId = (extra as Map)['peerId'];
+            if (rawId is int) {
+              peerId = rawId;
+            } else if (rawId != null) {
+              peerId = int.tryParse(rawId.toString()) ?? 0;
+            }
+            final nameRaw = (extra as Map)['peerName'];
+            final initMsgRaw = (extra as Map)['initialMessage'];
+            final supportRaw = (extra as Map)['support'];
+            peerName = nameRaw?.toString();
+            initialMessage = initMsgRaw?.toString();
+            if (supportRaw is bool) {
+              support = supportRaw;
+            } else if (supportRaw != null) {
+              support = supportRaw.toString() == 'true';
+            }
+          }
+          return ChatScreen(
+              peerId: peerId == 0 ? null : peerId,
+              support: support,
+              peerName: peerName,
+              initialMessage: initialMessage);
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

@@ -27,6 +27,7 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nas_masr_app/widgets/price_text.dart';
 import 'package:nas_masr_app/core/utils/contact_launcher.dart';
+import 'package:nas_masr_app/widgets/notifications_badge_icon.dart';
 
 class AdDetailsScreen extends StatelessWidget {
   final String categorySlug;
@@ -174,8 +175,7 @@ class AdDetailsScreen extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 12),
                       child: InkWell(
                         onTap: () => context.pushNamed('notifications'),
-                        child: Icon(Icons.notifications_rounded,
-                            color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                        child: NotificationsBadgeIcon(isLand: isLand),
                       ),
                     ),
                   ],
