@@ -53,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       _TopRow(),
                       //SizedBox(height: 8.h),
                       _SearchBar(),
+                      SizedBox(height: 8.h),
                     ],
                   ),
                 ),
@@ -94,7 +95,6 @@ class _TopRow extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surface,
-      
       ),
       padding:
           EdgeInsets.symmetric(horizontal: 0.w, vertical: isLand ? 0.h : 0.h),
@@ -137,6 +137,7 @@ class _TopRow extends StatelessWidget {
 }
 
 class _SearchBar extends StatelessWidget {
+  const _SearchBar({super.key});
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -145,9 +146,17 @@ class _SearchBar extends StatelessWidget {
     ).copyWith(
       borderSide: BorderSide(color: cs.surface, width: 1.0),
     );
+    final controller = TextEditingController();
 
     final Widget field = TextField(
+      controller: controller,
       textDirection: TextDirection.rtl,
+      textInputAction: TextInputAction.search,
+      onSubmitted: (val) {
+        final kw = val.trim();
+        if (kw.isEmpty) return;
+        context.pushNamed('global_search', extra: {'keyword': kw});
+      },
       decoration: InputDecoration(
         contentPadding:
             const EdgeInsets.symmetric(vertical: 0.0, horizontal: 12.0),
@@ -179,10 +188,12 @@ class _NotificationsBadgeIconTop extends StatefulWidget {
   final bool isLand;
   const _NotificationsBadgeIconTop({required this.isLand});
   @override
-  State<_NotificationsBadgeIconTop> createState() => _NotificationsBadgeIconTopState();
+  State<_NotificationsBadgeIconTop> createState() =>
+      _NotificationsBadgeIconTopState();
 }
 
-class _NotificationsBadgeIconTopState extends State<_NotificationsBadgeIconTop> {
+class _NotificationsBadgeIconTopState
+    extends State<_NotificationsBadgeIconTop> {
   final NotificationsRepository _repo = NotificationsRepository();
   int _count = 0;
   Timer? _timer;

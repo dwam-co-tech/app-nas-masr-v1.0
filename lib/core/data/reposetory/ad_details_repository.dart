@@ -35,4 +35,15 @@ class AdDetailsRepository {
       );
     }
   }
+
+  Future<void> reportListing({required String adId, required String reason, String? token}) async {
+    final endpoint = '/api/listings/$adId/report';
+    try {
+      await _api.post(endpoint, data: {'reason': reason}, token: token);
+    } on AppError catch (e) {
+      throw e;
+    } catch (e) {
+      throw AppError('فشل إرسال البلاغ عن الإعلان.');
+    }
+  }
 }

@@ -71,4 +71,16 @@ class AdDetailsProvider with ChangeNotifier {
     _error = msg;
     notifyListeners();
   }
+
+  Future<void> reportAd(String reason) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      await _repo.reportListing(adId: _adId, reason: reason, token: token);
+    } on AppError catch (e) {
+      throw e;
+    } catch (e) {
+      throw AppError('تعذر إرسال البلاغ');
+    }
+  }
 }

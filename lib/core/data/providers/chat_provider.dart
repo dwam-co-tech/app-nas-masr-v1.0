@@ -16,6 +16,7 @@ class ChatProvider with ChangeNotifier {
   final List<ChatMessage> _messages = [];
   int _page = 1;
   int _lastPage = 1;
+  String? _conversationId;
 
   int? get peerId => _peerId;
   int? get myId => _myId;
@@ -24,6 +25,7 @@ class ChatProvider with ChangeNotifier {
   bool get loading => _loading;
   String? get error => _error;
   List<ChatMessage> get messages => List.unmodifiable(_messages);
+  String? get conversationId => _conversationId;
 
   void init({required int peerId, required int myId}) {
     _peerId = peerId;
@@ -87,14 +89,38 @@ class ChatProvider with ChangeNotifier {
       final (items, current, last) = _supportMode
           ? await _repo.fetchSupport(page: pageToLoad)
           : await _repo.fetchChat(peerId: _peerId!, page: pageToLoad);
+      // حاول استخراج conversation_id من أول رسالة
+      if (items.isNotEmpty) {
+        final cid = items.first.conversationId;
+        if (cid != null && cid.isNotEmpty) {
+          _conversationId = cid;
+        }
+      }
       if (reset) {
         _messages
           ..clear()
           ..addAll(items);
       } else {
-        final existingIds = _messages.map((m) => m.id).toSet();
+        final indexById = <int, int>{};
+        for (var i = 0; i < _messages.length; i++) {
+          final id = _messages[i].id;
+          if (id != null) indexById[id] = i;
+        }
         for (final m in items) {
-          if (!existingIds.contains(m.id)) {
+          final id = m.id;
+          if (id != null && indexById.containsKey(id)) {
+            final idx = indexById[id]!;
+            final old = _messages[idx];
+            _messages[idx] = ChatMessage(
+              id: old.id,
+              senderId: old.senderId,
+              receiverId: old.receiverId,
+              message: old.message,
+              createdAt: old.createdAt,
+              readAt: m.readAt ?? old.readAt,
+              conversationId: old.conversationId ?? m.conversationId,
+            );
+          } else {
             _messages.add(m);
           }
         }
@@ -134,5 +160,37 @@ class ChatProvider with ChangeNotifier {
   void setMyId(int id) {
     _myId = id;
     notifyListeners();
+  }
+
+  Future<void> refreshReadMarks() async {
+    final cid = _conversationId;
+    if (cid == null || cid.isEmpty) return;
+    try {
+      final items = await _repo.fetchReadMarks(conversationId: cid);
+      final indexById = <int, int>{};
+      for (var i = 0; i < _messages.length; i++) {
+        final id = _messages[i].id;
+        if (id != null) indexById[id] = i;
+      }
+      for (final m in items) {
+        final id = m.id;
+        if (id != null && indexById.containsKey(id)) {
+          final idx = indexById[id]!;
+          final old = _messages[idx];
+          _messages[idx] = ChatMessage(
+            id: old.id,
+            senderId: old.senderId,
+            receiverId: old.receiverId,
+            message: old.message,
+            createdAt: old.createdAt,
+            readAt: m.readAt ?? old.readAt,
+            conversationId: old.conversationId ?? m.conversationId,
+          );
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      // تجاهل أخطاء التحديث الصامت
+    }
   }
 }

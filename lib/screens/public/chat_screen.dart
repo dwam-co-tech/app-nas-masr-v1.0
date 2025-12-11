@@ -78,6 +78,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   Timer.periodic(const Duration(seconds: 1), (t) async {
                 if (!mounted) return;
                 await provider.load(reset: true, silent: true);
+                await provider.refreshReadMarks();
                 _scrollToEnd();
               });
             });
@@ -126,10 +127,32 @@ class _ChatScreenState extends State<ChatScreen> {
                               border: Border.all(
                                   color: cs.primary.withOpacity(0.25)),
                             ),
-                            child: Text(
-                              m.message,
-                              style: TextStyle(
-                                  fontSize: 14.sp, color: cs.onSurface),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                 if (isMe) ...[
+                                 
+                                  Icon(
+                                    m.readAt != null
+                                        ? Icons.done_all
+                                        : Icons.done,
+                                    size: 18.sp,
+                                    color: m.readAt != null
+                                        ? cs.primary
+                                        : cs.onSurface.withOpacity(0.45),
+                                  ),
+                                ],
+                                SizedBox(width: 6.w),
+                                Flexible(
+                                  child: Text(
+                                    m.message,
+                                    style: TextStyle(
+                                        fontSize: 14.sp, color: cs.onSurface),
+                                  ),
+                                ),
+                               
+                              ],
                             ),
                           ),
                         );

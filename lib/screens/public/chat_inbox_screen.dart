@@ -51,14 +51,13 @@ class _ChatInboxScreenState extends State<ChatInboxScreen>
         builder: (context, prov, _) {
           if (!prov.loading && prov.error == null && prov.items.isEmpty) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              prov.load();
+              prov.load(silent: true);
             });
           }
           return Directionality(
             textDirection: TextDirection.rtl,
             child: Scaffold(
-                      bottomNavigationBar: const CustomBottomNav(currentIndex: 3),
-       
+              bottomNavigationBar: const CustomBottomNav(currentIndex: 3),
               appBar: AppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
@@ -133,11 +132,37 @@ class _PeerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    if (prov.loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
     if (prov.error != null) {
       return Center(child: Text(prov.error!));
+    }
+    if (prov.displayedItems.isEmpty) {
+      return Center(
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: cs.primary.withOpacity(0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Text(
+            'لا توجد رسائل حتى الآن',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: cs.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      );
     }
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),

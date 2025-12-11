@@ -632,7 +632,118 @@ class AdDetailsScreen extends StatelessWidget {
                           SizedBox(height: 12.h),
                           Center(
                             child: GestureDetector(
-                              onTap: () {},
+                              onTap: () async {
+                                final sent = await showDialog<bool>(
+                                  context: context,
+                                  builder: (ctx) {
+                                    final reasonController =
+                                        TextEditingController(text: '');
+                                    bool submitting = false;
+                                    return Directionality(
+                                      textDirection: ui.TextDirection.rtl,
+                                      child: StatefulBuilder(
+                                        builder: (ctx, setState) {
+                                          return AlertDialog(
+                                            title: const Text(
+                                                'الإبلاغ عن الإعلان'),
+                                            content: SingleChildScrollView(
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.stretch,
+                                                children: [
+                                                  TextField(
+                                                    controller:
+                                                        reasonController,
+                                                    maxLines: 4,
+                                                    decoration:
+                                                        const InputDecoration(
+                                                      labelText: 'سبب الإبلاغ',
+                                                      border:
+                                                          OutlineInputBorder(),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.of(ctx)
+                                                        .pop(false),
+                                                child: const Text('إلغاء'),
+                                              ),
+                                              TextButton(
+                                                onPressed: submitting
+                                                    ? null
+                                                    : () async {
+                                                        final reason =
+                                                            reasonController
+                                                                    .text
+                                                                    .trim()
+                                                                    .isEmpty
+                                                                ? 'الاعلان هذا غير لائق'
+                                                                : reasonController
+                                                                    .text
+                                                                    .trim();
+                                                        setState(() =>
+                                                            submitting = true);
+                                                        try {
+                                                          await context
+                                                              .read<
+                                                                  AdDetailsProvider>()
+                                                              .reportAd(reason);
+                                                          if (ctx.mounted)
+                                                            Navigator.of(ctx)
+                                                                .pop(true);
+                                                        } catch (e) {
+                                                          setState(() =>
+                                                              submitting =
+                                                                  false);
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                            const SnackBar(
+                                                              content:
+                                                                  Directionality(
+                                                                textDirection: ui
+                                                                    .TextDirection
+                                                                    .rtl,
+                                                                child: Text(
+                                                                    'تعذر إرسال الإبلاغ'),
+                                                              ),
+                                                            ),
+                                                          );
+                                                        }
+                                                      },
+                                                child: submitting
+                                                    ? const SizedBox(
+                                                        width: 18,
+                                                        height: 18,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                                strokeWidth: 2),
+                                                      )
+                                                    : const Text('إرسال'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                );
+                                if (sent == true) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Directionality(
+                                        textDirection: ui.TextDirection.rtl,
+                                        child: Text('تم إرسال الإبلاغ بنجاح'),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
                               child: Text(
                                 'الإبلاغ عن هذا الإعلان',
                                 style: TextStyle(

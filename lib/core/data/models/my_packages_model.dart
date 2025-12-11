@@ -3,12 +3,18 @@ class MyPackage {
   final String badgeText;
   final String? expiresAtHuman;
   final String? note;
+  final int? total;
+  final int? used;
+  final int? remaining;
 
   MyPackage({
     required this.title,
     required this.badgeText,
     this.expiresAtHuman,
     this.note,
+    this.total,
+    this.used,
+    this.remaining,
   });
 
   factory MyPackage.fromMap(Map<String, dynamic> map) {
@@ -17,6 +23,9 @@ class MyPackage {
       badgeText: map['badge_text']?.toString() ?? '',
       expiresAtHuman: map['expires_at_human']?.toString(),
       note: map['note']?.toString(),
+      total: (map['total'] as num?)?.toInt(),
+      used: (map['used'] as num?)?.toInt(),
+      remaining: (map['remaining'] as num?)?.toInt(),
     );
   }
 }
@@ -36,6 +45,9 @@ class MySubscription {
   final String? paymentMethod;
   final String? paymentReference;
   final bool active;
+  final int? adsTotal;
+  final int? adsUsed;
+  final int? remaining;
 
   MySubscription({
     required this.id,
@@ -52,6 +64,9 @@ class MySubscription {
     this.paymentMethod,
     this.paymentReference,
     required this.active,
+    this.adsTotal,
+    this.adsUsed,
+    this.remaining,
   });
 
   factory MySubscription.fromMap(Map<String, dynamic> map) {
@@ -71,6 +86,9 @@ class MySubscription {
       paymentMethod: map['payment_method']?.toString(),
       paymentReference: map['payment_reference']?.toString(),
       active: (map['active'] as bool?) ?? false,
+      adsTotal: (map['ads_total'] as num?)?.toInt(),
+      adsUsed: (map['ads_used'] as num?)?.toInt(),
+      remaining: (map['remaining'] as num?)?.toInt(),
     );
   }
 }

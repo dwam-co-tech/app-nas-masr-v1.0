@@ -4,6 +4,8 @@ class ChatMessage {
   final int receiverId;
   final String message;
   final DateTime createdAt;
+  final DateTime? readAt;
+  final String? conversationId;
 
   const ChatMessage({
     this.id,
@@ -11,6 +13,8 @@ class ChatMessage {
     required this.receiverId,
     required this.message,
     required this.createdAt,
+    this.readAt,
+    this.conversationId,
   });
 
   factory ChatMessage.fromMap(Map<String, dynamic> map) {
@@ -28,12 +32,17 @@ class ChatMessage {
     final createdAt = createdAtStr != null
         ? (DateTime.tryParse(createdAtStr) ?? DateTime.now())
         : DateTime.now();
+    final readAtStr = map['read_at']?.toString();
+    final readAt = readAtStr != null ? DateTime.tryParse(readAtStr) : null;
+    final conversationId = map['conversation_id']?.toString();
     return ChatMessage(
       id: id,
       senderId: senderId,
       receiverId: receiverId,
       message: message,
       createdAt: createdAt,
+      readAt: readAt,
+      conversationId: conversationId,
     );
   }
 
@@ -55,12 +64,17 @@ class ChatMessage {
     final createdAt = createdAtStr != null
         ? (DateTime.tryParse(createdAtStr) ?? DateTime.now())
         : DateTime.now();
+    final readAtStr = map['read_at']?.toString();
+    final readAt = readAtStr != null ? DateTime.tryParse(readAtStr) : null;
+    final conversationId = map['conversation_id']?.toString();
     return ChatMessage(
       id: id,
       senderId: senderId,
       receiverId: receiverId,
       message: message,
       createdAt: createdAt,
+      readAt: readAt,
+      conversationId: conversationId,
     );
   }
 
@@ -78,12 +92,17 @@ class ChatMessage {
     final createdAt = createdAtStr != null
         ? (DateTime.tryParse(createdAtStr) ?? DateTime.now())
         : DateTime.now();
+    final readAtStr = map['read_at']?.toString();
+    final readAt = readAtStr != null ? DateTime.tryParse(readAtStr) : null;
+    final conversationId = map['conversation_id']?.toString();
     return ChatMessage(
       id: id,
       senderId: senderId,
       receiverId: 0,
       message: message,
       createdAt: createdAt,
+      readAt: readAt,
+      conversationId: conversationId,
     );
   }
 }

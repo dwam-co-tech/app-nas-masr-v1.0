@@ -120,6 +120,9 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                                   expiry: p.expiresAtHuman,
                                   color: _packageAccentColor(p.title),
                                   gradient: _packageGradient(p.title),
+                                  total: p.total,
+                                  used: p.used,
+                                  remaining: p.remaining,
                                 )),
                           ],
                           if (subs.isNotEmpty) ...[
@@ -136,27 +139,30 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                             SizedBox(height: 8.h),
                             ...subs.map((s) {
                               final planLabel = _planLabel(s.planType);
-                              final title =
-                                  "اشتراك $planLabel - ${s.categoryName}";
-                              final badgeText = s.active ? 'نشط' : 'غير نشط';
-                              final expiryStr = s.expiresAt != null
-                                  ? DateFormat('dd/MM/yyyy')
-                                      .format(s.expiresAt!)
-                                  : null;
-                              return _buildPackageCard(
-                                cs,
-                                title: title,
-                                badgeText: badgeText,
-                                expiry: expiryStr,
-                                color: _packageAccentColor(title),
-                                gradient: _packageGradient(title),
-                              );
-                            }),
-                          ],
+                            final title =
+                                "اشتراك $planLabel - ${s.categoryName}";
+                            final badgeText = s.active ? 'نشط' : 'غير نشط';
+                            final expiryStr = s.expiresAt != null
+                                ? DateFormat('dd/MM/yyyy')
+                                    .format(s.expiresAt!)
+                                : null;
+                            return _buildPackageCard(
+                              cs,
+                              title: title,
+                              badgeText: badgeText,
+                              expiry: expiryStr,
+                              color: _packageAccentColor(title),
+                              gradient: _packageGradient(title),
+                              total: s.adsTotal,
+                              used: s.adsUsed,
+                              remaining: s.remaining,
+                            );
+                          }),
                         ],
-                      );
-                    },
-                  ),
+                      ],
+                    );
+                  },
+                ),
                   SizedBox(height: 10.h),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -463,6 +469,9 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
     String? expiry,
     required Color color,
     required LinearGradient gradient,
+    int? total,
+    int? used,
+    int? remaining,
   }) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
@@ -533,6 +542,20 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                         style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w500,
+                            color: cs.onSurface),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 6.h),
+                if (remaining != null) Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "عدد الإعلانات المتبقية: ${remaining}${(total != null) ? " من $total" : ""}",
+                        style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
                             color: cs.onSurface),
                       ),
                     ),

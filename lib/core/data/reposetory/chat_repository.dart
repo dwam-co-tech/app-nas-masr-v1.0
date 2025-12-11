@@ -126,4 +126,18 @@ class ChatRepository {
         : int.tryParse(lastRaw?.toString() ?? '') ?? currentPage;
     return (items, currentPage, lastPage);
   }
+
+  Future<List<ChatMessage>> fetchReadMarks(
+      {required String conversationId}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final res = await _api.get('/api/chat/$conversationId/read', token: token);
+    final map = Map<String, dynamic>.from(res as Map);
+    final dataList = (map['data'] as List?) ?? const [];
+    final items = dataList
+        .whereType<Map>()
+        .map((e) => ChatMessage.fromApiChat(Map<String, dynamic>.from(e)))
+        .toList();
+    return items;
+  }
 }

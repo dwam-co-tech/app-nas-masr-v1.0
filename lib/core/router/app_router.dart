@@ -26,6 +26,7 @@ import 'package:nas_masr_app/screens/public/hom&best_ad_screen.dart';
 import 'package:nas_masr_app/screens/public/filtered_ads_screen.dart';
 import 'package:nas_masr_app/screens/public/seller_listings_screen.dart';
 import 'package:nas_masr_app/screens/public/notifications_screen.dart';
+import 'package:nas_masr_app/screens/public/global_search_screen.dart';
 
 // Centralized GoRouter configuration kept separate from main.dart
 class AppRouter {
@@ -287,6 +288,18 @@ class AppRouter {
           }
           return SellerListingsScreen(
               userId: userId, initialSlug: initialSlug, sellerName: sellerName);
+        },
+      ),
+      GoRoute(
+        path: '/search',
+        name: 'global_search',
+        builder: (context, state) {
+          String kw = '';
+          final extra = state.extra;
+          if (extra is Map<String, dynamic>) {
+            kw = (extra['keyword'] ?? '').toString();
+          }
+          return GlobalSearchScreen(initialKeyword: kw);
         },
       ),
       GoRoute(

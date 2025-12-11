@@ -36,10 +36,16 @@ class MyPackagesRepository {
               expiresHuman = DateFormat('dd/MM/yyyy').format(dt);
             }
           }
+          final total = (e['total'] as num?)?.toInt();
+          final used = (e['used'] as num?)?.toInt();
+          final remaining = (e['remaining'] as num?)?.toInt();
           final map = {
             'title': e['title']?.toString() ?? '',
             'badge_text': active ? 'نشطة' : 'غير نشطة',
             'expires_at_human': expiresHuman,
+            'total': total,
+            'used': used,
+            'remaining': remaining,
           };
           pkgs.add(MyPackage.fromMap(map));
         }
