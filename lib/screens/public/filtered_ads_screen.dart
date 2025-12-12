@@ -32,6 +32,7 @@ import 'package:nas_masr_app/core/data/models/main_section.dart';
 import 'package:nas_masr_app/core/data/models/sub_section.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nas_masr_app/widgets/notifications_badge_icon.dart';
 
 class FilteredAdsScreen extends StatefulWidget {
   final String categorySlug;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nas_masr_app/widgets/notifications_badge_icon.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:nas_masr_app/core/data/providers/home_provider.dart';
@@ -70,8 +71,8 @@ class _ChoseCategoryCreateAdsState extends State<ChoseCategoryCreateAds> {
                       padding: const EdgeInsets.only(left: 12),
                       child: InkWell(
                         onTap: () => context.pushNamed('notifications'),
-                        child: Icon(Icons.notifications_rounded,
-                            color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                           child: NotificationsBadgeIcon(isLand: isLand),
+                  
                       ),
                     ),
                   ],

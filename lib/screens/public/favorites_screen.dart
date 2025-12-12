@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nas_masr_app/core/data/providers/favorites_provider.dart';
 import 'package:nas_masr_app/core/data/reposetory/favorites_repository.dart';
 import 'package:nas_masr_app/widgets/ad_card_widget.dart/favorite_card_widget.dart';
+import 'package:nas_masr_app/widgets/notifications_badge_icon.dart';
 
 class FavoritesScreen extends StatelessWidget {
   final String? initialSlug;
@@ -37,12 +38,11 @@ class FavoritesScreen extends StatelessWidget {
                 ),
                 actions: [
                   Padding(
-                    
+
                     padding: const EdgeInsets.only(left: 12),
                     child: InkWell(
                       onTap: () => context.pushNamed('notifications'),
-                      child: Icon(Icons.notifications_rounded,
-                          color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
+                      child: NotificationsBadgeIcon(isLand: isLand),
                     ),
                   ),
                 ],

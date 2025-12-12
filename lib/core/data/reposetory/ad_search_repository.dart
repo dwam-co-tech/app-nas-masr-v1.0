@@ -26,6 +26,8 @@ class AdSearchRepository {
             key == 'main_section' ||
             key == 'sub_section') {
           finalQuery[key] = value;
+        } else if (key == 'q') {
+          finalQuery['q'] = value;
         } else {
           finalQuery['attr[$key]'] = value;
         }
