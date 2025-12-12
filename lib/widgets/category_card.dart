@@ -72,8 +72,8 @@ class CategoryCard extends StatelessWidget {
                 ),
                 Text(
                   category.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  maxLines: 3,
+                  softWrap: true,
                   textAlign: TextAlign.center,
                   style: tt.bodyMedium?.copyWith(
                     fontSize: 11.sp,

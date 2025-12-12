@@ -11,16 +11,12 @@ class CategoryRepository {
   CategoryRepository({ApiService? api}) : _api = api ?? ApiService();
 
   Future<CategoryFieldsResponse> getCategoryFields(String categorySlug) async {
-    // EndPoint: /api/category-fields?category_slug=real_estate
-    final response = await _api.get(
-        '/api/category-fields',
-        query: {'category_slug': categorySlug}
-    );
+    final response = await _api
+        .get('/api/category-fields', query: {'category_slug': categorySlug});
 
     if (response is Map<String, dynamic>) {
-      // الـ Model الشامل اللي بيجمع كل بيانات الأقسام (Governorates, Fields, Makes)
-      return CategoryFieldsResponse.fromMap(response); 
+      return CategoryFieldsResponse.fromMap(response);
     }
-    throw Exception('Failed to load category configuration for $categorySlug'); 
+    throw Exception('Failed to load category configuration for $categorySlug');
   }
 }

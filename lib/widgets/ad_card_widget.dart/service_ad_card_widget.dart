@@ -10,10 +10,10 @@ import 'package:provider/provider.dart';
 import 'package:nas_masr_app/core/data/providers/favorites_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class UnifiedAdCardWidget extends StatelessWidget {
+class ServiceAdCardWidget extends StatelessWidget {
   final AdCardModel ad;
 
-  const UnifiedAdCardWidget({
+  const ServiceAdCardWidget({
     super.key,
     required this.ad,
   });
@@ -143,7 +143,9 @@ class UnifiedAdCardWidget extends StatelessWidget {
             adId: ad.id.toString(),
             token: token);
         number = details.contactPhone;
-        number ??= details.whatsappPhone;
+        if (number.isEmpty) {
+          number = details.whatsappPhone;
+        }
       } catch (_) {}
     }
     if (number == null || number.isEmpty) {
@@ -206,23 +208,12 @@ class UnifiedAdCardWidget extends StatelessWidget {
         : (ad.planType == 'standard' ? 'ستاندرد' : 'مجاني');
     final labelColor = statusLabel == 'متميز' ? cs.primary : cs.primary;
 
-    // Doctors Logic:
-    // Name -> replaces Sub Category (Font Weight 500)
-    // Specialization -> replaces Main Category (Font Weight 400)
-    String line1 = ad.subSection ??
-        ad.attributes['sub_category']?.toString() ??
-        'غير محدد';
-    String line2 =
-        ad.mainSection ?? ad.attributes['main_category']?.toString() ?? '';
-
-    if (ad.categorySlug == 'doctors' || ad.categorySlug == 'teachers') {
-      line1 = ad.attributes['name']?.toString() ??
-          ad.attributes['title']?.toString() ??
-          ad.categoryName;
-      line2 = ad.attributes['specialization']?.toString() ??
-          ad.attributes['specialization_id']?.toString() ??
-          '';
-    }
+    // Service Logic:
+    // Specialization -> Main Title (Font Weight 500)
+    final specialization =
+        ad.attributes['specialization']?.toString() ?? 'غير محدد';
+    // Category Name -> Subtitle (Font Weight 400)
+    final categoryName = ad.categoryName;
 
     String createdAt = '';
     if (ad.createdAt != null) {
@@ -368,13 +359,13 @@ class UnifiedAdCardWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    line1, // Was propertyType
+                    specialization,
                     style:
                         TextStyle(fontWeight: FontWeight.w500, fontSize: 16.sp),
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    line2, // Was contractType
+                    categoryName,
                     style:
                         TextStyle(fontWeight: FontWeight.w400, fontSize: 14.sp),
                   ),

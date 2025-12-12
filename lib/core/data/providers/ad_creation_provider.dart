@@ -26,7 +26,7 @@ class AdCreationProvider with ChangeNotifier {
   Future<bool> submitListing({
     required String categorySlug,
     required CreateListingPayload payload,
-    required File mainImage,
+    File? mainImage,
     List<File> images = const [],
   }) async {
     _setSubmitting(true);

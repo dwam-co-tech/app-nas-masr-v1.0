@@ -1,184 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:nas_masr_app/core/data/models/ad_card_model.dart';
-import 'package:flutter/foundation.dart' as foundation;
-import 'package:url_launcher/url_launcher.dart';
-import 'package:nas_masr_app/core/data/reposetory/ad_details_repository.dart';
 import 'package:nas_masr_app/widgets/price_text.dart';
 import 'package:provider/provider.dart';
 import 'package:nas_masr_app/core/data/providers/favorites_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class UnifiedAdCardWidget extends StatelessWidget {
+class JobsAdCardWidget extends StatelessWidget {
   final AdCardModel ad;
 
-  const UnifiedAdCardWidget({
+  const JobsAdCardWidget({
     super.key,
     required this.ad,
   });
 
-  Widget _buildActionButton(
-      BuildContext context, String text, IconData icon, Color backgroundColor,
-      {VoidCallback? onPressed}) {
-    return Expanded(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 2.w),
-        child: ElevatedButton.icon(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: backgroundColor,
-            padding: EdgeInsets.symmetric(vertical: 0.h),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r)),
-            elevation: 0,
+  Future<void> _copyContactInfo(BuildContext context) async {
+    final contactInfo = ad.attributes['contact_via']?.toString() ?? '';
+    if (contactInfo.isEmpty) return;
+
+    await Clipboard.setData(ClipboardData(text: contactInfo));
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Directionality(
+          textDirection: TextDirection.rtl,
+          child: Text(
+            'تم نسخ طريقة التواصل بنجاح',
+            style: TextStyle(fontFamily: 'Tajawal'),
           ),
-          label: Text(text,
-              style: TextStyle(
-                  fontSize: 12.sp,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w400)),
         ),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        backgroundColor: Colors.green,
       ),
     );
-  }
-
-  Future<void> _launchWhatsAppFromCard(BuildContext context) async {
-    String? number = ad.attributes['whatsapp_phone']?.toString();
-    number ??= ad.attributes['contact_phone']?.toString();
-    if (number == null || number.isEmpty) {
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('auth_token');
-        final repo = AdDetailsRepository();
-        final details = await repo.fetchAdDetails(
-            categorySlug: ad.categorySlug,
-            adId: ad.id.toString(),
-            token: token);
-        number = details.whatsappPhone ?? details.contactPhone;
-      } catch (_) {}
-    }
-    if (number == null || number.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Directionality(
-            textDirection: TextDirection.rtl,
-            child: const Text('تعذر الحصول على رقم المعلن',
-                textAlign: TextAlign.right),
-          ),
-        ),
-      );
-      return;
-    }
-    var sanitized = number.replaceAll(RegExp(r'[^0-9]'), '');
-    if (sanitized.startsWith('00')) {
-      sanitized = sanitized.substring(2);
-    }
-    String normalized = sanitized;
-    if (sanitized.startsWith('0') && !sanitized.startsWith('20')) {
-      normalized = '20${sanitized.substring(1)}';
-    }
-    final encodedText = Uri.encodeComponent('مرحبا!');
-    final deepNoPlus =
-        Uri.parse('whatsapp://send?phone=$normalized&text=$encodedText');
-    final deepPlus =
-        Uri.parse('whatsapp://send?phone=%2B$normalized&text=$encodedText');
-    final waUri = Uri.parse('https://wa.me/$normalized?text=$encodedText');
-    final apiUri = Uri.parse(
-        'https://api.whatsapp.com/send?phone=$normalized&text=$encodedText');
-
-    try {
-      if (foundation.kIsWeb) {
-        final ok = await launchUrl(waUri, mode: LaunchMode.externalApplication);
-        if (ok) return;
-        final okWeb = await launchUrl(
-          apiUri,
-          mode: LaunchMode.inAppWebView,
-          webViewConfiguration:
-              const WebViewConfiguration(enableJavaScript: true),
-        );
-        if (!okWeb) throw Exception('No handler');
-        return;
-      } else {
-        var ok =
-            await launchUrl(deepNoPlus, mode: LaunchMode.externalApplication);
-        if (ok) return;
-        ok = await launchUrl(deepPlus, mode: LaunchMode.externalApplication);
-        if (ok) return;
-        ok = await launchUrl(waUri, mode: LaunchMode.externalApplication);
-        if (ok) return;
-        ok = await launchUrl(apiUri, mode: LaunchMode.externalApplication);
-        if (ok) return;
-        final okWebView = await launchUrl(
-          apiUri,
-          mode: LaunchMode.inAppWebView,
-          webViewConfiguration:
-              const WebViewConfiguration(enableJavaScript: true),
-        );
-        if (!okWebView) throw Exception('No handler');
-        return;
-      }
-    } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Directionality(
-            textDirection: TextDirection.rtl,
-            child: const Text('تعذر فتح واتساب', textAlign: TextAlign.right),
-          ),
-        ),
-      );
-    }
-  }
-
-  Future<void> _launchPhoneFromCard(BuildContext context) async {
-    String? number = ad.attributes['contact_phone']?.toString();
-    number ??= ad.attributes['whatsapp_phone']?.toString();
-    if (number == null || number.isEmpty) {
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('auth_token');
-        final repo = AdDetailsRepository();
-        final details = await repo.fetchAdDetails(
-            categorySlug: ad.categorySlug,
-            adId: ad.id.toString(),
-            token: token);
-        number = details.contactPhone;
-        number ??= details.whatsappPhone;
-      } catch (_) {}
-    }
-    if (number == null || number.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Directionality(
-            textDirection: TextDirection.rtl,
-            child: const Text('تعذر الحصول على رقم المعلن',
-                textAlign: TextAlign.right),
-          ),
-        ),
-      );
-      return;
-    }
-    var sanitized = number.replaceAll(RegExp(r'[^0-9]'), '');
-    if (sanitized.startsWith('00')) {
-      sanitized = sanitized.substring(2);
-    }
-    String normalized = sanitized;
-    if (sanitized.startsWith('0') && !sanitized.startsWith('20')) {
-      normalized = '20${sanitized.substring(1)}';
-    }
-    final telUri = Uri.parse('tel:+$normalized');
-    try {
-      await launchUrl(telUri, mode: LaunchMode.externalApplication);
-    } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Directionality(
-            textDirection: TextDirection.rtl,
-            child: const Text('تعذر إجراء الاتصال', textAlign: TextAlign.right),
-          ),
-        ),
-      );
-    }
   }
 
   String _toArabicDigits(String s) {
@@ -206,23 +67,20 @@ class UnifiedAdCardWidget extends StatelessWidget {
         : (ad.planType == 'standard' ? 'ستاندرد' : 'مجاني');
     final labelColor = statusLabel == 'متميز' ? cs.primary : cs.primary;
 
-    // Doctors Logic:
-    // Name -> replaces Sub Category (Font Weight 500)
-    // Specialization -> replaces Main Category (Font Weight 400)
-    String line1 = ad.subSection ??
+    // Jobs Specific Logic:
+    // Sub Category -> Specialization (Sub Section)
+    final subCategory = ad.subSection ??
+        ad.attributes['sub_section_id']?.toString() ?? // Fallback attempts
+        ad.attributes['specialization']?.toString() ?? // Fallback legacy
         ad.attributes['sub_category']?.toString() ??
         'غير محدد';
-    String line2 =
-        ad.mainSection ?? ad.attributes['main_category']?.toString() ?? '';
 
-    if (ad.categorySlug == 'doctors' || ad.categorySlug == 'teachers') {
-      line1 = ad.attributes['name']?.toString() ??
-          ad.attributes['title']?.toString() ??
-          ad.categoryName;
-      line2 = ad.attributes['specialization']?.toString() ??
-          ad.attributes['specialization_id']?.toString() ??
-          '';
-    }
+    // Main Category -> Classification (Main Section)
+    final mainCategory = ad.mainSection ??
+        ad.attributes['main_section_id']?.toString() ?? // Fallback attempts
+        ad.attributes['job_category']?.toString() ?? // Fallback legacy
+        ad.attributes['main_category']?.toString() ??
+        '';
 
     String createdAt = '';
     if (ad.createdAt != null) {
@@ -234,6 +92,9 @@ class UnifiedAdCardWidget extends StatelessWidget {
         createdAt = dt != null ? _formatArabicDate(dt) : _toArabicDigits(raw);
       }
     }
+
+    final contactText =
+        ad.attributes['contact_via']?.toString() ?? 'اضغط للنسخ';
 
     return Card(
       elevation: 2,
@@ -249,13 +110,15 @@ class UnifiedAdCardWidget extends StatelessWidget {
               height: 140.h,
               child: Stack(
                 children: [
+                  // Image logic: For Jobs, we might not have a main image, so show placeholder or category icon
+                  // But layout requires an image area. Use standard component logic.
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.r),
                     child: Container(
                       color: Colors.grey.shade300,
                       child: CachedNetworkImage(
                         imageUrl: ad.mainImageUrl ??
-                            'https://via.placeholder.com/600x400/94A5A2/FFFFFF?text=ناص',
+                            'https://via.placeholder.com/600x400/94A5A2/FFFFFF?text=وظائف',
                         fit: BoxFit.cover,
                         width: 160.w,
                         height: 140.h,
@@ -334,8 +197,10 @@ class UnifiedAdCardWidget extends StatelessWidget {
                       },
                     ),
                   ),
+                  // Price Logic (Salary) - Hide if redundant or keep?
+                  // User layout showed a price (Salary). Let's keep it.
                   if (ad.categorySlug != 'missing' &&
-                      (ad.attributes['category']?.toString() != 'missing'))
+                      ad.price != null) // Keep simple check
                     Positioned(
                       bottom: 0.h,
                       left: 0.w,
@@ -349,8 +214,8 @@ class UnifiedAdCardWidget extends StatelessWidget {
                               bottomLeft: Radius.circular(8)),
                         ),
                         child: PriceText(
-                          price: ad.price,
-                          currencySuffix: 'ج',
+                          price: ad.price, // This will be Salary
+                          currencySuffix: 'ج', // Or generic?
                           style: TextStyle(
                             color: cs.secondary,
                             fontSize: 16.sp,
@@ -368,13 +233,13 @@ class UnifiedAdCardWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    line1, // Was propertyType
+                    subCategory,
                     style:
                         TextStyle(fontWeight: FontWeight.w500, fontSize: 16.sp),
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    line2, // Was contractType
+                    mainCategory,
                     style:
                         TextStyle(fontWeight: FontWeight.w400, fontSize: 14.sp),
                   ),
@@ -405,16 +270,32 @@ class UnifiedAdCardWidget extends StatelessWidget {
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w400),
                     ),
-                  SizedBox(height: 2.h),
-                  Row(
-                    children: [
-                      _buildActionButton(context, 'اتصال',
-                          Icons.chat_bubble_outline, cs.onSurface,
-                          onPressed: () => _launchPhoneFromCard(context)),
-                      _buildActionButton(
-                          context, 'واتساب', Icons.phone_outlined, cs.primary,
-                          onPressed: () => _launchWhatsAppFromCard(context)),
-                    ],
+                  SizedBox(height: 8.h),
+                  // Custom Footer for Jobs: Copy Contact Info
+                  InkWell(
+                    onTap: () => _copyContactInfo(context),
+                    child: Container(
+                      width: double.infinity,
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
+                      decoration: BoxDecoration(
+                        color: const Color(
+                            0xFF0F4C5C), // Dark Teal like color from image/theme
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Text(
+                          contactText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

@@ -109,8 +109,110 @@ class AdDetailsScreen extends StatelessWidget {
         mainSection: mainSection,
         subSection: subSection,
       );
+    } else if (slug == 'doctors') {
+      final name = attributes['name']?.toString() ?? 'دكتور';
+      final specialization =
+          attributes['specialization']?.toString() ?? 'غير محدد';
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            specialization,
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      );
+    } else if (slug == 'teachers') {
+      // For teachers, show name and specialization from attributes
+      final name = attributes['name']?.toString() ?? 'مدرس';
+      final specialization =
+          attributes['specialization']?.toString() ?? 'غير محدد';
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            specialization,
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      );
+    } else if (slug == 'jobs') {
+      final displayMainSection =
+          mainSection ?? attributes['main_section']?.toString() ?? 'غير محدد';
+      final displaySubSection =
+          subSection ?? attributes['sub_section']?.toString() ?? 'غير محدد';
+      // final salary = attributes['salary']?.toString() ?? 'غير محدد'; // Salary moved to price
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(displayMainSection,
+              style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface)),
+          SizedBox(height: 4.h),
+          Text(displaySubSection,
+              style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w400,
+                  color: Theme.of(context).colorScheme.onSurface)),
+        ],
+      );
     }
     return const Center(child: Text('لا توجد لوحة تفاصيل لهذا القسم'));
+  }
+
+  Future<void> _copyContactInfo(
+      BuildContext context, String? contactInfo) async {
+    final text = contactInfo ?? '';
+    if (text.isEmpty) return;
+
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Directionality(
+          textDirection: ui.TextDirection.rtl,
+          child: Text(
+            'تم نسخ طريقة التواصل بنجاح',
+            style: TextStyle(fontFamily: 'Tajawal'),
+          ),
+        ),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   // شريط الاتصال (ثابت لجميع الأقسام)
@@ -334,7 +436,10 @@ class AdDetailsScreen extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: PriceText(
-                                  price: adDetails.price,
+                                  price: categorySlug == 'jobs'
+                                      ? adDetails.attributes['salary']
+                                          ?.toString()
+                                      : adDetails.price,
                                   style: TextStyle(
                                       color: cs.secondary,
                                       fontSize: 16.sp,
@@ -388,160 +493,271 @@ class AdDetailsScreen extends StatelessWidget {
                                   fontSize: 24.sp,
                                   fontWeight: FontWeight.w500)),
                           SizedBox(height: 10.h),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                          if (categorySlug == 'jobs')
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
                                   children: [
-                                    SizedBox(height: 12.h),
-                                    Text(
-                                        (adDetails.sellerName == null ||
-                                                adDetails.sellerName!
-                                                    .trim()
-                                                    .isEmpty)
-                                            ? 'اسم المستخدم'
-                                            : adDetails.sellerName!,
-                                        style: TextStyle(
-                                            color: cs.onSurface,
-                                            fontSize: 16.sp,
-                                            fontWeight: FontWeight.w500)),
-                                    SizedBox(height: 6.h),
-                                    GestureDetector(
-                                      onTap: () {
-                                        final uid = adDetails.sellerId;
-                                        if (uid != null) {
-                                          context.pushNamed('user_listings',
-                                              extra: {
-                                                'userId': uid,
-                                                'initialSlug':
-                                                    adDetails.categorySlug,
-                                                'sellerName':
-                                                    adDetails.sellerName ??
-                                                        'المعلن',
-                                              });
-                                        }
-                                      },
-                                      child: Text(
-                                          'عرض جميع الإعلانات (${_toArabicDigits('${adDetails.sellerListingsCount ?? 0}')} )',
-                                          style: TextStyle(
-                                              color: cs.secondary,
-                                              decoration:
-                                                  TextDecoration.underline,
-                                              decorationColor: cs.secondary,
-                                              decorationStyle:
-                                                  TextDecorationStyle.solid,
-                                              decorationThickness: 2,
-                                              fontSize: 14.sp,
-                                              fontWeight: FontWeight.w500)),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(height: 12.h),
+                                          Text(
+                                              (adDetails.sellerName == null ||
+                                                      adDetails.sellerName!
+                                                          .trim()
+                                                          .isEmpty)
+                                                  ? 'اسم المستخدم'
+                                                  : adDetails.sellerName!,
+                                              style: TextStyle(
+                                                  color: cs.onSurface,
+                                                  fontSize: 16.sp,
+                                                  fontWeight: FontWeight.w500)),
+                                          SizedBox(height: 6.h),
+                                          GestureDetector(
+                                            onTap: () {
+                                              final uid = adDetails.sellerId;
+                                              if (uid != null) {
+                                                context.pushNamed(
+                                                    'user_listings',
+                                                    extra: {
+                                                      'userId': uid,
+                                                      'initialSlug': adDetails
+                                                          .categorySlug,
+                                                      'sellerName': adDetails
+                                                              .sellerName ??
+                                                          'المعلن',
+                                                    });
+                                              }
+                                            },
+                                            child: Text(
+                                                'عرض جميع الإعلانات (${_toArabicDigits('${adDetails.sellerListingsCount ?? 0}')} )',
+                                                style: TextStyle(
+                                                    color: cs.secondary,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                    decorationColor:
+                                                        cs.secondary,
+                                                    decorationStyle:
+                                                        TextDecorationStyle
+                                                            .solid,
+                                                    decorationThickness: 2,
+                                                    fontSize: 14.sp,
+                                                    fontWeight:
+                                                        FontWeight.w500)),
+                                          ),
+                                          SizedBox(height: 6.h),
+                                          Text(
+                                              adDetails.sellerJoinedAtHuman !=
+                                                          null &&
+                                                      adDetails
+                                                          .sellerJoinedAtHuman!
+                                                          .isNotEmpty
+                                                  ? 'عضو ${_toArabicHuman(adDetails.sellerJoinedAtHuman!)}'
+                                                  : (adDetails.sellerJoinedAt !=
+                                                          null
+                                                      ? 'عضو منذ ${_formatArabicDate(adDetails.sellerJoinedAt!)}'
+                                                      : 'عضو'),
+                                              style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      1, 22, 24, 0.45),
+                                                  fontSize: 14.sp,
+                                                  fontWeight: FontWeight.w400)),
+                                        ],
+                                      ),
                                     ),
-                                    SizedBox(height: 6.h),
-                                    Text(
-                                        adDetails.sellerJoinedAtHuman != null &&
-                                                adDetails.sellerJoinedAtHuman!
-                                                    .isNotEmpty
-                                            ? 'عضو ${_toArabicHuman(adDetails.sellerJoinedAtHuman!)}'
-                                            : (adDetails.sellerJoinedAt != null
-                                                ? 'عضو منذ ${_formatArabicDate(adDetails.sellerJoinedAt!)}'
-                                                : 'عضو'),
-                                        style: TextStyle(
-                                            color:
-                                                Color.fromRGBO(1, 22, 24, 0.45),
-                                            fontSize: 14.sp,
-                                            fontWeight: FontWeight.w400)),
                                   ],
                                 ),
-                              ),
-                              SizedBox(width: 12.w),
-                              Column(
-                                children: [
-                                  SizedBox(
-                                    width: 97.w,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xFF19AC84),
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: 10.h),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8.r),
-                                        ),
-                                      ),
-                                      onPressed: () =>
-                                          ContactLauncher.openWhatsApp(
-                                        context,
-                                        whatsappNumber: adDetails.whatsappPhone,
-                                        phoneNumber: adDetails.contactPhone,
-                                      ),
-                                      child: Directionality(
-                                        textDirection: ui.TextDirection.ltr,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Center(
-                                              child: FaIcon(
-                                                  FontAwesomeIcons.whatsapp,
-                                                  color: Colors.white,
-                                                  size: 16.sp),
-                                            ),
-                                            SizedBox(width: 8.w),
-                                            Text('واتساب',
-                                                style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 15.sp)),
-                                          ],
+                                SizedBox(height: 12.h),
+                                InkWell(
+                                  onTap: () => _copyContactInfo(context,
+                                      adDetails.attributes['contact_via']),
+                                  child: Container(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 12.h),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0F4C5C),
+                                      borderRadius: BorderRadius.circular(8.r),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        adDetails.attributes['contact_via']
+                                                ?.toString() ??
+                                            'طريقة التواصل',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15.sp,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                     ),
                                   ),
-                                  //  SizedBox(height: 3.h),
-                                  SizedBox(
-                                    width: 97.w,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xFF024950),
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: 10.h),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8.r),
-                                        ),
+                                ),
+                              ],
+                            )
+                          else
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 12.h),
+                                      Text(
+                                          (adDetails.sellerName == null ||
+                                                  adDetails.sellerName!
+                                                      .trim()
+                                                      .isEmpty)
+                                              ? 'اسم المستخدم'
+                                              : adDetails.sellerName!,
+                                          style: TextStyle(
+                                              color: cs.onSurface,
+                                              fontSize: 16.sp,
+                                              fontWeight: FontWeight.w500)),
+                                      SizedBox(height: 6.h),
+                                      GestureDetector(
+                                        onTap: () {
+                                          final uid = adDetails.sellerId;
+                                          if (uid != null) {
+                                            context.pushNamed('user_listings',
+                                                extra: {
+                                                  'userId': uid,
+                                                  'initialSlug':
+                                                      adDetails.categorySlug,
+                                                  'sellerName':
+                                                      adDetails.sellerName ??
+                                                          'المعلن',
+                                                });
+                                          }
+                                        },
+                                        child: Text(
+                                            'عرض جميع الإعلانات (${_toArabicDigits('${adDetails.sellerListingsCount ?? 0}')} )',
+                                            style: TextStyle(
+                                                color: cs.secondary,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                                decorationColor: cs.secondary,
+                                                decorationStyle:
+                                                    TextDecorationStyle.solid,
+                                                decorationThickness: 2,
+                                                fontSize: 14.sp,
+                                                fontWeight: FontWeight.w500)),
                                       ),
-                                      child: Directionality(
-                                        textDirection: ui.TextDirection.ltr,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Center(
-                                              child: Icon(Icons.phone,
-                                                  color: Colors.white,
-                                                  size: 16.sp),
-                                            ),
-                                            SizedBox(width: 8.w),
-                                            Text('اتصال',
-                                                style: TextStyle(
+                                      SizedBox(height: 6.h),
+                                      Text(
+                                          adDetails.sellerJoinedAtHuman !=
+                                                      null &&
+                                                  adDetails.sellerJoinedAtHuman!
+                                                      .isNotEmpty
+                                              ? 'عضو ${_toArabicHuman(adDetails.sellerJoinedAtHuman!)}'
+                                              : (adDetails.sellerJoinedAt !=
+                                                      null
+                                                  ? 'عضو منذ ${_formatArabicDate(adDetails.sellerJoinedAt!)}'
+                                                  : 'عضو'),
+                                          style: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  1, 22, 24, 0.45),
+                                              fontSize: 14.sp,
+                                              fontWeight: FontWeight.w400)),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(width: 12.w),
+                                Column(
+                                  children: [
+                                    SizedBox(
+                                      width: 97.w,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              const Color(0xFF19AC84),
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 10.h),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8.r),
+                                          ),
+                                        ),
+                                        onPressed: () =>
+                                            ContactLauncher.openWhatsApp(
+                                          context,
+                                          whatsappNumber:
+                                              adDetails.whatsappPhone,
+                                          phoneNumber: adDetails.contactPhone,
+                                        ),
+                                        child: Directionality(
+                                          textDirection: ui.TextDirection.ltr,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Center(
+                                                child: FaIcon(
+                                                    FontAwesomeIcons.whatsapp,
                                                     color: Colors.white,
-                                                    fontSize: 15.sp)),
-                                          ],
+                                                    size: 16.sp),
+                                              ),
+                                              SizedBox(width: 8.w),
+                                              Text('واتساب',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 15.sp)),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                      onPressed: () =>
-                                          ContactLauncher.openPhone(
-                                        context,
-                                        phoneNumber: adDetails.contactPhone,
-                                        whatsappNumber: adDetails.whatsappPhone,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                    //  SizedBox(height: 3.h),
+                                    SizedBox(
+                                      width: 97.w,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              const Color(0xFF024950),
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 10.h),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8.r),
+                                          ),
+                                        ),
+                                        child: Directionality(
+                                          textDirection: ui.TextDirection.ltr,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Center(
+                                                child: Icon(Icons.phone,
+                                                    color: Colors.white,
+                                                    size: 16.sp),
+                                              ),
+                                              SizedBox(width: 8.w),
+                                              Text('اتصال',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 15.sp)),
+                                            ],
+                                          ),
+                                        ),
+                                        onPressed: () =>
+                                            ContactLauncher.openPhone(
+                                          context,
+                                          phoneNumber: adDetails.contactPhone,
+                                          whatsappNumber:
+                                              adDetails.whatsappPhone,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           SizedBox(height: 16.h),
                           Text('الموقع',
                               style: TextStyle(

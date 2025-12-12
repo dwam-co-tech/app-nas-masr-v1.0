@@ -6,6 +6,7 @@ import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:nas_masr_app/widgets/create_Ads/car_rental_creation_form.dart';
 import 'package:nas_masr_app/widgets/create_Ads/car_spare_parts_creation_form.dart';
 import 'package:nas_masr_app/widgets/create_Ads/unified_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/doctors_creation_form.dart';
 
 import 'package:provider/provider.dart';
 import 'package:nas_masr_app/core/data/providers/ad_creation_provider.dart';
@@ -60,6 +61,7 @@ class _EditAdScreenState extends State<EditAdScreen> {
   String? _model;
   String? _year;
   String? _driverOption;
+  String? _specialization;
 
   final _carRentalFormKey = GlobalKey<CarRentalCreationFormState>();
   final _carSparePartsFormKey = GlobalKey<CarSparePartsCreationFormState>();
@@ -154,6 +156,14 @@ class _EditAdScreenState extends State<EditAdScreen> {
         initialColor: initialColor,
         initialTransmission: initialTransmission,
         initialFuelType: initialFuelType,
+      );
+    }
+    if (widget.categorySlug == 'doctors' || widget.categorySlug == 'teachers') {
+      return DoctorsCreationForm(
+        fieldsConfig: _config?.categoryFields ?? const [],
+        labelStyle: labelStyle,
+        initialSpecialization: _specialization,
+        onSpecializationChanged: (v) => _specialization = v,
       );
     }
     return RealEstateCreationForm(
@@ -349,6 +359,12 @@ class _EditAdScreenState extends State<EditAdScreen> {
                                           .currentState
                                           ?.getSelectedAttributes() ??
                                       {});
+                                } else if (widget.categorySlug == 'doctors' ||
+                                    widget.categorySlug == 'teachers') {
+                                  if (_specialization != null) {
+                                    attributes['specialization'] =
+                                        _specialization;
+                                  }
                                 }
 
                                 String? selectedMake;
@@ -485,6 +501,7 @@ class _EditAdScreenState extends State<EditAdScreen> {
       _year = d.attributes['year']?.toString();
       _driverOption = d.attributes['driver_option']?.toString() ??
           d.attributes['driver']?.toString();
+      _specialization = d.attributes['specialization']?.toString();
 
       _price = d.price.toString();
       _description = d.description.toString();

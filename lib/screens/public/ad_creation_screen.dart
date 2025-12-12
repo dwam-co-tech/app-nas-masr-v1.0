@@ -12,6 +12,7 @@ import 'package:nas_masr_app/widgets/create_Ads/unified_creation_form.dart';
 import 'package:nas_masr_app/widgets/create_Ads/car_rental_creation_form.dart';
 import 'package:nas_masr_app/widgets/create_Ads/car_spare_parts_creation_form.dart';
 import 'package:nas_masr_app/widgets/create_Ads/doctors_creation_form.dart';
+import 'package:nas_masr_app/widgets/create_Ads/jobs_creation_form.dart';
 import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:nas_masr_app/widgets/create_Ads/custom_dropdown_field.dart';
 import 'package:nas_masr_app/widgets/custom_text_field.dart';
@@ -997,6 +998,10 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
   String? _error;
   CategoryFieldsResponse? _config;
   bool _usernameChecked = false;
+
+  String? _doctorName;
+
+  String get slug => widget.categorySlug.toLowerCase().trim();
   bool _submitting = false;
 
   String? _mainCategory;
@@ -1018,6 +1023,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
   final GlobalKey<CarRentalCreationFormState> _carRentalFormKey = GlobalKey();
   final GlobalKey<CarSparePartsCreationFormState> _carSparePartsFormKey =
       GlobalKey();
+  final GlobalKey<JobsCreationFormState> _jobsFormKey = GlobalKey();
   final GlobalKey<_ImageUploadSectionState> _imagesKey = GlobalKey();
   final GlobalKey<_MapSelectionWidgetState> _mapKey = GlobalKey();
   final GlobalKey<_LocationFieldsSectionState> _locationKey = GlobalKey();
@@ -1123,10 +1129,27 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
         );
 
       case 'doctors':
+      case 'teachers':
         return DoctorsCreationForm(
           fieldsConfig: fields,
           labelStyle: labelStyle,
           onSpecializationChanged: (v) => _specialization = v,
+          onNameChanged: (v) => _doctorName = v,
+          initialName: _doctorName,
+          initialSpecialization: _specialization,
+          nameLabel: slug == 'teachers'
+              ? 'الاسم (مثال: أ. محمد)'
+              : 'الاسم (مثال: د. أحمد محمد)',
+        );
+
+      case 'jobs':
+        return JobsCreationForm(
+          key: _jobsFormKey,
+          fieldsConfig: fields,
+          mainSections: _config?.mainSections ?? [],
+          labelStyle: labelStyle,
+          onMainCategoryChanged: (v) => _mainCategory = v,
+          onSubCategoryChanged: (v) => _subCategory = v,
         );
 
       default:
@@ -1150,20 +1173,22 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
     final errors = <String>[];
     if (gov == null || gov.isEmpty) errors.add('اختر المحافظة');
     if (city == null || city.isEmpty) errors.add('اختر المدينة');
-    if (widget.categorySlug != 'missing') {
+    if (slug != 'missing' && slug != 'jobs') {
       if (_price == null || _price!.trim().isEmpty) errors.add('ادخل السعر');
     }
     if (_description == null || _description!.trim().isEmpty)
       errors.add('ادخل الوصف');
-    if (widget.categorySlug != 'missing') {
+    if (slug != 'missing') {
       if (_selectedPlanType == null || _selectedPlanType!.isEmpty)
         errors.add('اختر نوع الإعلان');
     }
-    if (_contactPhone == null || _contactPhone!.trim().isEmpty)
-      errors.add('ادخل رقم الهاتف');
-    if (_whatsappPhone == null || _whatsappPhone!.trim().isEmpty)
-      errors.add('ادخل رقم الواتساب');
-    if (mainX == null) errors.add('اختر الصورة الرئيسية');
+    if (slug != 'jobs' && slug != 'doctors' && slug != 'teachers') {
+      if (_contactPhone == null || _contactPhone!.trim().isEmpty)
+        errors.add('ادخل رقم الهاتف');
+      if (_whatsappPhone == null || _whatsappPhone!.trim().isEmpty)
+        errors.add('ادخل رقم الواتساب');
+      if (mainX == null) errors.add('اختر الصورة الرئيسية');
+    }
     if (loc == null ||
         loc['lat'] == null ||
         loc['lng'] == null ||
@@ -1183,9 +1208,9 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
       if (_subCategory == null || _subCategory!.isEmpty)
         errors.add('اختر القسم الفرعي');
     }
+
     // تحقق من الحقول الديناميكية للقسم الحالي
-    // تحقق من الحقول الديناميكية للقسم الحالي
-    if (widget.categorySlug == 'cars') {
+    if (slug == 'cars') {
       final carAttrs = _carFormKey.currentState?.getSelectedAttributes() ??
           const <String, String?>{};
       final fields = _config?.categoryFields ?? const <CategoryFieldConfig>[];
@@ -1240,7 +1265,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
           .isEmpty) {
         errors.add('اختر الموديل');
       }
-    } else if (widget.categorySlug == 'cars_rent') {
+    } else if (slug == 'cars_rent') {
       final rentalAttrs =
           _carRentalFormKey.currentState?.getSelectedAttributes() ??
               const <String, String?>{};
@@ -1259,7 +1284,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
       if ((rentalAttrs['driver_option'] ?? '').trim().isEmpty) {
         errors.add('اختر حالة السائق');
       }
-    } else if (widget.categorySlug == 'spare-parts') {
+    } else if (slug == 'spare-parts') {
       final spareAttrs =
           _carSparePartsFormKey.currentState?.getSelectedAttributes() ??
               const <String, String?>{};
@@ -1280,9 +1305,17 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
       if ((spareAttrs['sub_section'] ?? '').trim().isEmpty) {
         errors.add('اختر القسم الفرعي');
       }
-    } else if (widget.categorySlug == 'doctors') {
+    } else if (slug == 'doctors' || slug == 'teachers') {
       if (_specialization == null || _specialization!.isEmpty) {
         errors.add('اختر التخصص');
+      }
+      if (slug == 'doctors' &&
+          (_doctorName == null || _doctorName!.trim().isEmpty)) {
+        errors.add('ادخل اسم الطبيب');
+      }
+      if (slug == 'teachers' &&
+          (_doctorName == null || _doctorName!.trim().isEmpty)) {
+        errors.add('ادخل اسم المدرس');
       }
     }
 
@@ -1297,7 +1330,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
     }
     setState(() => _submitting = true);
     try {
-      final mainFile = File(mainX!.path);
+      final mainFile = mainX != null ? File(mainX.path) : null;
       final thumbFiles = thumbsX.map((e) => File(e.path)).toList();
       final double? latVal = () {
         final v = loc != null ? loc['lat'] : null;
@@ -1311,51 +1344,70 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
         if (v is double) return v;
         return double.tryParse(v.toString());
       }();
-      final carAttrs = widget.categorySlug == 'cars'
+      final carAttrs = slug == 'cars'
           ? (_carFormKey.currentState?.getSelectedAttributes() ??
               const <String, String?>{})
           : const <String, String?>{};
-      final rentalAttrs = widget.categorySlug == 'cars_rent'
+      final rentalAttrs = slug == 'cars_rent'
           ? (_carRentalFormKey.currentState?.getSelectedAttributes() ??
               const <String, String?>{})
           : const <String, String?>{};
-      final spareAttrs = widget.categorySlug == 'spare-parts'
+      final spareAttrs = slug == 'spare-parts'
           ? (_carSparePartsFormKey.currentState?.getSelectedAttributes() ??
               const <String, String?>{})
           : const <String, String?>{};
+
+      final jobsAttrs = slug == 'jobs'
+          ? (_jobsFormKey.currentState?.getAttributes() ??
+              const <String, String?>{})
+          : const <String, String?>{};
+
+      String? mainSecId;
+      String? subSecId;
+      if (slug == 'jobs') {
+        final sections = _config?.mainSections ?? [];
+        try {
+          final m = sections.firstWhere((s) => s.name == _mainCategory);
+          mainSecId = m.id.toString();
+          final s = m.subSections.firstWhere((sub) => sub.name == _subCategory);
+          subSecId = s.id.toString();
+        } catch (_) {}
+      }
 
       final payload = CreateListingPayload(
         price: _price,
         governorate: gov,
         city: city,
         description: _description,
-        planType: widget.categorySlug == 'missing'
-            ? 'free'
-            : (_selectedPlanType ?? 'free'),
+        planType: slug == 'missing' ? 'free' : (_selectedPlanType ?? 'free'),
         lat: latVal,
         lng: lngVal,
         address: loc != null ? (loc['address']?.toString()) : null,
         contactPhone: _contactPhone,
         whatsappPhone: _whatsappPhone,
-        make: widget.categorySlug == 'cars_rent'
+        make: slug == 'cars_rent'
             ? _carRentalFormKey.currentState?.selectedMake
-            : (widget.categorySlug == 'spare-parts'
+            : (slug == 'spare-parts'
                 ? _carSparePartsFormKey.currentState?.selectedMake
                 : _carFormKey.currentState?.selectedMake),
-        model: widget.categorySlug == 'cars_rent'
+        model: slug == 'cars_rent'
             ? _carRentalFormKey.currentState?.selectedModel
-            : (widget.categorySlug == 'spare-parts'
+            : (slug == 'spare-parts'
                 ? _carSparePartsFormKey.currentState?.selectedModel
                 : _carFormKey.currentState?.selectedModel),
         mainSection: _mainCategory,
         subSection: _subCategory,
+        mainSectionId: mainSecId,
+        subSectionId: subSecId,
         attributes: {
           if (_propertyType != null) 'property_type': _propertyType,
           if (_contractType != null) 'contract_type': _contractType,
           ...carAttrs.map((k, v) => MapEntry(k, v)),
           ...rentalAttrs.map((k, v) => MapEntry(k, v)),
           ...spareAttrs.map((k, v) => MapEntry(k, v)),
+          ...jobsAttrs.map((k, v) => MapEntry(k, v)),
           if (_specialization != null) 'specialization': _specialization,
+          if (_doctorName != null) 'name': _doctorName,
         },
       );
       final ok = await provider.submitListing(
@@ -1655,7 +1707,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                                 // 2. >>> قلب الصفحة الديناميكي: هنا كل الحقول تُرسم آلياً! <<<
                                 _buildDynamicForm(
                                   context,
-                                  widget.categorySlug,
+                                  slug,
                                   fieldsFromApi,
                                   labelStyle,
                                 ),
@@ -1663,49 +1715,54 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                                 // 3. الأجزاء الثابتة التي يجب أن تظهر تحت الـ Dynamic Fields
                                 //  SizedBox(height: 5.h),
 
-                                if (widget.categorySlug != 'missing')
+                                if (slug != 'missing' && slug != 'jobs')
                                   CustomTextField(
-                                    labelText: 'السعر',
+                                    labelText:
+                                        slug == 'doctors' ? 'المبلغ' : 'السعر',
                                     keyboardType: TextInputType.number,
                                     showTopLabel: true,
                                     labelStyle: labelStyle,
                                     onChanged: (v) => _price = v,
                                   ),
-                                Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Text(
-                                      'رقم الهاتف',
-                                      textAlign: TextAlign.right,
-                                      style: labelStyle,
-                                    ),
-                                    SizedBox(height: 3.h),
-                                    CustomPhoneField(
-                                      controller: _contactController,
-                                      onPhoneNumberChanged: (v) =>
-                                          _contactPhone = v,
-                                    ),
-                                  ],
-                                ),
+                                if (slug != 'jobs')
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Text(
+                                        'رقم الهاتف',
+                                        textAlign: TextAlign.right,
+                                        style: labelStyle,
+                                      ),
+                                      SizedBox(height: 3.h),
+                                      CustomPhoneField(
+                                        controller: _contactController,
+                                        onPhoneNumberChanged: (v) =>
+                                            _contactPhone = v,
+                                      ),
+                                    ],
+                                  ),
                                 SizedBox(height: 7.h),
-                                Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Text(
-                                      'رقم الواتساب',
-                                      textAlign: TextAlign.right,
-                                      style: labelStyle,
-                                    ),
-                                    SizedBox(height: 3.h),
-                                    CustomPhoneField(
-                                      controller: _whatsappController,
-                                      onPhoneNumberChanged: (v) =>
-                                          _whatsappPhone = v,
-                                    ),
-                                  ],
-                                ),
+                                if (slug != 'jobs') ...[
+                                  SizedBox(height: 7.h),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Text(
+                                        'رقم الواتساب',
+                                        textAlign: TextAlign.right,
+                                        style: labelStyle,
+                                      ),
+                                      SizedBox(height: 3.h),
+                                      CustomPhoneField(
+                                        controller: _whatsappController,
+                                        onPhoneNumberChanged: (v) =>
+                                            _whatsappPhone = v,
+                                      ),
+                                    ],
+                                  ),
+                                ],
 
                                 SizedBox(height: 5.h),
                                 CustomDescriptionField(
@@ -1717,8 +1774,11 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
 
                                 SizedBox(height: 12.h),
 
-                                ImageUploadSection(
-                                    key: _imagesKey, slug: widget.categorySlug),
+                                if (slug != 'jobs' &&
+                                    slug != 'doctors' &&
+                                    slug != 'teachers')
+                                  ImageUploadSection(
+                                      key: _imagesKey, slug: slug),
                                 SizedBox(height: 20.h),
 
                                 MapSelectionWidget(key: _mapKey),
@@ -1727,12 +1787,11 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                                 PackageSelectionWidget(
                                   onChanged: (v) =>
                                       _selectedPlanType = v ?? 'free',
-                                  initialValue: widget.categorySlug == 'missing'
+                                  initialValue: slug == 'missing'
                                       ? 'free'
                                       : _selectedPlanType,
-                                  allowedIds: widget.categorySlug == 'missing'
-                                      ? const ['free']
-                                      : null,
+                                  allowedIds:
+                                      slug == 'missing' ? const ['free'] : null,
                                 ),
                                 SizedBox(height: 5.h),
 

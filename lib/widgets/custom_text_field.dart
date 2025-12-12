@@ -22,6 +22,7 @@ class CustomTextField extends StatefulWidget {
   final int? maxLines;
   final int? maxLength;
   final TextStyle? labelStyle;
+  final String? Function(String?)? validator;
 
   const CustomTextField({
     super.key,
@@ -43,6 +44,7 @@ class CustomTextField extends StatefulWidget {
     this.maxLines,
     this.maxLength,
     this.labelStyle,
+    this.validator,
   });
 
   @override
@@ -73,6 +75,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
     final int effectiveMaxLines = _obscure ? 1 : (widget.maxLines ?? 1);
     final Widget field = TextFormField(
+      validator: widget.validator,
       initialValue: widget.initialValue,
       keyboardType: widget.keyboardType,
       obscureText: _obscure,

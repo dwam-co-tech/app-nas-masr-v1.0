@@ -57,6 +57,9 @@ class PremiumSellersWrapper extends StatelessWidget {
       'cars_rent',
       'spare-parts',
       'real_estate',
+      'doctors',
+      'teachers',
+      'jobs',
       ...UnifiedCategories.slugs,
     ];
 

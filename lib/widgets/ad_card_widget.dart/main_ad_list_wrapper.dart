@@ -15,19 +15,8 @@ import 'package:go_router/go_router.dart';
 
 // ============ المكونات الفرعية (هيكل UI مُختلف) ============= //
 
-class ServiceAdCardWidget extends StatelessWidget {
-  // مثال لـ Card يُناسب Doctors/Teachers
-  // final AdCardModel ad;
-  const ServiceAdCardWidget({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        height: 80.h,
-        color: Colors.lime.shade50,
-        child:
-            const Center(child: Text('Service/People Card (List Tile Look)')));
-  }
-}
+import 'package:nas_masr_app/widgets/ad_card_widget.dart/service_ad_card_widget.dart';
+import 'package:nas_masr_app/widgets/ad_card_widget.dart/jobs_ad_card_widget.dart';
 
 // ============================================================== //
 
@@ -61,9 +50,12 @@ class MainAdListWrapper extends StatelessWidget {
         return CarRentalAdCardWidget(ad: ad);
       case 'spare-parts':
         return CarSparePartsAdCardWidget(ad: ad);
-      case 'doctors':
       case 'teachers':
-        return const ServiceAdCardWidget();
+        return UnifiedAdCardWidget(ad: ad);
+      case 'doctors':
+        return UnifiedAdCardWidget(ad: ad);
+      case 'jobs':
+        return JobsAdCardWidget(ad: ad);
       default:
         return UnifiedAdCardWidget(ad: ad);
     }

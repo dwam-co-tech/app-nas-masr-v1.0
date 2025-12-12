@@ -48,7 +48,8 @@ class CategoryFieldsResponse {
           .where((x) => x is Map)
           .map((x) => MainSection.fromMap(Map<String, dynamic>.from(x as Map)))
           .toList(),
-      supportsSections: json['supports_sections'] as bool? ?? false,
+      supportsSections: (json['supports_sections'] as bool? ?? false) ||
+          mainSectionsData.isNotEmpty,
     );
   }
 }

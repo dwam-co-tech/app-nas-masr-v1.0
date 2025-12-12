@@ -26,6 +26,7 @@ import 'package:nas_masr_app/widgets/filter_widgets/unified_filters_widget.dart'
 import 'package:nas_masr_app/widgets/filter_widgets/car_rental_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/car_spare_parts_filters_widget.dart';
 import 'package:nas_masr_app/widgets/filter_widgets/doctors_filters_widget.dart';
+import 'package:nas_masr_app/widgets/filter_widgets/jobs_filters_widget.dart';
 import 'package:nas_masr_app/core/constatants/unified_categories.dart';
 import 'package:nas_masr_app/core/data/models/main_section.dart';
 import 'package:nas_masr_app/core/data/models/sub_section.dart';
@@ -196,218 +197,256 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
     final cs = Theme.of(context).colorScheme;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
-      child: MultiProvider(
-        providers: [
-          ChangeNotifierProvider(
-            create: (_) => CategoryListingProvider(
-              repository: CategoryRepository() as dynamic,
-              categorySlug: widget.categorySlug,
-              categoryName: widget.categoryName,
-            ),
-          ),
-          ChangeNotifierProvider(
-            create: (_) => AdSearchProvider(),
-          ),
-          ChangeNotifierProvider(
-            create: (_) => FavoritesProvider(
-              repository: FavoritesRepository(),
-            ),
-          ),
-        ],
-        child: Builder(
-          builder: (innerCtx) => WillPopScope(
-            onWillPop: () async {
-              final hasActive = _selected.isNotEmpty;
-              if (hasActive) {
-                final catProvider = Provider.of<CategoryListingProvider>(
-                    innerCtx,
-                    listen: false);
-                final adProvider = Provider.of<AdSearchProvider>(innerCtx,
-                    listen: false);
-                catProvider.clearAllFilters();
-                setState(() {
-                  _selected.clear();
-                });
-                await _performSearch(adProvider);
-                return false;
-              }
-              return true;
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  centerTitle: true,
-                  leading: IconButton(
-                    icon: Icon(Icons.arrow_back, color: cs.onSurface),
-                    onPressed: () {
-                      final hasActive = _selected.isNotEmpty;
-                      if (hasActive) {
-                        final catProvider = Provider.of<CategoryListingProvider>(
-                            innerCtx,
-                            listen: false);
-                        final adProvider = Provider.of<AdSearchProvider>(
-                            innerCtx,
-                            listen: false);
-                        catProvider.clearAllFilters();
-                        setState(() {
-                          _selected.clear();
-                        });
-                        _performSearch(adProvider);
-                        return;
-                      }
-                      if (innerCtx.canPop()) {
-                        innerCtx.pop();
-                      } else {
-                        innerCtx.go('/home');
-                      }
-                    },
-                  ),
-                  notificationPredicate: (notification) =>
-                      notification is! ScrollNotification,
-                  actions: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 12),
-                      child: InkWell(
-                        onTap: () => innerCtx.pushNamed('notifications'),
-                        child: Icon(Icons.notifications_rounded,
-                            color: cs.onSurface, size: isLand ? 15.sp : 30.sp),
-                      ),
-                    ),
-                  ],
-                  title: Text(widget.categoryName,
-                      style: TextStyle(
-                          color: cs.onSurface,
-                          fontSize: 22.sp,
-                          fontWeight: FontWeight.w700))),
-              bottomNavigationBar: const CustomBottomNav(currentIndex: 0),
-              body: SafeArea(
-                child: Consumer2<CategoryListingProvider, AdSearchProvider>(
-                  builder: (context, catProvider, adProvider, child) {
-                final cfg = catProvider.fieldsConfig;
-
-                // Apply incoming filters once after config loads
-                if (cfg != null && !_filtersAppliedOnce) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _selected.forEach((key, value) {
-                      final k = _providerKeyFor(key);
-                      if (!catProvider.isFilterSelected(k)) {
-                        catProvider.setFilter(k, value.toString());
-                      }
-                    });
-                    _filtersAppliedOnce = true;
-                  });
-                }
-
-                // Trigger initial search only once
-                if (cfg != null && !_initialSearchDone) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _performSearch(adProvider);
-                    _initialSearchDone = true;
-                  });
-                }
-
-                void performFilterChange(
-                    String filterKey, dynamic selectedValue) {
-                  if (selectedValue == '__RESET__') {
-                    catProvider.clearFilter(filterKey);
+        textDirection: TextDirection.rtl,
+        child: MultiProvider(
+            providers: [
+              ChangeNotifierProvider(
+                create: (_) => CategoryListingProvider(
+                  repository: CategoryRepository() as dynamic,
+                  categorySlug: widget.categorySlug,
+                  categoryName: widget.categoryName,
+                ),
+              ),
+              ChangeNotifierProvider(
+                create: (_) => AdSearchProvider(),
+              ),
+              ChangeNotifierProvider(
+                create: (_) => FavoritesProvider(
+                  repository: FavoritesRepository(),
+                ),
+              ),
+            ],
+            child: Builder(
+              builder: (innerCtx) => WillPopScope(
+                onWillPop: () async {
+                  final hasActive = _selected.isNotEmpty;
+                  if (hasActive) {
+                    final catProvider = Provider.of<CategoryListingProvider>(
+                        innerCtx,
+                        listen: false);
+                    final adProvider =
+                        Provider.of<AdSearchProvider>(innerCtx, listen: false);
+                    catProvider.clearAllFilters();
                     setState(() {
-                      _selected.remove(filterKey);
-                      if (filterKey == 'make') _selected.remove('model');
-                      _performSearch(adProvider);
+                      _selected.clear();
                     });
-                    return;
+                    await _performSearch(adProvider);
+                    return false;
                   }
-                  if (selectedValue == '__ALL__') {
-                    catProvider.setFilter(filterKey, 'الكل');
-                    setState(() {
-                      _selected.remove(filterKey);
-                      if (filterKey == 'make') _selected.remove('model');
-                      _performSearch(adProvider);
-                    });
-                    return;
-                  }
-                  final String val = (selectedValue is Governorate ||
-                          selectedValue is City ||
-                          selectedValue is MainSection ||
-                          selectedValue is SubSection ||
-                          selectedValue is Make ||
-                          selectedValue is CarModel)
-                      ? selectedValue.name
-                      : selectedValue.toString();
-                  catProvider.setFilter(filterKey, val);
-                  setState(() {
-                    _selected[filterKey] = val;
-                    if (filterKey == 'make') _selected.remove('model');
-                    _performSearch(adProvider);
-                  });
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (cfg != null)
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 0.w),
-                        child: _selectFiltersWidget(context,
-                            widget.categorySlug, cfg, performFilterChange),
-                      ),
-                    Expanded(
-                      child: Builder(
-                        builder: (context) {
-                          if (adProvider.loading) {
-                            return const Center(
-                                child: CircularProgressIndicator());
+                  return true;
+                },
+                child: Scaffold(
+                  appBar: AppBar(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      centerTitle: true,
+                      leading: IconButton(
+                        icon: Icon(Icons.arrow_back, color: cs.onSurface),
+                        onPressed: () {
+                          final hasActive = _selected.isNotEmpty;
+                          if (hasActive) {
+                            final catProvider =
+                                Provider.of<CategoryListingProvider>(innerCtx,
+                                    listen: false);
+                            final adProvider = Provider.of<AdSearchProvider>(
+                                innerCtx,
+                                listen: false);
+                            catProvider.clearAllFilters();
+                            setState(() {
+                              _selected.clear();
+                            });
+                            _performSearch(adProvider);
+                            return;
                           }
-                          if (adProvider.error != null) {
-                            return Center(
-                                child: Text('خطأ: ${adProvider.error}'));
+                          if (innerCtx.canPop()) {
+                            innerCtx.pop();
+                          } else {
+                            innerCtx.go('/home');
                           }
-                          final ads = adProvider.ads;
-                          _adsCount = ads.length;
-                          if (ads.isEmpty) {
-                            return const Center(child: Text('لا توجد نتائج'));
-                          }
-                          return SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                SearchControlWidget(
-                                  totalAdsCount: _adsCount,
-                                  showPriceToggle:
-                                      widget.categorySlug != 'missing',
-                                  showDistanceToggle: true,
-                                  isSortByNearest: adProvider.sortByNearest,
-                                  isSortByPrice: adProvider.sortByPrice,
-                                  onToggleChanged: (key, value) {
-                                    if (key == 'sort_distance') {
-                                      adProvider.toggleSortByNearest();
-                                    } else if (key == 'sort_price') {
-                                      adProvider.toggleSortByPrice();
-                                    }
-                                  },
-                                ),
-                                MainAdListWrapper(
-                                  categorySlug: widget.categorySlug,
-                                  categoryName: widget.categoryName,
-                                  isLoading: false,
-                                  adList: ads,
-                                ),
-                              ],
-                            ),
-                          );
                         },
                       ),
+                      notificationPredicate: (notification) =>
+                          notification is! ScrollNotification,
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12),
+                          child: InkWell(
+                            onTap: () => innerCtx.pushNamed('notifications'),
+                            child: Icon(Icons.notifications_rounded,
+                                color: cs.onSurface,
+                                size: isLand ? 15.sp : 30.sp),
+                          ),
+                        ),
+                      ],
+                      title: Text(widget.categoryName,
+                          style: TextStyle(
+                              color: cs.onSurface,
+                              fontSize: 22.sp,
+                              fontWeight: FontWeight.w700))),
+                  bottomNavigationBar: const CustomBottomNav(currentIndex: 0),
+                  body: SafeArea(
+                    child: Consumer2<CategoryListingProvider, AdSearchProvider>(
+                      builder: (context, catProvider, adProvider, child) {
+                        final cfg = catProvider.fieldsConfig;
+
+                        // Apply incoming filters once after config loads
+                        if (cfg != null && !_filtersAppliedOnce) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _selected.forEach((key, value) {
+                              final k = _providerKeyFor(key);
+                              if (!catProvider.isFilterSelected(k)) {
+                                catProvider.setFilter(k, value.toString());
+                              }
+                            });
+                            _filtersAppliedOnce = true;
+                          });
+                        }
+
+                        // Trigger initial search only once
+                        if (cfg != null && !_initialSearchDone) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _performSearch(adProvider);
+                            _initialSearchDone = true;
+                          });
+                        }
+
+                        void performFilterChange(
+                            String filterKey, dynamic selectedValue) {
+                          if (selectedValue == '__RESET__') {
+                            catProvider.clearFilter(filterKey);
+                            setState(() {
+                              _selected.remove(filterKey);
+                              if (filterKey == 'make')
+                                _selected.remove('model');
+                              _performSearch(adProvider);
+                            });
+                            return;
+                          }
+                          if (selectedValue == '__ALL__') {
+                            catProvider.setFilter(filterKey, 'الكل');
+                            setState(() {
+                              _selected.remove(filterKey);
+                              if (filterKey == 'make')
+                                _selected.remove('model');
+                              _performSearch(adProvider);
+                            });
+                            return;
+                          }
+                          final String val = (selectedValue is Governorate ||
+                                  selectedValue is City ||
+                                  selectedValue is Make ||
+                                  selectedValue is CarModel)
+                              ? selectedValue.name
+                              : (filterKey == 'main_section_id' &&
+                                      selectedValue is MainSection)
+                                  ? selectedValue.id.toString()
+                                  : (filterKey == 'sub_section_id' &&
+                                          selectedValue is SubSection)
+                                      ? selectedValue.id.toString()
+                                      : (selectedValue is MainSection ||
+                                              selectedValue is SubSection)
+                                          ? selectedValue.name
+                                          : selectedValue.toString();
+                          catProvider.setFilter(filterKey, val);
+                          setState(() {
+                            _selected[filterKey] = val;
+                            if (filterKey == 'make') _selected.remove('model');
+                            _performSearch(adProvider);
+                          });
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (catProvider.error != null && cfg == null)
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                    'خطأ في تحميل الفلاتر: ${catProvider.error}',
+                                    style: const TextStyle(color: Colors.red)),
+                              ),
+                            Builder(builder: (context) {
+                              print(
+                                  'DEBUG: FilteredAdsScreen build. Slug: ${widget.categorySlug}');
+                              if (cfg == null) {
+                                print(
+                                    'DEBUG: cfg is NULL. Loading: ${catProvider.isLoading}, Error: ${catProvider.error}');
+                              } else {
+                                print(
+                                    'DEBUG: cfg found. Governorates: ${cfg.governorates.length}, SupportsSections: ${cfg.supportsSections}');
+                                print(
+                                    'DEBUG: MainSections: ${cfg.mainSections.length}');
+                              }
+                              return const SizedBox.shrink();
+                            }),
+                            if (cfg != null)
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 0.w),
+                                child: _selectFiltersWidget(
+                                    context,
+                                    widget.categorySlug,
+                                    cfg,
+                                    performFilterChange),
+                              ),
+                            Expanded(
+                              child: Builder(
+                                builder: (context) {
+                                  if (adProvider.loading) {
+                                    return const Center(
+                                        child: CircularProgressIndicator());
+                                  }
+                                  if (adProvider.error != null) {
+                                    return Center(
+                                        child:
+                                            Text('خطأ: ${adProvider.error}'));
+                                  }
+                                  final ads = adProvider.ads;
+                                  _adsCount = ads.length;
+                                  if (ads.isEmpty) {
+                                    return const Center(
+                                        child: Text('لا توجد نتائج'));
+                                  }
+                                  return SingleChildScrollView(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        SearchControlWidget(
+                                          totalAdsCount: _adsCount,
+                                          showPriceToggle:
+                                              widget.categorySlug != 'missing',
+                                          showDistanceToggle: true,
+                                          isSortByNearest:
+                                              adProvider.sortByNearest,
+                                          isSortByPrice: adProvider.sortByPrice,
+                                          onToggleChanged: (key, value) {
+                                            if (key == 'sort_distance') {
+                                              adProvider.toggleSortByNearest();
+                                            } else if (key == 'sort_price') {
+                                              adProvider.toggleSortByPrice();
+                                            }
+                                          },
+                                        ),
+                                        MainAdListWrapper(
+                                          categorySlug: widget.categorySlug,
+                                          categoryName: widget.categoryName,
+                                          isLoading: false,
+                                          adList: ads,
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
-      ),
-    )));
+                  ),
+                ),
+              ),
+            )));
   }
 
   Future<void> _performSearch(AdSearchProvider provider) async {
@@ -449,7 +488,13 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
           onNavigate: onAction,
         );
       case 'doctors':
+      case 'teachers':
         return DoctorsFiltersWidget(
+          config: config,
+          onNavigate: onAction,
+        );
+      case 'jobs':
+        return JobsFiltersWidget(
           config: config,
           onNavigate: onAction,
         );

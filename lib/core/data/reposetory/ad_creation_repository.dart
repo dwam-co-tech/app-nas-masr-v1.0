@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nas_masr_app/core/data/web_services/api_services.dart';
@@ -12,7 +13,7 @@ class AdCreationRepository {
   Future<Map<String, dynamic>> createListing({
     required String categorySlug,
     required CreateListingPayload payload,
-    required File mainImage,
+    File? mainImage,
     List<File> images = const [],
   }) async {
     try {
@@ -20,6 +21,14 @@ class AdCreationRepository {
       final token = prefs.getString('auth_token');
       final endpoint = '/api/v1/$categorySlug/listings';
       final data = payload.toFormMap();
+      debugPrint('-------------- AD SUBMISSION DEBUG --------------');
+      debugPrint('Endpoint: $endpoint');
+      debugPrint('Payload: $data');
+      if (payload.attributes != null) {
+        debugPrint('Attributes: ${payload.attributes}');
+      }
+      debugPrint('-------------------------------------------------');
+
       final res = await _api.postFormData(
         endpoint,
         data: data,
