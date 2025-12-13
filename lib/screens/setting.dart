@@ -10,6 +10,7 @@ import 'package:nas_masr_app/core/data/providers/auth_provider.dart';
 import 'package:nas_masr_app/core/data/providers/home_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nas_masr_app/core/data/web_services/api_services.dart';
 
 class Setting extends StatefulWidget {
   const Setting({super.key});
@@ -150,6 +151,112 @@ class _SettingState extends State<Setting> {
     }
   }
 
+  Future<void> _createAgentCode() async {
+    try {
+      final api = ApiService();
+      final res = await api.post('/api/create-agent-code', data: {});
+      int? id;
+      if (res is Map) {
+        final data = res['data'];
+        if (data is Map) {
+          final v = data['id'];
+          if (v is int) {
+            id = v;
+          } else {
+            id = int.tryParse('$v');
+          }
+        }
+      }
+      if (id != null) {
+        if (!mounted) return;
+        _showAgentCodeDialog(id);
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Directionality(
+              textDirection: TextDirection.rtl,
+              child: const Text('تعذر الحصول على رقم الكود'),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Directionality(
+            textDirection: TextDirection.rtl,
+            child: Text('فشل إنشاء الكود: $e', textAlign: TextAlign.right),
+          ),
+        ),
+      );
+    }
+  }
+
+  void _showAgentCodeDialog(int id) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            backgroundColor: cs.surface,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            titlePadding: const EdgeInsetsDirectional.only(
+                start: 16, end: 16, top: 12, bottom: 4),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            title: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    'كود المندوب',
+                    textAlign: TextAlign.center,
+                    style: tt.titleMedium
+                        ?.copyWith(color: cs.onSurface, fontSize: 22.sp),
+                  ),
+                ),
+                Align(
+                  alignment: AlignmentDirectional.topStart,
+                  child: SizedBox(
+                    width: 26,
+                    height: 26,
+                    child: IconButton(
+                      iconSize: 20,
+                      padding: EdgeInsets.zero,
+                      icon: Icon(Icons.close_rounded, color: cs.onSurface),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'الرقم: $id',
+                  textAlign: TextAlign.center,
+                  style: tt.titleLarge?.copyWith(
+                      color: cs.primary,
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLand = MediaQuery.of(context).orientation == Orientation.landscape;
@@ -184,7 +291,7 @@ class _SettingState extends State<Setting> {
                           title: 'إنشاء كود المندوب',
                           leadingSvgAsset: 'assets/svg/code.svg',
                           iconSize: tileIconSize,
-                          onTap: () {},
+                          onTap: _createAgentCode,
                         ),
                         SizedBox(height: 3.h),
                         _SettingTile(
@@ -335,7 +442,7 @@ class _SettingsHeader extends StatelessWidget {
           child: Center(
             child: Image.asset(
               'assets/images/logo.png',
-              height:90.h,
+              height: 90.h,
               //width: 138.w,
               fit: BoxFit.contain,
             ),

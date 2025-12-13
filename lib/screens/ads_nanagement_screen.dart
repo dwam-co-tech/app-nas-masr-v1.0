@@ -139,30 +139,30 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                             SizedBox(height: 8.h),
                             ...subs.map((s) {
                               final planLabel = _planLabel(s.planType);
-                            final title =
-                                "اشتراك $planLabel - ${s.categoryName}";
-                            final badgeText = s.active ? 'نشط' : 'غير نشط';
-                            final expiryStr = s.expiresAt != null
-                                ? DateFormat('dd/MM/yyyy')
-                                    .format(s.expiresAt!)
-                                : null;
-                            return _buildPackageCard(
-                              cs,
-                              title: title,
-                              badgeText: badgeText,
-                              expiry: expiryStr,
-                              color: _packageAccentColor(title),
-                              gradient: _packageGradient(title),
-                              total: s.adsTotal,
-                              used: s.adsUsed,
-                              remaining: s.remaining,
-                            );
-                          }),
+                              final title =
+                                  "اشتراك $planLabel - ${s.categoryName}";
+                              final badgeText = s.active ? 'نشط' : 'غير نشط';
+                              final expiryStr = s.expiresAt != null
+                                  ? DateFormat('dd/MM/yyyy')
+                                      .format(s.expiresAt!)
+                                  : null;
+                              return _buildPackageCard(
+                                cs,
+                                title: title,
+                                badgeText: badgeText,
+                                expiry: expiryStr,
+                                color: _packageAccentColor(title),
+                                gradient: _packageGradient(title),
+                                total: s.adsTotal,
+                                used: s.adsUsed,
+                                remaining: s.remaining,
+                              );
+                            }),
+                          ],
                         ],
-                      ],
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
                   SizedBox(height: 10.h),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -270,6 +270,16 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                           final t = '$mk $md'.trim();
                           return t.isEmpty ? '—' : t;
                         }
+                        if (cat == 'spare-parts') {
+                          final sub = (ad.subSection?.toString() ??
+                                  ad.attributes['sub_section']?.toString() ??
+                                  ad.attributes['sub_category']?.toString() ??
+                                  '')
+                              .trim();
+                          return sub.isEmpty
+                              ? (ad.title ?? ad.categoryName ?? 'إعلان')
+                              : sub;
+                        }
                         return ad.title ?? ad.categoryName ?? 'إعلان';
                       }
 
@@ -281,6 +291,14 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                         }
                         if (cat == 'cars') {
                           return ad.attributes['year']?.toString() ?? '';
+                        }
+                        if (cat == 'spare-parts') {
+                          final mainSec = (ad.mainSection?.toString() ??
+                                  ad.attributes['main_section']?.toString() ??
+                                  ad.attributes['main_category']?.toString() ??
+                                  '')
+                              .trim();
+                          return mainSec;
                         }
                         final gov = ad.governorate ?? '';
                         final city = ad.city ?? '';
@@ -548,19 +566,20 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                   ],
                 ),
                 SizedBox(height: 6.h),
-                if (remaining != null) Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        "عدد الإعلانات المتبقية: ${remaining}${(total != null) ? " من $total" : ""}",
-                        style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                            color: cs.onSurface),
+                if (remaining != null)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "عدد الإعلانات المتبقية: ${remaining}${(total != null) ? " من $total" : ""}",
+                          style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: cs.onSurface),
+                        ),
                       ),
-                    ),
-                  ],
-                )
+                    ],
+                  )
               ],
             ),
           ),

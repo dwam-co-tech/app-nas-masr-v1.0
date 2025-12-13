@@ -168,9 +168,9 @@ class PaymentSuccessScreen extends StatelessWidget {
                       EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                   child: ElevatedButton(
                     onPressed: () {
-                      if (isSubscription) {
+                   
                         context.go('/packages/subscribe');
-                      } 
+                       
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cs.primary,

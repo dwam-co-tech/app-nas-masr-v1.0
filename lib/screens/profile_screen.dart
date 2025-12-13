@@ -44,7 +44,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       };
 
   String _display(String? v, String fieldName) {
-    if (v == null || v.trim().isEmpty) return 'enter $fieldName';
+    if (v == null || v.trim().isEmpty) return 'ادخل $fieldName';
     return v;
   }
 
@@ -185,34 +185,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         appBar: AppBar(
           backgroundColor: cs.surface,
           elevation: 0,
-          leading: isRTL
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  color: cs.onSurface,
-                  onPressed: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.go('/home');
-                    }
-                  },
-                )
-              : null,
-          actions: isRTL
-              ? null
-              : [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward),
-                    color: cs.onSurface,
-                    onPressed: () {
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        context.go('/home');
-                      }
-                    },
-                  ),
-                ],
+          leading: IconButton(
+            icon: Icon(isRTL ? Icons.arrow_forward : Icons.arrow_back),
+            color: cs.onSurface,
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
+          ),
           centerTitle: true,
           title: Text(
             'الملف الشخصي',
@@ -253,7 +236,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: CustomTextField(
                         key: ValueKey('name-$username'),
                         labelText: '*اسم المستخدم',
-                        initialValue: _display(username, 'name'),
+                        initialValue: _display(username, 'اسم المستخدم'),
                         readOnly: true,
                       ),
                     ),
@@ -316,7 +299,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         labelText: 'رقم المندوب',
                         isOptional: true,
                         hintText: 'XXXX',
-                        initialValue: _display(delegateNumber, 'referral_code'),
+                        initialValue: _display(delegateNumber, 'رقم المندوب'),
                         readOnly: true,
                       ),
                     ),

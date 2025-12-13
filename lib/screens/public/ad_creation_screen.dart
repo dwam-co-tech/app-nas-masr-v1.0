@@ -35,7 +35,7 @@ import 'package:nas_masr_app/core/data/reposetory/ad_creation_repository.dart';
 import 'package:nas_masr_app/core/data/providers/ad_creation_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:nas_masr_app/widgets/notifications_badge_icon.dart';
-// Note: يرجى التحقق من وجود FilterOptions و FilterRepository
+// Note: يرجى حقق من وجود FilterOptions و FilterRepository
 // (تم استبدالهما بـ Models النهائية لتجنب أخطاء البناء)
 // import '../core/data/models/filter_options.dart';
 // import '../core/data/reposetory/filter_repository.dart';
@@ -1306,6 +1306,12 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
       if ((spareAttrs['sub_section'] ?? '').trim().isEmpty) {
         errors.add('اختر القسم الفرعي');
       }
+    } else if (slug == 'jobs') {
+      final j = _jobsFormKey.currentState?.getAttributes() ??
+          const <String, String?>{};
+      if ((j['salary'] ?? '').toString().trim().isEmpty) {
+        errors.add('ادخل الراتب');
+      }
     } else if (slug == 'doctors' || slug == 'teachers') {
       if (_specialization == null || _specialization!.isEmpty) {
         errors.add('اختر التخصص');
@@ -1375,8 +1381,20 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
         } catch (_) {}
       }
 
+      final attrs = {
+        if (_propertyType != null) 'property_type': _propertyType,
+        if (_contractType != null) 'contract_type': _contractType,
+        ...carAttrs.map((k, v) => MapEntry(k, v)),
+        ...rentalAttrs.map((k, v) => MapEntry(k, v)),
+        ...spareAttrs.map((k, v) => MapEntry(k, v)),
+        ...jobsAttrs.map((k, v) => MapEntry(k, v)),
+        if (_specialization != null) 'specialization': _specialization,
+        if (_doctorName != null) 'name': _doctorName,
+      };
+      // لا نحذف "salary" من الـ attributes في الوظائف لضمان تلبية تحقق السيرفر
+
       final payload = CreateListingPayload(
-        price: _price,
+        price: slug == 'jobs' ? jobsAttrs['salary']?.toString() : _price,
         governorate: gov,
         city: city,
         description: _description,
@@ -1400,16 +1418,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
         subSection: _subCategory,
         mainSectionId: mainSecId,
         subSectionId: subSecId,
-        attributes: {
-          if (_propertyType != null) 'property_type': _propertyType,
-          if (_contractType != null) 'contract_type': _contractType,
-          ...carAttrs.map((k, v) => MapEntry(k, v)),
-          ...rentalAttrs.map((k, v) => MapEntry(k, v)),
-          ...spareAttrs.map((k, v) => MapEntry(k, v)),
-          ...jobsAttrs.map((k, v) => MapEntry(k, v)),
-          if (_specialization != null) 'specialization': _specialization,
-          if (_doctorName != null) 'name': _doctorName,
-        },
+        attributes: attrs,
       );
       final ok = await provider.submitListing(
         categorySlug: widget.categorySlug,
@@ -1427,6 +1436,17 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
             msg.contains('الإعلانات المجانية');
         final bool isFreePlanSelected =
             (_selectedPlanType ?? 'free').toLowerCase() == 'free';
+        final bool isSpecificPaymentMsg = msg.contains('لا تملك باقة فعّالة') &&
+            (msg.contains('دفع قيمة هذا الإعلان') ||
+                msg.contains('او الاشتراك في باقه'));
+        if (isSpecificPaymentMsg) {
+          context.push('/payment/checkout', extra: {
+            'categorySlug': widget.categorySlug,
+            'planType': _selectedPlanType,
+            'listingId': provider.pendingListingId,
+          });
+          return;
+        }
         if (isPaymentRequired) {
           final cs = Theme.of(context).colorScheme;
           await showDialog<void>(

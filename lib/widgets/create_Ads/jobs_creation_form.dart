@@ -4,6 +4,7 @@ import 'package:nas_masr_app/core/data/models/filter_options.dart';
 import 'package:nas_masr_app/core/data/models/main_section.dart';
 import 'package:nas_masr_app/widgets/create_Ads/custom_dropdown_field.dart';
 import 'package:nas_masr_app/widgets/create_Ads/form_layout_builder.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class JobsCreationForm extends StatefulWidget {
   final List<CategoryFieldConfig> fieldsConfig;
@@ -100,32 +101,96 @@ class JobsCreationFormState extends State<JobsCreationForm> {
       },
     );
 
-    final List<Widget> widgets = [mainCategoryField, subCategoryField];
+    final List<Widget> gridWidgets = [mainCategoryField, subCategoryField];
 
     // 3. Dynamic Attributes (Salary, Contact Via, etc.)
+    Widget? salaryField;
+    Widget? contactViaField;
     for (final field in widget.fieldsConfig) {
       // Skip fields that are handled specially or globally (if any)
       // Usually generic attributes have options (dropdown) or null (text)
-      if (field.fieldName == 'main_section_id' ||
-          field.fieldName == 'sub_section_id') continue;
+      if (field.fieldName == 'main_section' ||
+          field.fieldName == 'sub_section') {
+        continue;
+      }
+
+      if (field.fieldName == 'salary' || field.fieldName == 'contact_via') {
+        if (field.options.isNotEmpty) {
+          final w = CustomDropdownField(
+            label: field.displayName,
+            options: field.options.map((e) => e.toString()).toList(),
+            isRequired: field.isRequired,
+            labelStyle: field.fieldName == 'contact_via'
+                ? widget.labelStyle?.copyWith(
+                    fontSize: (widget.labelStyle?.fontSize ?? 16) + 2,
+                  )
+                : widget.labelStyle,
+            onChanged: (val) {
+              if (val != null) {
+                _attributes[field.fieldName] = val;
+              } else {
+                _attributes.remove(field.fieldName);
+              }
+            },
+          );
+          if (field.fieldName == 'salary') {
+            salaryField = w;
+          } else {
+            contactViaField = w;
+          }
+        } else {
+          final w = CustomTextField(
+            labelText: field.displayName,
+            showTopLabel: true,
+            labelStyle: field.fieldName == 'contact_via'
+                ? widget.labelStyle?.copyWith(
+                    fontSize: (widget.labelStyle?.fontSize ?? 16) + 2,
+                  )
+                : widget.labelStyle,
+            keyboardType: field.type == 'decimal' || field.type == 'integer'
+                ? TextInputType.number
+                : TextInputType.text,
+            onChanged: (val) {
+              if (val.isNotEmpty) {
+                _attributes[field.fieldName] = val;
+              } else {
+                _attributes.remove(field.fieldName);
+              }
+            },
+            validator: (val) {
+              if (field.isRequired && (val == null || val.isEmpty)) {
+                return 'هذا الحقل مطلوب';
+              }
+              return null;
+            },
+          );
+          if (field.fieldName == 'salary') {
+            salaryField = w;
+          } else {
+            contactViaField = w;
+          }
+        }
+        continue;
+      }
 
       if (field.options.isNotEmpty) {
         // Dropdown
-        widgets.add(CustomDropdownField(
+        gridWidgets.add(CustomDropdownField(
           label: field.displayName,
           options: field.options.map((e) => e.toString()).toList(),
           isRequired: field.isRequired,
           labelStyle: widget.labelStyle,
           onChanged: (val) {
-            if (val != null)
+            if (val != null) {
               _attributes[field.fieldName] = val;
-            else
+            } else {
               _attributes.remove(field.fieldName);
+            }
           },
         ));
       } else {
         // Text/Number Field
-        widgets.add(CustomTextField(
+        gridWidgets.add(CustomTextField(
           labelText: field.displayName,
           showTopLabel: true,
           labelStyle: widget.labelStyle,
@@ -133,10 +198,11 @@ class JobsCreationFormState extends State<JobsCreationForm> {
               ? TextInputType.number
               : TextInputType.text,
           onChanged: (val) {
-            if (val.isNotEmpty)
+            if (val.isNotEmpty) {
               _attributes[field.fieldName] = val;
-            else
+            } else {
               _attributes.remove(field.fieldName);
+            }
           },
           validator: (val) {
             if (field.isRequired && (val == null || val.isEmpty)) {
@@ -148,6 +214,25 @@ class JobsCreationFormState extends State<JobsCreationForm> {
       }
     }
 
-    return build2ColFormLayout(widgets);
+    final List<Widget> children = [
+      build2ColFormLayout(gridWidgets),
+    ];
+    if (salaryField != null || contactViaField != null) {
+      children.add(
+        Padding(
+          padding: EdgeInsets.only(bottom: 8.h),
+          child: Row(
+            children: [
+              Expanded(flex: 1, child: salaryField ?? const SizedBox.shrink()),
+              SizedBox(width: 8.w),
+              Expanded(
+                  flex: 2, child: contactViaField ?? const SizedBox.shrink()),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(children: children);
   }
 }
