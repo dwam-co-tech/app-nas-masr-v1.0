@@ -333,6 +333,9 @@ class AppRouter {
           bool support = false;
           String? peerName;
           String? initialMessage;
+          String? categorySlug;
+          int? listingId;
+          bool autoSend = false;
           if (extra is Map) {
             final rawId = (extra as Map)['peerId'];
             if (rawId is int) {
@@ -343,6 +346,19 @@ class AppRouter {
             final nameRaw = (extra as Map)['peerName'];
             final initMsgRaw = (extra as Map)['initialMessage'];
             final supportRaw = (extra as Map)['support'];
+            categorySlug = (extra as Map)['categorySlug']?.toString();
+            final listingIdRaw = (extra as Map)['listingId'];
+            if (listingIdRaw is int) {
+              listingId = listingIdRaw;
+            } else if (listingIdRaw != null) {
+              listingId = int.tryParse(listingIdRaw.toString());
+            }
+
+            final autoSendRaw = (extra as Map)['autoSend'];
+            if (autoSendRaw == true || autoSendRaw.toString() == 'true') {
+              autoSend = true;
+            }
+
             peerName = nameRaw?.toString();
             initialMessage = initMsgRaw?.toString();
             if (supportRaw is bool) {
@@ -352,10 +368,14 @@ class AppRouter {
             }
           }
           return ChatScreen(
-              peerId: peerId == 0 ? null : peerId,
-              support: support,
-              peerName: peerName,
-              initialMessage: initialMessage);
+            peerId: peerId == 0 ? null : peerId,
+            support: support,
+            peerName: peerName,
+            initialMessage: initialMessage,
+            categorySlug: categorySlug,
+            listingId: listingId,
+            autoSend: autoSend,
+          );
         },
       ),
     ],

@@ -397,6 +397,12 @@ class NotificationsScreen extends StatelessWidget {
                                                                           viewerId,
                                                                       'peerName':
                                                                           'العميل #${viewerId}',
+                                                                      'categorySlug':
+                                                                          n.categorySlug,
+                                                                      'listingId':
+                                                                          n.listingId,
+                                                                      'autoSend':
+                                                                          true,
                                                                     });
                                                               } else {
                                                                 context.push(

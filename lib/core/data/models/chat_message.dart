@@ -6,6 +6,9 @@ class ChatMessage {
   final DateTime createdAt;
   final DateTime? readAt;
   final String? conversationId;
+  final String? contentType;
+  final Map<String, dynamic>? listing;
+  final String? attachment;
 
   const ChatMessage({
     this.id,
@@ -15,6 +18,9 @@ class ChatMessage {
     required this.createdAt,
     this.readAt,
     this.conversationId,
+    this.contentType,
+    this.listing,
+    this.attachment,
   });
 
   factory ChatMessage.fromMap(Map<String, dynamic> map) {
@@ -35,6 +41,12 @@ class ChatMessage {
     final readAtStr = map['read_at']?.toString();
     final readAt = readAtStr != null ? DateTime.tryParse(readAtStr) : null;
     final conversationId = map['conversation_id']?.toString();
+
+    final contentType = map['content_type']?.toString();
+    final listing = map['listing'] is Map<String, dynamic>
+        ? map['listing'] as Map<String, dynamic>
+        : null;
+
     return ChatMessage(
       id: id,
       senderId: senderId,
@@ -43,6 +55,8 @@ class ChatMessage {
       createdAt: createdAt,
       readAt: readAt,
       conversationId: conversationId,
+      contentType: contentType,
+      listing: listing,
     );
   }
 
@@ -67,6 +81,12 @@ class ChatMessage {
     final readAtStr = map['read_at']?.toString();
     final readAt = readAtStr != null ? DateTime.tryParse(readAtStr) : null;
     final conversationId = map['conversation_id']?.toString();
+
+    final contentType = map['content_type']?.toString();
+    final listing = map['listing'] is Map<String, dynamic>
+        ? map['listing'] as Map<String, dynamic>
+        : null;
+
     return ChatMessage(
       id: id,
       senderId: senderId,
@@ -75,6 +95,8 @@ class ChatMessage {
       createdAt: createdAt,
       readAt: readAt,
       conversationId: conversationId,
+      contentType: contentType,
+      listing: listing,
     );
   }
 
@@ -95,6 +117,13 @@ class ChatMessage {
     final readAtStr = map['read_at']?.toString();
     final readAt = readAtStr != null ? DateTime.tryParse(readAtStr) : null;
     final conversationId = map['conversation_id']?.toString();
+
+    final contentType = map['content_type']?.toString();
+    final listing = map['listing'] is Map<String, dynamic>
+        ? map['listing'] as Map<String, dynamic>
+        : null;
+    final attachment = map['attachment']?.toString();
+
     return ChatMessage(
       id: id,
       senderId: senderId,
@@ -103,6 +132,9 @@ class ChatMessage {
       createdAt: createdAt,
       readAt: readAt,
       conversationId: conversationId,
+      contentType: contentType,
+      listing: listing,
+      attachment: attachment,
     );
   }
 }

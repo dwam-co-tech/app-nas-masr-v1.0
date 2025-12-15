@@ -435,4 +435,33 @@ class ApiService {
   //     rethrow;
   //   }
   // }
+  Future<dynamic> postMultipart(
+    String endpoint, {
+    required FormData formData,
+    void Function(int, int)? onSendProgress,
+    String? token,
+  }) async {
+    final String? authToken = token ?? await _loadToken();
+    if (authToken != null && authToken.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $authToken';
+    }
+    final Options multipartOptions =
+        Options(contentType: Headers.multipartFormDataContentType);
+
+    try {
+      final response = await _dio.post(
+        endpoint,
+        data: formData,
+        options: multipartOptions,
+        onSendProgress: onSendProgress,
+      );
+      return response.data;
+    } on DioException catch (e) {
+      print('=== API MULTIPART ERROR ===');
+      print('Endpoint: $endpoint');
+      print('Error: ${e.message}');
+      print('Response: ${e.response?.data}');
+      throw ErrorHandler.handleDioError(e);
+    }
+  }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:nas_masr_app/core/data/models/category_home.dart';
 // Use Theme.of(context) colorScheme/textTheme instead of ColorManager
-import 'package:cached_network_image/cached_network_image.dart';
 
 class CategoryCard extends StatelessWidget {
   final Category category;
@@ -39,29 +38,28 @@ class CategoryCard extends StatelessWidget {
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 0.h),
                     child: Center(
-                      child: CachedNetworkImage(
-                        imageUrl: category.iconUrl,
-                        imageBuilder: (context, imageProvider) => SizedBox(
-                          width: 70.w,
-                          height: 80.w,
-                          child: Image(
-                            image: imageProvider,
-                            fit: BoxFit.contain,
-                            alignment: Alignment.center,
-                          ),
-                        ),
-                        placeholder: (context, url) => SizedBox(
-                          width: 44.w,
-                          height: 44.w,
-                          child: Center(
-                            child: SizedBox(
-                              width: 16.sp,
-                              height: 16.sp,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                      child: Image.network(
+                        category.iconUrl,
+                        width: 70.w,
+                        height: 80.w,
+                        fit: BoxFit.contain,
+                        alignment: Alignment.center,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return SizedBox(
+                            width: 44.w,
+                            height: 44.w,
+                            child: Center(
+                              child: SizedBox(
+                                width: 16.sp,
+                                height: 16.sp,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              ),
                             ),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Icon(
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) => Icon(
                           Icons.image_not_supported_outlined,
                           size: 26.sp,
                           color: Colors.grey.shade400,

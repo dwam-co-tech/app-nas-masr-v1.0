@@ -25,6 +25,8 @@ class NotificationItem {
   final Map<String, dynamic>? data;
   final DateTime? createdAt;
   final bool isRead;
+  final String? categorySlug;
+  final int? listingId;
   NotificationItem({
     required this.id,
     required this.title,
@@ -34,6 +36,8 @@ class NotificationItem {
     this.data,
     this.createdAt,
     this.isRead = false,
+    this.categorySlug,
+    this.listingId,
   });
 }
 
@@ -73,6 +77,17 @@ class NotificationsRepository {
           isRead: (m['read'] as bool?) ??
               (m['is_read'] as bool?) ??
               (m['read_at'] != null),
+          categorySlug: m['category_slug']?.toString() ??
+              (m['data'] is Map
+                  ? m['data']['category_slug']?.toString()
+                  : null),
+          listingId: (m['listing_id'] is int)
+              ? m['listing_id'] as int
+              : (m['listing_id'] != null)
+                  ? int.tryParse(m['listing_id'].toString())
+                  : (m['data'] is Map && m['data']['listing_id'] != null)
+                      ? int.tryParse(m['data']['listing_id'].toString())
+                      : null,
         );
       }).toList();
     } catch (_) {
@@ -110,6 +125,15 @@ class NotificationsRepository {
         isRead: (m['read'] as bool?) ??
             (m['is_read'] as bool?) ??
             (m['read_at'] != null),
+        categorySlug: m['category_slug']?.toString() ??
+            (m['data'] is Map ? m['data']['category_slug']?.toString() : null),
+        listingId: (m['listing_id'] is int)
+            ? m['listing_id'] as int
+            : (m['listing_id'] != null)
+                ? int.tryParse(m['listing_id'].toString())
+                : (m['data'] is Map && m['data']['listing_id'] != null)
+                    ? int.tryParse(m['data']['listing_id'].toString())
+                    : null,
       );
     }).toList();
 

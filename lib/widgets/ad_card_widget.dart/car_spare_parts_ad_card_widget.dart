@@ -151,7 +151,7 @@ class CarSparePartsAdCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final statusLabel = ad.planType == 'featured'
-        ? " متميز"
+        ? 'متميز'
         : (ad.planType == 'standard' ? 'ستاندرد' : 'مجاني');
     final labelColor = cs.primary;
 

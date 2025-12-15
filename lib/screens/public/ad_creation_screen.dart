@@ -35,6 +35,8 @@ import 'package:nas_masr_app/core/data/reposetory/ad_creation_repository.dart';
 import 'package:nas_masr_app/core/data/providers/ad_creation_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:nas_masr_app/widgets/notifications_badge_icon.dart';
+import 'package:nas_masr_app/core/data/models/plan_prices_model.dart';
+import 'package:nas_masr_app/core/data/reposetory/plan_prices_repository.dart';
 // Note: يرجى حقق من وجود FilterOptions و FilterRepository
 // (تم استبدالهما بـ Models النهائية لتجنب أخطاء البناء)
 // import '../core/data/models/filter_options.dart';
@@ -735,8 +737,13 @@ class PackageSelectionWidget extends StatefulWidget {
   final ValueChanged<String?>? onChanged;
   final String? initialValue;
   final List<String>? allowedIds;
+  final PlanPrices? prices;
   const PackageSelectionWidget(
-      {super.key, this.onChanged, this.initialValue, this.allowedIds});
+      {super.key,
+      this.onChanged,
+      this.initialValue,
+      this.allowedIds,
+      this.prices});
   @override
   State<PackageSelectionWidget> createState() => _PackageSelectionWidgetState();
 }
@@ -758,27 +765,32 @@ class _PackageSelectionWidgetState extends State<PackageSelectionWidget> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final items = const [
+  List<_PackageItem> _buildItems() {
+    final p = widget.prices;
+    return [
       _PackageItem(
           id: 'featured',
           title: 'إعلان متميز يظهر في مجموعة أعلي قائمة الاعلانات',
-          price: 100,
-          validityDays: 365),
+          price: p?.priceFeatured ?? p?.featuredAdPrice ?? 100,
+          validityDays: p?.featuredDays ?? 365),
       _PackageItem(
           id: 'standard',
-          title: 'إعلان ستاندرد يظهر في مجموعة بعد الاعلانات المميزة',
-          price: 80,
-          validityDays: 365),
+          title: 'إعلان ستاندرد يظهر في مجموعة بعد الاعلانات متميز',
+          price: p?.priceStandard ?? p?.standardAdPrice ?? 80,
+          validityDays: p?.standardDays ?? 365),
       _PackageItem(
           id: 'free',
           title: 'إعلان مجاني يظهر في نهاية قائمة الاعلانات',
           price: 0,
           validityDays: 365),
     ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final items = _buildItems();
     final visibleItems = items
         .where((i) =>
             widget.allowedIds == null || widget.allowedIds!.contains(i.id))
@@ -997,6 +1009,7 @@ class AdCreationScreen extends StatefulWidget {
 class _AdCreationScreenState extends State<AdCreationScreen> {
   bool _loading = true;
   String? _error;
+  PlanPrices? _planPrices;
   CategoryFieldsResponse? _config;
   bool _usernameChecked = false;
 
@@ -1034,6 +1047,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     Future.microtask(_loadConfig);
+    Future.microtask(_loadPlanPrices);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkUsernameOnOpen());
   }
 
@@ -1077,6 +1091,18 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
         _loading = false;
         _error = 'فشل تحميل بيانات القسم';
       });
+    }
+  }
+
+  Future<void> _loadPlanPrices() async {
+    try {
+      final repo = PlanPricesRepository();
+      final prices = await repo.getPlanPrices(widget.categorySlug);
+      if (mounted) {
+        setState(() => _planPrices = prices);
+      }
+    } catch (_) {
+      // Use default prices if API fails
     }
   }
 
@@ -1466,7 +1492,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
-                            'لا يمكنك المتابعة بالدفع لخطة مجانية. برجاء اختيار خطة ستاندرد أو مميزة ثم المتابعة.',
+                            'لا يمكنك المتابعة بالدفع لخطة مجانية. برجاء اختيار خطة ستاندرد أو متميز ثم المتابعة.',
                             style: TextStyle(
                               color: cs.secondary,
                               fontSize: 13,
@@ -1805,6 +1831,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                                 SizedBox(height: 20.h),
 
                                 PackageSelectionWidget(
+                                  prices: _planPrices,
                                   onChanged: (v) =>
                                       _selectedPlanType = v ?? 'free',
                                   initialValue: slug == 'missing'

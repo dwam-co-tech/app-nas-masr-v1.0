@@ -10,8 +10,8 @@ allprojects {
 ext {
     if (!hasProperty('flutter')) {
         flutter = [
-            compileSdkVersion: 34,
-            targetSdkVersion: 34,
+            compileSdkVersion: 36,
+            targetSdkVersion: 36,
             minSdkVersion   : 21,
             ndkVersion      : null
         ]

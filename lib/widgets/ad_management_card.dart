@@ -41,7 +41,7 @@ class AdManagementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     final cs = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     // تحديد لون الشارة بناءً على النص
     Color badgeColor = const Color(0xFFE0F2F1); // Default Light Green
@@ -53,7 +53,7 @@ class AdManagementCard extends StatelessWidget {
     } else if (statusLabel.contains('مجاني')) {
       badgeColor = ColorManager.primaryColor; // Light Blue
       badgeTextColor = ColorManager.primaryColor; // Blue
-    } else if (statusLabel.contains('مميز') || statusLabel.contains('نشط')) {
+    } else if (statusLabel.contains('متميز') || statusLabel.contains('نشط')) {
       badgeColor = const Color(0xFFE8F5E9);
       badgeTextColor = ColorManager.primaryColor;
     }
@@ -151,7 +151,8 @@ class AdManagementCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 16.sp,
                                   fontWeight: FontWeight.w700,
-                                  color: ColorManager.secondaryColor, // برتقالي للسعر
+                                  color: ColorManager
+                                      .secondaryColor, // برتقالي للسعر
                                 ),
                               ),
                             ),
@@ -189,10 +190,10 @@ class AdManagementCard extends StatelessWidget {
                           _buildInfoRow("تاريخ الانتهاء:", expiryDate),
                           SizedBox(height: 4.h),
                           Text(
-                            "البحث وعدد المشاهدات ($viewsCount)",
+                            "مشاهدات الاعلان التفصيلي ($viewsCount)",
                             style: TextStyle(
                               fontSize: 12.sp,
-                               fontWeight: FontWeight.w400,
+                              fontWeight: FontWeight.w400,
                               color: cs.onSurface,
                             ),
                           ),
@@ -212,17 +213,17 @@ class AdManagementCard extends StatelessWidget {
               child: Row(
                 children: [
                   // زر تحديث (Dark Blue)
-                  _buildActionButton(
-                      "تحديث", ColorManager.primary_font_color , Colors.white, onUpdate),
+                  _buildActionButton("تحديث", ColorManager.primary_font_color,
+                      Colors.white, onUpdate),
                   SizedBox(width: 6.w),
                   // زر تعديل (Border only)
-                  _buildActionButton(
-                      "تعديل", Colors.white, ColorManager.primary_font_color, onEdit,
+                  _buildActionButton("تعديل", Colors.white,
+                      ColorManager.primary_font_color, onEdit,
                       isOutlined: true),
                   SizedBox(width: 6.w),
                   // زر تجديد (Green)
-                  _buildActionButton(
-                      "تجديد", ColorManager.primaryColor, Colors.white, onRenew),
+                  _buildActionButton("تجديد", ColorManager.primaryColor,
+                      Colors.white, onRenew),
                   SizedBox(width: 6.w),
                   // زر حذف (Red)
                   _buildActionButton(
@@ -244,7 +245,8 @@ class AdManagementCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(fontSize: 12.sp, color: Color.fromRGBO(1, 22, 24, 0.45)),
+            style: TextStyle(
+                fontSize: 12.sp, color: Color.fromRGBO(1, 22, 24, 0.45)),
           ),
           SizedBox(width: 4.w),
           Text(

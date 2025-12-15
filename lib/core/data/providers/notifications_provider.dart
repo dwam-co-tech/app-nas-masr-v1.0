@@ -73,18 +73,22 @@ class NotificationsProvider with ChangeNotifier {
   Future<void> markItemRead(int id) async {
     try {
       await _repo.markAsRead(id);
-      _items = _items.map((n) => n.id == id
-          ? NotificationItem(
-              id: n.id,
-              title: n.title,
-              body: n.body,
-              category: n.category,
-              type: n.type,
-              data: n.data,
-              createdAt: n.createdAt,
-              isRead: true,
-            )
-          : n).toList();
+      _items = _items
+          .map((n) => n.id == id
+              ? NotificationItem(
+                  id: n.id,
+                  title: n.title,
+                  body: n.body,
+                  category: n.category,
+                  type: n.type,
+                  data: n.data,
+                  createdAt: n.createdAt,
+                  isRead: true,
+                  categorySlug: n.categorySlug,
+                  listingId: n.listingId,
+                )
+              : n)
+          .toList();
       notifyListeners();
     } catch (_) {}
   }
@@ -102,6 +106,8 @@ class NotificationsProvider with ChangeNotifier {
                 data: n.data,
                 createdAt: n.createdAt,
                 isRead: true,
+                categorySlug: n.categorySlug,
+                listingId: n.listingId,
               ))
           .toList();
       notifyListeners();

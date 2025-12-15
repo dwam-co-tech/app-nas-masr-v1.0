@@ -207,7 +207,7 @@ class RealEstateAdCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final statusLabel = ad.planType == 'featured'
-        ? 'مميز'
+        ? 'متميز'
         : (ad.planType == 'standard' ? 'ستاندرد' : 'مجاني');
     final labelColor = statusLabel == 'متميز' ? cs.primary : cs.primary;
     final propertyType =

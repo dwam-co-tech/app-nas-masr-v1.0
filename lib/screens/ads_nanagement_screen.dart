@@ -280,6 +280,11 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                               ? (ad.title ?? ad.categoryName ?? 'إعلان')
                               : sub;
                         }
+                        if (cat == 'jobs') {
+                          return ad.subSection?.toString() ??
+                              ad.title ??
+                              'إعلان';
+                        }
                         return ad.title ?? ad.categoryName ?? 'إعلان';
                       }
 
@@ -299,6 +304,9 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
                                   '')
                               .trim();
                           return mainSec;
+                        }
+                        if (cat == 'jobs') {
+                          return ad.mainSection?.toString() ?? '';
                         }
                         final gov = ad.governorate ?? '';
                         final city = ad.city ?? '';
@@ -431,12 +439,10 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
 
   Color _packageAccentColor(String title) {
     final t = title.toLowerCase();
-    if (t.contains('متميز') || t.contains('متميزة')) {
+    if (t.contains('متميز')) {
       return ColorManager.primaryColor;
     }
-    if (t.contains('قياسي') ||
-        t.contains('القياسية') ||
-        t.contains('ستاندرد')) {
+    if (t.contains('ستاندرد')) {
       return ColorManager.secondaryColor;
     }
     return Colors.grey;
@@ -444,16 +450,14 @@ class _AdsManagementScreenState extends State<AdsManagementScreen> {
 
   LinearGradient _packageGradient(String title) {
     final t = title.toLowerCase();
-    if (t.contains('متميز') || t.contains('متميزة')) {
+    if (t.contains('متميز')) {
       return const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [Color(0xFF14876F), Color(0xFF03464A)],
       );
     }
-    if (t.contains('قياسي') ||
-        t.contains('القياسية') ||
-        t.contains('ستاندرد')) {
+    if (t.contains('ستاندرد')) {
       return const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,

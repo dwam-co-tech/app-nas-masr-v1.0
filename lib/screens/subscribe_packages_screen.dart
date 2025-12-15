@@ -95,8 +95,8 @@ class _SubscribePackagesScreenState extends State<SubscribePackagesScreen> {
           return Directionality(
               textDirection: TextDirection.rtl,
               child: Scaffold(
-                  bottomNavigationBar: const CustomBottomNav(currentIndex: 1),
-         
+                bottomNavigationBar: const CustomBottomNav(currentIndex: 1),
+
                 appBar: AppBar(
                   backgroundColor: Colors.transparent,
                   elevation: 0,
@@ -117,7 +117,7 @@ class _SubscribePackagesScreenState extends State<SubscribePackagesScreen> {
                     },
                   ),
                 ),
-              //  bottomNavigationBar: const SizedBox.shrink(),
+                //  bottomNavigationBar: const SizedBox.shrink(),
                 body: SafeArea(
                   child: SingleChildScrollView(
                     padding:
@@ -144,7 +144,7 @@ class _SubscribePackagesScreenState extends State<SubscribePackagesScreen> {
                                 color: cs.onSurface)),
                         SizedBox(height: 6.h),
                         _PlanTile(
-                          title: 'الباقة المتميزة',
+                          title: 'باقة متميز',
                           subtitle:
                               'إعلاناتنا تظهر في مجموعة أعلي قائمة الاعلانات',
                           selected: _planType == 'featured',
@@ -152,9 +152,9 @@ class _SubscribePackagesScreenState extends State<SubscribePackagesScreen> {
                         ),
                         SizedBox(height: 18.h),
                         _PlanTile(
-                          title: 'الباقة الاستاندرد',
+                          title: 'باقة ستاندرد',
                           subtitle:
-                              'إعلاناتنا تظهر في مجموعة بعد الاعلانات المتميزة',
+                              'إعلاناتنا تظهر في مجموعة بعد الاعلانات متميز',
                           selected: _planType == 'standard',
                           onTap: () => setState(() => _planType = 'standard'),
                         ),
@@ -193,8 +193,7 @@ class _SubscribePackagesScreenState extends State<SubscribePackagesScreen> {
                             ],
                           ),
                         ),
-                         SizedBox(height: 120.h),
-                 
+                        SizedBox(height: 120.h),
                         ElevatedButton(
                           onPressed:
                               (_selectedSlug == null || _selectedSlug!.isEmpty)

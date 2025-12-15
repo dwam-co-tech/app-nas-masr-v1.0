@@ -112,7 +112,7 @@ class MainAdListWrapper extends StatelessWidget {
     String _title(String k) {
       switch (k) {
         case 'featured':
-          return 'إعلانات مميزة';
+          return 'إعلانات متميز';
         case 'standard':
           return 'إعلانات ستاندرد';
         default:

@@ -520,15 +520,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final d2 = TextEditingController();
     final d3 = TextEditingController();
     final d4 = TextEditingController();
+    final d5 = TextEditingController();
+    final d6 = TextEditingController();
     final f1 = FocusNode();
     final f2 = FocusNode();
     final f3 = FocusNode();
     final f4 = FocusNode();
+    final f5 = FocusNode();
+    final f6 = FocusNode();
     bool submitting = false;
     String otpText = '';
     int activeIndex = 0;
-    final ctrls = [d1, d2, d3, d4];
-    final nodes = [f1, f2, f3, f4];
+    final ctrls = [d1, d2, d3, d4, d5, d6];
+    final nodes = [f1, f2, f3, f4, f5, f6];
     bool initializedFocus = false;
 
     showDialog(
@@ -580,7 +584,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('اكتب الكود المكون من 4 أرقام المرسل إلى هاتفك',
+                    Text('اكتب الكود المكون من 6 أرقام المرسل إلى هاتفك',
                         textAlign: TextAlign.center,
                         style: tt.bodyMedium?.copyWith(color: cs.onSurface)),
                     const SizedBox(height: 12),
@@ -589,95 +593,220 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _otpBox(
-                            d1,
-                            f1,
-                            enabled: activeIndex == 0,
-                            next: f2,
-                            setState: setState,
-                            prev: null,
-                            onChanged: () {
-                              otpText =
-                                  [d1.text, d2.text, d3.text, d4.text].join();
-                              int idx = ctrls.indexWhere((c) => c.text.isEmpty);
-                              if (idx == -1) idx = 3;
-                              activeIndex = idx;
-                              setState(() {});
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                nodes[activeIndex].requestFocus();
-                              });
-                            },
-                            onTapInactive: () {
-                              nodes[activeIndex].requestFocus();
-                            },
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 2),
+                              child: _otpBox(
+                                d1,
+                                f1,
+                                enabled: activeIndex == 0,
+                                next: f2,
+                                setState: setState,
+                                prev: null,
+                                onChanged: () {
+                                  otpText = [
+                                    d1.text,
+                                    d2.text,
+                                    d3.text,
+                                    d4.text,
+                                    d5.text,
+                                    d6.text
+                                  ].join();
+                                  int idx =
+                                      ctrls.indexWhere((c) => c.text.isEmpty);
+                                  if (idx == -1) idx = 5;
+                                  activeIndex = idx;
+                                  setState(() {});
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    nodes[activeIndex].requestFocus();
+                                  });
+                                },
+                                onTapInactive: () {
+                                  nodes[activeIndex].requestFocus();
+                                },
+                              ),
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          _otpBox(
-                            d2,
-                            f2,
-                            enabled: activeIndex == 1,
-                            next: f3,
-                            setState: setState,
-                            prev: f1,
-                            onChanged: () {
-                              otpText =
-                                  [d1.text, d2.text, d3.text, d4.text].join();
-                              int idx = ctrls.indexWhere((c) => c.text.isEmpty);
-                              if (idx == -1) idx = 3;
-                              activeIndex = idx;
-                              setState(() {});
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                nodes[activeIndex].requestFocus();
-                              });
-                            },
-                            onTapInactive: () {
-                              nodes[activeIndex].requestFocus();
-                            },
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 2),
+                              child: _otpBox(
+                                d2,
+                                f2,
+                                enabled: activeIndex == 1,
+                                next: f3,
+                                setState: setState,
+                                prev: f1,
+                                onChanged: () {
+                                  otpText = [
+                                    d1.text,
+                                    d2.text,
+                                    d3.text,
+                                    d4.text,
+                                    d5.text,
+                                    d6.text
+                                  ].join();
+                                  int idx =
+                                      ctrls.indexWhere((c) => c.text.isEmpty);
+                                  if (idx == -1) idx = 5;
+                                  activeIndex = idx;
+                                  setState(() {});
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    nodes[activeIndex].requestFocus();
+                                  });
+                                },
+                                onTapInactive: () {
+                                  nodes[activeIndex].requestFocus();
+                                },
+                              ),
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          _otpBox(
-                            d3,
-                            f3,
-                            enabled: activeIndex == 2,
-                            next: f4,
-                            setState: setState,
-                            prev: f2,
-                            onChanged: () {
-                              otpText =
-                                  [d1.text, d2.text, d3.text, d4.text].join();
-                              int idx = ctrls.indexWhere((c) => c.text.isEmpty);
-                              if (idx == -1) idx = 3;
-                              activeIndex = idx;
-                              setState(() {});
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                nodes[activeIndex].requestFocus();
-                              });
-                            },
-                            onTapInactive: () {
-                              nodes[activeIndex].requestFocus();
-                            },
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 2),
+                              child: _otpBox(
+                                d3,
+                                f3,
+                                enabled: activeIndex == 2,
+                                next: f4,
+                                setState: setState,
+                                prev: f2,
+                                onChanged: () {
+                                  otpText = [
+                                    d1.text,
+                                    d2.text,
+                                    d3.text,
+                                    d4.text,
+                                    d5.text,
+                                    d6.text
+                                  ].join();
+                                  int idx =
+                                      ctrls.indexWhere((c) => c.text.isEmpty);
+                                  if (idx == -1) idx = 5;
+                                  activeIndex = idx;
+                                  setState(() {});
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    nodes[activeIndex].requestFocus();
+                                  });
+                                },
+                                onTapInactive: () {
+                                  nodes[activeIndex].requestFocus();
+                                },
+                              ),
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          _otpBox(
-                            d4,
-                            f4,
-                            enabled: activeIndex == 3,
-                            setState: setState,
-                            prev: f3,
-                            onChanged: () {
-                              otpText =
-                                  [d1.text, d2.text, d3.text, d4.text].join();
-                              int idx = ctrls.indexWhere((c) => c.text.isEmpty);
-                              if (idx == -1) idx = 3;
-                              activeIndex = idx;
-                              setState(() {});
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                nodes[activeIndex].requestFocus();
-                              });
-                            },
-                            onTapInactive: () {
-                              nodes[activeIndex].requestFocus();
-                            },
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 2),
+                              child: _otpBox(
+                                d4,
+                                f4,
+                                enabled: activeIndex == 3,
+                                next: f5,
+                                setState: setState,
+                                prev: f3,
+                                onChanged: () {
+                                  otpText = [
+                                    d1.text,
+                                    d2.text,
+                                    d3.text,
+                                    d4.text,
+                                    d5.text,
+                                    d6.text
+                                  ].join();
+                                  int idx =
+                                      ctrls.indexWhere((c) => c.text.isEmpty);
+                                  if (idx == -1) idx = 5;
+                                  activeIndex = idx;
+                                  setState(() {});
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    nodes[activeIndex].requestFocus();
+                                  });
+                                },
+                                onTapInactive: () {
+                                  nodes[activeIndex].requestFocus();
+                                },
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 2),
+                              child: _otpBox(
+                                d5,
+                                f5,
+                                enabled: activeIndex == 4,
+                                next: f6,
+                                setState: setState,
+                                prev: f4,
+                                onChanged: () {
+                                  otpText = [
+                                    d1.text,
+                                    d2.text,
+                                    d3.text,
+                                    d4.text,
+                                    d5.text,
+                                    d6.text
+                                  ].join();
+                                  int idx =
+                                      ctrls.indexWhere((c) => c.text.isEmpty);
+                                  if (idx == -1) idx = 5;
+                                  activeIndex = idx;
+                                  setState(() {});
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    nodes[activeIndex].requestFocus();
+                                  });
+                                },
+                                onTapInactive: () {
+                                  nodes[activeIndex].requestFocus();
+                                },
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 2),
+                              child: _otpBox(
+                                d6,
+                                f6,
+                                enabled: activeIndex == 5,
+                                setState: setState,
+                                prev: f5,
+                                onChanged: () {
+                                  otpText = [
+                                    d1.text,
+                                    d2.text,
+                                    d3.text,
+                                    d4.text,
+                                    d5.text,
+                                    d6.text
+                                  ].join();
+                                  int idx =
+                                      ctrls.indexWhere((c) => c.text.isEmpty);
+                                  if (idx == -1) idx = 5;
+                                  activeIndex = idx;
+                                  setState(() {});
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    nodes[activeIndex].requestFocus();
+                                  });
+                                },
+                                onTapInactive: () {
+                                  nodes[activeIndex].requestFocus();
+                                },
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -697,15 +826,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onPressed: submitting
                             ? null
                             : () async {
-                                final otp =
-                                    [d1.text, d2.text, d3.text, d4.text].join();
-                                if (otp.length != 4 ||
-                                    !RegExp(r'^\d{4}$').hasMatch(otp)) {
+                                final otp = [
+                                  d1.text,
+                                  d2.text,
+                                  d3.text,
+                                  d4.text,
+                                  d5.text,
+                                  d6.text
+                                ].join();
+                                if (otp.length != 6 ||
+                                    !RegExp(r'^\d{6}$').hasMatch(otp)) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Directionality(
                                         textDirection: TextDirection.rtl,
-                                        child: const Text('أدخل 4 أرقام صحيحة',
+                                        child: const Text('أدخل 6 أرقام صحيحة',
                                             textAlign: TextAlign.right),
                                       ),
                                     ),
@@ -780,7 +915,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       required VoidCallback onTapInactive}) {
     final cs = Theme.of(context).colorScheme;
     return SizedBox(
-      width: 50,
       height: 50,
       child: TextField(
         controller: c,

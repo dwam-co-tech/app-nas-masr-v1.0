@@ -140,6 +140,7 @@ class AdSearchProvider with ChangeNotifier {
     switch (planType.toLowerCase()) {
       case 'premium':
       case 'مميزة':
+      case 'متميز':
         return 3;
       case 'standard':
       case 'ستاندرد':
