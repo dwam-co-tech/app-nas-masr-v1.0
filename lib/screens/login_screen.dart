@@ -222,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: GestureDetector(
-                            onTap: _launchWhatsAppSupport,
+                            onTap: _launchWhatsAppForPassword,
                             child: Text(
                               'نسيت كلمة المرور؟',
                               style: tt.bodyMedium?.copyWith(
@@ -328,19 +328,22 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<void> _launchWhatsAppSupport() async {
+  Future<void> _launchWhatsAppForPassword() async {
     final home = context.read<HomeProvider>();
-    String? number = home.supportNumber;
-    number ??= await home.ensureSupportNumber();
+    // جلب رقم تغيير الباسورد (sub_support_number)
+    String? number = home.passwordChangeNumber;
+    number ??= await home.ensurePasswordChangeNumber();
+
     if (!mounted) return;
     if (number == null || number.isEmpty) {
-      foundation.debugPrint('=== WHATSAPP DEBUG ===');
-      foundation.debugPrint('Support number is null/empty');
+      foundation.debugPrint('=== WHATSAPP PASSSWORD DEBUG ===');
+      foundation.debugPrint('Password change number is null/empty');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Directionality(
             textDirection: TextDirection.rtl,
-            child: const Text('تعذر الحصول على رقم الدعم',
+            child: const Text(
+                'تعذر الحصول على رقم الدعم الفني لتغيير كلمة المرور',
                 textAlign: TextAlign.right),
           ),
         ),
@@ -359,7 +362,7 @@ class _LoginScreenState extends State<LoginScreen> {
       normalized = '20${sanitized.substring(1)}';
       foundation.debugPrint('Applied EG country code fallback (+20).');
     }
-    final encodedText = Uri.encodeComponent('مرحبا!');
+    final encodedText = Uri.encodeComponent('نسيت كلمة المرور');
     final deepNoPlus =
         Uri.parse('whatsapp://send?phone=$normalized&text=$encodedText');
     final deepPlus =
@@ -368,8 +371,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final apiUri = Uri.parse(
         'https://api.whatsapp.com/send?phone=$normalized&text=$encodedText');
 
-    foundation.debugPrint('=== WHATSAPP DEBUG ===');
-    foundation.debugPrint('Raw support number: $number');
+    foundation.debugPrint('=== WHATSAPP PASSSWORD DEBUG ===');
+    foundation.debugPrint('Raw number: $number');
     foundation.debugPrint('Sanitized number: $sanitized');
     foundation.debugPrint('Normalized number (final): $normalized');
     foundation.debugPrint('kIsWeb: ${foundation.kIsWeb}');

@@ -32,6 +32,22 @@ class HomeRepository {
     return raw;
   }
 
+  /// جلب رقم الطوارئ من إعدادات النظام
+  Future<String?> getEmergencyNumber() async {
+    final settings = await getSystemSettings();
+    final raw = settings.emergencyNumber;
+    if (raw == null || raw.isEmpty) return null;
+    return raw;
+  }
+
+  /// جلب رقم تغيير كلمة المرور من إعدادات النظام
+  Future<String?> getPasswordChangeNumber() async {
+    final settings = await getSystemSettings();
+    final raw = settings.passwordChangeNumber;
+    if (raw == null || raw.isEmpty) return null;
+    return raw;
+  }
+
   /// جلب الأقسام مع الحفاظ على نفس الترتيب
   Future<List<Category>> getCategories() async {
     final res = await _api.get('/api/categories');

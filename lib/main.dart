@@ -14,6 +14,8 @@ import 'screens/splash_screen.dart';
 import 'core/router/app_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:firebase_core/firebase_core.dart';
+import 'package:nas_masr_app/core/services/fcm_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +24,13 @@ Future<void> main() async {
     await initializeDateFormatting('en');
     intl.Intl.defaultLocale = 'ar';
   } catch (_) {}
+
+  // Initialize Firebase
+  await Firebase.initializeApp();
+
+  // Initialize FCM and request notification permissions
+  await FCMService().initialize();
+
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent, // Transparent status bar background

@@ -14,12 +14,16 @@ class HomeProvider with ChangeNotifier {
   String? _bannerUrl;
   List<Models.Category> _categories = const [];
   String? _supportNumber;
+  String? _emergencyNumber;
+  String? _passwordChangeNumber;
 
   bool get loading => _loading;
   String? get error => _error;
   String? get bannerUrl => _bannerUrl;
   List<Models.Category> get categories => _categories;
   String? get supportNumber => _supportNumber;
+  String? get emergencyNumber => _emergencyNumber;
+  String? get passwordChangeNumber => _passwordChangeNumber;
 
   Future<void> loadHome() async {
     _setLoading(true);
@@ -65,6 +69,46 @@ class HomeProvider with ChangeNotifier {
         _setError(e.message);
       } else {
         _setError('حدث خطأ أثناء تحميل رقم الدعم.');
+      }
+      return null;
+    }
+  }
+
+  /// تحميل رقم الطوارئ عند الحاجة وإرجاعه
+  Future<String?> ensureEmergencyNumber() async {
+    if (_emergencyNumber != null && _emergencyNumber!.isNotEmpty) {
+      return _emergencyNumber;
+    }
+    try {
+      final num = await _repo.getEmergencyNumber();
+      _emergencyNumber = num;
+      notifyListeners();
+      return num;
+    } catch (e) {
+      if (e is AppError) {
+        _setError(e.message);
+      } else {
+        _setError('حدث خطأ أثناء تحميل رقم الطوارئ.');
+      }
+      return null;
+    }
+  }
+
+  /// تحميل رقم تغيير كلمة المرور عند الحاجة وإرجاعه
+  Future<String?> ensurePasswordChangeNumber() async {
+    if (_passwordChangeNumber != null && _passwordChangeNumber!.isNotEmpty) {
+      return _passwordChangeNumber;
+    }
+    try {
+      final num = await _repo.getPasswordChangeNumber();
+      _passwordChangeNumber = num;
+      notifyListeners();
+      return num;
+    } catch (e) {
+      if (e is AppError) {
+        _setError(e.message);
+      } else {
+        _setError('حدث خطأ أثناء تحميل رقم تغيير كلمة المرور.');
       }
       return null;
     }

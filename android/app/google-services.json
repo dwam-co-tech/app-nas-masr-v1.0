@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "194491953970",
+    "project_id": "nasmasr-app",
+    "storage_bucket": "nasmasr-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:194491953970:android:7de1920ef1b17e7cd8dd2b",
+        "android_client_info": {
+          "package_name": "com.example.nas_masr_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYcid6HVemtl9ayUHL6NgtJur5il_yWTE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

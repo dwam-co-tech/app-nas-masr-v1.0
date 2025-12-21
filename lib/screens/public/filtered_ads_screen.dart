@@ -100,6 +100,14 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
         case 'model':
           m['model'] = v;
           break;
+        case 'main_section_id':
+        case 'main_section':
+          m['main_section'] = v;
+          break;
+        case 'sub_section_id':
+        case 'sub_section':
+          m['sub_section'] = v;
+          break;
         default:
           m[k] = v;
       }
@@ -336,18 +344,11 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
                           final String val = (selectedValue is Governorate ||
                                   selectedValue is City ||
                                   selectedValue is Make ||
-                                  selectedValue is CarModel)
+                                  selectedValue is CarModel ||
+                                  selectedValue is MainSection ||
+                                  selectedValue is SubSection)
                               ? selectedValue.name
-                              : (filterKey == 'main_section_id' &&
-                                      selectedValue is MainSection)
-                                  ? selectedValue.id.toString()
-                                  : (filterKey == 'sub_section_id' &&
-                                          selectedValue is SubSection)
-                                      ? selectedValue.id.toString()
-                                      : (selectedValue is MainSection ||
-                                              selectedValue is SubSection)
-                                          ? selectedValue.name
-                                          : selectedValue.toString();
+                              : selectedValue.toString();
                           catProvider.setFilter(filterKey, val);
                           setState(() {
                             _selected[filterKey] = val;

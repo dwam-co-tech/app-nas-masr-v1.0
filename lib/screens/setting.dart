@@ -40,25 +40,121 @@ class _SettingState extends State<Setting> {
     super.dispose();
   }
 
-  Future<void> _launchWhatsAppSupport() async {
+  Future<void> _handleContactAction(String type, String title) async {
     final home = context.read<HomeProvider>();
-    String? number = home.supportNumber;
-    number ??= await home.ensureSupportNumber();
+    String? number;
+
+    if (type == 'support') {
+      number = home.supportNumber ?? await home.ensureSupportNumber();
+    } else {
+      number = home.emergencyNumber ?? await home.ensureEmergencyNumber();
+    }
+
     if (!mounted) return;
+
     if (number == null || number.isEmpty) {
-      foundation.debugPrint('=== WHATSAPP DEBUG ===');
-      foundation.debugPrint('Support number is null/empty');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Directionality(
             textDirection: TextDirection.rtl,
-            child: const Text('تعذر الحصول على رقم الدعم',
-                textAlign: TextAlign.right),
+            child:
+                const Text('تعذر الحصول على الرقم', textAlign: TextAlign.right),
           ),
         ),
       );
       return;
     }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                number!,
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                textDirection: TextDirection.ltr,
+              ),
+              SizedBox(height: 20.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _launchWhatsApp(number!);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF25D366),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      icon: const Icon(Icons.chat),
+                      label: const Text('واتساب'),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _makePhoneCall(number!);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      icon: const Icon(Icons.phone),
+                      label: const Text('اتصال'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _makePhoneCall(String number) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: number,
+    );
+    try {
+      if (await canLaunchUrl(launchUri)) {
+        await launchUrl(launchUri);
+      } else {
+        throw 'Could not launch $launchUri';
+      }
+    } catch (e) {
+      foundation.debugPrint('Error making phone call: $e');
+    }
+  }
+
+  Future<void> _launchWhatsApp(String number) async {
     // إزالة جميع الرموز غير الرقمية ثم تطبيع الرقم لصيغة دولية إن لزم (EG: +20)
     var sanitized = number.replaceAll(RegExp(r'[^0-9]'), '');
     if (sanitized.startsWith('00')) {
@@ -69,7 +165,6 @@ class _SettingState extends State<Setting> {
     if (sanitized.startsWith('0') && !sanitized.startsWith('20')) {
       // نفترض مصر كبلد افتراضي للتطبيق (nas_masr_app) => كود الدولة 20
       normalized = '20${sanitized.substring(1)}';
-      foundation.debugPrint('Applied EG country code fallback (+20).');
     }
     final encodedText = Uri.encodeComponent('مرحبا!');
     final deepNoPlus =
@@ -80,16 +175,9 @@ class _SettingState extends State<Setting> {
     final apiUri = Uri.parse(
         'https://api.whatsapp.com/send?phone=$normalized&text=$encodedText');
 
-    foundation.debugPrint('=== WHATSAPP DEBUG ===');
-    foundation.debugPrint('Raw support number: $number');
-    foundation.debugPrint('Sanitized number: $sanitized');
-    foundation.debugPrint('Normalized number (final): $normalized');
-    foundation.debugPrint('kIsWeb: ${foundation.kIsWeb}');
-
     try {
       if (foundation.kIsWeb) {
         final ok = await launchUrl(waUri, mode: LaunchMode.externalApplication);
-        foundation.debugPrint('launch wa.me (web) result: $ok');
         if (ok) return;
         final okWeb = await launchUrl(
           apiUri,
@@ -97,30 +185,21 @@ class _SettingState extends State<Setting> {
           webViewConfiguration:
               const WebViewConfiguration(enableJavaScript: true),
         );
-        foundation.debugPrint('launch inAppWebView (web) result: $okWeb');
         if (!okWeb)
           throw Exception('No available handler for WhatsApp links on web');
         return;
       } else {
-        foundation.debugPrint('Trying deep link without plus: $deepNoPlus');
         var ok =
             await launchUrl(deepNoPlus, mode: LaunchMode.externalApplication);
-        foundation.debugPrint('launch whatsapp (no plus) result: $ok');
         if (ok) return;
 
-        foundation.debugPrint('Trying deep link with plus: $deepPlus');
         ok = await launchUrl(deepPlus, mode: LaunchMode.externalApplication);
-        foundation.debugPrint('launch whatsapp (with plus) result: $ok');
         if (ok) return;
 
-        foundation.debugPrint('Trying wa.me external: $waUri');
         ok = await launchUrl(waUri, mode: LaunchMode.externalApplication);
-        foundation.debugPrint('launch wa.me external result: $ok');
         if (ok) return;
 
-        foundation.debugPrint('Trying api.whatsapp external: $apiUri');
         ok = await launchUrl(apiUri, mode: LaunchMode.externalApplication);
-        foundation.debugPrint('launch api.whatsapp external result: $ok');
         if (ok) return;
 
         // Final fallback: open WhatsApp web page in-app
@@ -130,16 +209,12 @@ class _SettingState extends State<Setting> {
           webViewConfiguration:
               const WebViewConfiguration(enableJavaScript: true),
         );
-        foundation
-            .debugPrint('launch inAppWebView (android) result: $okWebView');
         if (!okWebView)
           throw Exception('No available handler for any WhatsApp link');
         return;
       }
     } catch (e) {
       foundation.debugPrint('WHATSAPP LAUNCH ERROR: $e');
-      foundation.debugPrint(
-          'Root cause likely: no handler available or invalid phone format.');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Directionality(
@@ -338,14 +413,16 @@ class _SettingState extends State<Setting> {
                           title: 'تواصل لإضافة خدمة',
                           leadingSvgAsset: 'assets/svg/contact.svg',
                           iconSize: tileIconSize,
-                          onTap: _launchWhatsAppSupport,
+                          onTap: () => _handleContactAction(
+                              'support', 'تواصل لإضافة خدمة'),
                         ),
                         SizedBox(height: 3.h),
                         _SettingTile(
                           title: 'تواصل للاستفسارات',
                           leadingSvgAsset: 'assets/svg/asking.svg',
                           iconSize: tileIconSize,
-                          onTap: _launchWhatsAppSupport,
+                          onTap: () => _handleContactAction(
+                              'emergency', 'تواصل للاستفسارات'),
                         ),
                         SizedBox(height: 3.h),
                         _SettingTile(
