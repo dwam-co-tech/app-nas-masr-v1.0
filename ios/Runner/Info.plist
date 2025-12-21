@@ -54,5 +54,14 @@
     <!-- Location permission for geolocator -->
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>نحتاج للوصول إلى موقعك لتحديد العنوان على الخريطة.</string>
+    <!-- Camera permission for image_picker -->
+    <key>NSCameraUsageDescription</key>
+    <string>نحتاج للوصول إلى الكاميرا لالتقاط صور الإعلانات.</string>
+    <!-- Photo Library permission for image_picker -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>نحتاج للوصول إلى الصور لاختيار صور الإعلانات.</string>
+    <!-- Microphone permission for audio recording -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>نحتاج للوصول إلى الميكروفون لتسجيل الرسائل الصوتية.</string>
 </dict>
 </plist>
