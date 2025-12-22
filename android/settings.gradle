@@ -19,8 +19,7 @@ pluginManagement {
 
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-    // تحديث AGP إلى 8.5.0 ليتوافق مع Gradle 8.5 لديك
-    id "com.android.application" version "8.5.0" apply false
+    id "com.android.application" version "8.6.1" apply false
     // تحديث Kotlin إلى 2.1.0 كما يطلب الخطأ
     id "org.jetbrains.kotlin.android" version "2.1.0" apply false
 }

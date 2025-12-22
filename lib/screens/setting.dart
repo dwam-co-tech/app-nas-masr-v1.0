@@ -410,7 +410,7 @@ class _SettingState extends State<Setting> {
                         // ),
                         // SizedBox(height: 5.h),
                         _SettingTile(
-                          title: 'تواصل لإضافة خدمة',
+                          title: 'تواصل لإضافة منتج أو خدمة',
                           leadingSvgAsset: 'assets/svg/contact.svg',
                           iconSize: tileIconSize,
                           onTap: () => _handleContactAction(

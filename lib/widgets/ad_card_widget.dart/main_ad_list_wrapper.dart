@@ -25,6 +25,7 @@ class MainAdListWrapper extends StatelessWidget {
   final String categoryName;
   final bool isLoading;
   final List<AdCardModel> adList;
+  final bool groupByPlan;
 
   const MainAdListWrapper({
     super.key,
@@ -32,6 +33,7 @@ class MainAdListWrapper extends StatelessWidget {
     required this.categoryName,
     required this.isLoading,
     required this.adList,
+    this.groupByPlan = true,
   });
 
   Widget _selectAdCardWidget(String slug, AdCardModel ad) {
@@ -95,6 +97,26 @@ class MainAdListWrapper extends StatelessWidget {
     }
     if (adList.isEmpty) {
       return const Center(child: Text('لا توجد إعلانات مطابقة للبحث.'));
+    }
+    if (!groupByPlan) {
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: adList.length,
+        itemBuilder: (context, index) {
+          final ad = adList[index];
+          return InkWell(
+            onTap: () {
+              context.push('/ad/details', extra: {
+                'categorySlug': categorySlug,
+                'categoryName': categoryName,
+                'adId': ad.id.toString(),
+              });
+            },
+            child: _selectAdCardWidget(categorySlug, ad),
+          );
+        },
+      );
     }
     final Map<String, List<AdCardModel>> grouped = {
       'featured': <AdCardModel>[],

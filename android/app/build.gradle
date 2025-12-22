@@ -9,6 +9,7 @@ plugins {
 android {
     namespace = "com.example.nas_masr_app"
     compileSdk = 36
+    ndkVersion "26.3.11579264"
 
     compileOptions {
         // Enable core library desugaring for flutter_local_notifications

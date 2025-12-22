@@ -434,6 +434,9 @@ class _FilteredAdsScreenState extends State<FilteredAdsScreen> {
                                           categoryName: widget.categoryName,
                                           isLoading: false,
                                           adList: ads,
+                                          groupByPlan:
+                                              !(adProvider.sortByNearest ||
+                                                  adProvider.sortByPrice),
                                         ),
                                       ],
                                     ),
