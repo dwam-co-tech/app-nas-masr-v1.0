@@ -152,6 +152,21 @@ class FCMService {
         // TODO: التوجيه للصفحة المناسبة
       },
     );
+
+    // Create the channel on Android
+    final androidImplementation =
+        _localNotifications.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidImplementation != null) {
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        'fcm_default_channel', // id
+        'FCM Notifications', // title
+        description: 'Firebase Cloud Messaging notifications', // description
+        importance: Importance.high,
+      );
+      await androidImplementation.createNotificationChannel(channel);
+    }
   }
 
   /// Show local notification
