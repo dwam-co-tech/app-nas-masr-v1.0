@@ -16,8 +16,12 @@ class PremiumAdvertiser {
   factory PremiumAdvertiser.fromMap(Map<String, dynamic> json) {
     final listingsData = json['listings'] as List<dynamic>? ?? [];
 
+    // Ensure we get the User ID, not the Premium Subscription ID
+    final userId = json['user'] != null ? json['user']['id'] : json['user_id'];
+    final int effectiveId = userId is int ? userId : int.tryParse(userId.toString()) ?? (json['id'] as int);
+
     return PremiumAdvertiser(
-      id: json['id'] as int,
+      id: effectiveId,
       name: json['user']['name'] as String? ?? 'مُعلن مميز', // استخراج الإسم من User Nested Field
       listings: listingsData.map((e) => PremiumListingItem.fromMap(e as Map<String, dynamic>)).toList(),
     );

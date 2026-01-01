@@ -110,16 +110,19 @@ class GeneralGridPremiumSellersWidget extends StatelessWidget {
                               child: Stack(
                                 children: [
                                   Positioned.fill(
-                                    child: CachedNetworkImage(
-                                      imageUrl: item.mainImageUrl ??
-                                          'assets/images/logo.png',
-                                      fit: BoxFit.cover,
-                                      errorWidget: (context, url, error) =>
-                                          Container(
-                                              color: Colors.grey.shade200,
-                                              child: Center(
-                                                  child: Icon(Icons.error,
-                                                      size: 24.sp))),
+                                    child: Container(
+                                      color: const Color(0xFFE6E6E6),
+                                      child: CachedNetworkImage(
+                                        imageUrl: item.mainImageUrl ??
+                                            'assets/images/logo.png',
+                                        fit: BoxFit.contain,
+                                        errorWidget: (context, url, error) =>
+                                            Container(
+                                                color: Colors.grey.shade200,
+                                                child: Center(
+                                                    child: Icon(Icons.error,
+                                                        size: 24.sp))),
+                                      ),
                                     ),
                                   ),
                                   Positioned(

@@ -59,8 +59,8 @@ class AdCardModel {
       planType: json['plan_type'] as String? ?? 'free',
       make: json['make'] as String?,
       model: json['model'] as String?,
-      mainSection: json['main_section']?.toString(),
-      subSection: json['sub_section']?.toString(),
+      mainSection: json['main_section']?.toString() ?? attributes['main_section']?.toString(),
+      subSection: json['sub_section']?.toString() ?? attributes['sub_section']?.toString(),
       lat: double.tryParse(
           json['lat']?.toString() ?? attributes['lat']?.toString() ?? ''),
       lng: double.tryParse(

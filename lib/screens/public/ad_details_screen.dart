@@ -319,9 +319,12 @@ class AdDetailsScreen extends StatelessWidget {
                                         final url = urls.isEmpty
                                             ? 'https://via.placeholder.com/800x600/EEE/AAA?text=No+Image'
                                             : urls[index];
-                                        return CachedNetworkImage(
-                                          imageUrl: url,
-                                          fit: BoxFit.cover,
+                                        return Container(
+                                          color: const Color(0xFFE6E6E6),
+                                          child: CachedNetworkImage(
+                                            imageUrl: url,
+                                            fit: BoxFit.contain,
+                                          ),
                                         );
                                       },
                                     ),

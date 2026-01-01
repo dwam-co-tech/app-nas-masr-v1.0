@@ -37,6 +37,7 @@ import 'package:flutter/services.dart';
 import 'package:nas_masr_app/widgets/notifications_badge_icon.dart';
 import 'package:nas_masr_app/core/data/models/plan_prices_model.dart';
 import 'package:nas_masr_app/core/data/reposetory/plan_prices_repository.dart';
+import 'package:nas_masr_app/core/data/reposetory/home_repository.dart';
 // Note: يرجى حقق من وجود FilterOptions و FilterRepository
 // (تم استبدالهما بـ Models النهائية لتجنب أخطاء البناء)
 // import '../core/data/models/filter_options.dart';
@@ -738,12 +739,14 @@ class PackageSelectionWidget extends StatefulWidget {
   final String? initialValue;
   final List<String>? allowedIds;
   final PlanPrices? prices;
+  final int? freeDays;
   const PackageSelectionWidget(
       {super.key,
       this.onChanged,
       this.initialValue,
       this.allowedIds,
-      this.prices});
+      this.prices,
+      this.freeDays});
   @override
   State<PackageSelectionWidget> createState() => _PackageSelectionWidgetState();
 }
@@ -767,22 +770,27 @@ class _PackageSelectionWidgetState extends State<PackageSelectionWidget> {
 
   List<_PackageItem> _buildItems() {
     final p = widget.prices;
+    // Prioritize the explicit fields mentioned by the user:
+    // featured_ad_price and standard_ad_price
+    final fPrice = p?.featuredAdPrice ?? p?.priceFeatured ?? 100;
+    final sPrice = p?.standardAdPrice ?? p?.priceStandard ?? 80;
+
     return [
       _PackageItem(
           id: 'featured',
           title: 'إعلان متميز يظهر في مجموعة أعلي قائمة الاعلانات',
-          price: p?.priceFeatured ?? p?.featuredAdPrice ?? 100,
+          price: fPrice,
           validityDays: p?.featuredDays ?? 365),
       _PackageItem(
           id: 'standard',
           title: 'إعلان ستاندرد يظهر في مجموعة بعد الاعلانات متميز',
-          price: p?.priceStandard ?? p?.standardAdPrice ?? 80,
+          price: sPrice,
           validityDays: p?.standardDays ?? 365),
       _PackageItem(
           id: 'free',
           title: 'إعلان مجاني يظهر في نهاية قائمة الاعلانات',
           price: 0,
-          validityDays: 365),
+          validityDays: widget.freeDays ?? 365),
     ];
   }
 
@@ -1012,6 +1020,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
   PlanPrices? _planPrices;
   CategoryFieldsResponse? _config;
   bool _usernameChecked = false;
+  int? _freeAdDays;
 
   String? _doctorName;
 
@@ -1048,6 +1057,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     Future.microtask(_loadConfig);
     Future.microtask(_loadPlanPrices);
+    Future.microtask(_loadSystemSettings);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkUsernameOnOpen());
   }
 
@@ -1068,6 +1078,8 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
         await profProv.loadProfile();
       }
       final currentName = profProv.profile?.name?.trim() ?? '';
+      print(
+          'DEBUG_USER_CHECK_OPEN: Name="$currentName", IsEmpty=${currentName.isEmpty}');
       if (currentName.isEmpty) {
         await _promptForUsername();
       }
@@ -1104,6 +1116,18 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
     } catch (_) {
       // Use default prices if API fails
     }
+  }
+
+  Future<void> _loadSystemSettings() async {
+    try {
+      final repo = HomeRepository(api: ApiService());
+      final settings = await repo.getSystemSettings();
+      if (mounted && settings.freeAdDaysValidity != null) {
+        setState(() {
+          _freeAdDays = settings.freeAdDaysValidity;
+        });
+      }
+    } catch (_) {}
   }
 
   // هذه الدالة السحرية ستقوم ببناء جميع الـ Form Fields بشكل آلي
@@ -1187,6 +1211,8 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
   Future<void> _submitWithProvider(AdCreationProvider provider) async {
     final profProv = context.read<ProfileProvider>();
     final currentName = profProv.profile?.name?.trim() ?? '';
+    print(
+        'DEBUG_USER_CHECK_SUBMIT: Name="$currentName", IsEmpty=${currentName.isEmpty}');
     if (currentName.isEmpty) {
       final ok = await _promptForUsername();
       if (!ok) return;
@@ -1839,6 +1865,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
                                       : _selectedPlanType,
                                   allowedIds:
                                       slug == 'missing' ? const ['free'] : null,
+                                  freeDays: _freeAdDays,
                                 ),
                                 SizedBox(height: 5.h),
 

@@ -60,11 +60,11 @@ class FavoriteCardWidget extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8.r),
                       child: Container(
-                        color: Colors.grey.shade300,
+                        color: const Color(0xFFE6E6E6),
                         child: CachedNetworkImage(
                           imageUrl: ad.mainImageUrl ??
                               'https://via.placeholder.com/600x400/94A5A2/FFFFFF?text=ناص',
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                           width: 150.w,
                           height: 150.h,
                         ),
@@ -202,7 +202,7 @@ class FavoriteCardWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-                  SizedBox(height: 12.h),
+                    SizedBox(height: 12.h),
                     Row(
                       children: [
                         Icon(Icons.location_on_rounded,

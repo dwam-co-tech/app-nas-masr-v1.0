@@ -243,11 +243,11 @@ class ServiceAdCardWidget extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.r),
                     child: Container(
-                      color: Colors.grey.shade300,
+                      color: const Color(0xFFE6E6E6),
                       child: CachedNetworkImage(
                         imageUrl: ad.mainImageUrl ??
                             'https://via.placeholder.com/600x400/94A5A2/FFFFFF?text=ناص',
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                         width: 160.w,
                         height: 140.h,
                       ),

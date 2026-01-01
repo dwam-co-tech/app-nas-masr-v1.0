@@ -3,12 +3,14 @@ class HomeModel {
   final String? supportNumber;
   final String? emergencyNumber;
   final String? passwordChangeNumber;
+  final int? freeAdDaysValidity;
 
   const HomeModel({
     this.bannerUrl,
     this.supportNumber,
     this.emergencyNumber,
     this.passwordChangeNumber,
+    this.freeAdDaysValidity,
   });
 
   /// ينشئ موديل من خريطة الاستجابة، ويدمج `baseUrl` للرابط النسبي عند الحاجة
@@ -31,11 +33,21 @@ class HomeModel {
     final passwordChangeNumber = map['sub_support_number']?.toString() ??
         map['subSupportNumber']?.toString();
 
+    // Parse free_ad_days_validity
+    int? freeDays;
+    final fdRaw = map['free_ad_days_validity'];
+    if (fdRaw is int) {
+      freeDays = fdRaw;
+    } else if (fdRaw != null) {
+      freeDays = int.tryParse(fdRaw.toString());
+    }
+
     return HomeModel(
       bannerUrl: raw,
       supportNumber: supportNumber,
       emergencyNumber: emergencyNumber,
       passwordChangeNumber: passwordChangeNumber,
+      freeAdDaysValidity: freeDays,
     );
   }
 
@@ -47,11 +59,14 @@ class HomeModel {
     String? banner;
     String? support;
     String? emergency;
+    int? freeDays;
+
     for (final item in data) {
       if (item is Map<String, dynamic>) {
         final key = item['key']?.toString().toLowerCase();
         final val = item['value']?.toString();
         final pn = item['panner_image']?.toString();
+
         if (banner == null) {
           if (pn != null && pn.isNotEmpty) {
             banner = pn;
@@ -75,6 +90,15 @@ class HomeModel {
             emergency = val;
           }
         }
+        // Check for free_ad_days_validity
+        if (freeDays == null) {
+          if (item['free_ad_days_validity'] != null) {
+            final raw = item['free_ad_days_validity'];
+            freeDays = (raw is int) ? raw : int.tryParse(raw.toString());
+          } else if (key == 'free_ad_days_validity') {
+            freeDays = int.tryParse(val ?? '');
+          }
+        }
       }
     }
     if (banner != null && banner.isNotEmpty) {
@@ -84,6 +108,10 @@ class HomeModel {
       }
     }
     return HomeModel(
-        bannerUrl: banner, supportNumber: support, emergencyNumber: emergency);
+      bannerUrl: banner,
+      supportNumber: support,
+      emergencyNumber: emergency,
+      freeAdDaysValidity: freeDays,
+    );
   }
 }

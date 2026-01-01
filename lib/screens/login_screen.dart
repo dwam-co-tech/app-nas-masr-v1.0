@@ -204,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 5),
                   CustomTextField(
-                    labelText: 'كلمة المرور',
+                    labelText: 'انشاء كلمة المرور',
                     isPassword: true,
                     hintText: '***',
                     onChanged: (v) => _password = v,
