@@ -218,7 +218,7 @@ class CarSparePartsAdCardWidget extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.r),
                     child: Container(
-                      color: const Color(0xFFE6E6E6),
+                      color: Colors.white,
                       child: CachedNetworkImage(
                         imageUrl: ad.mainImageUrl ??
                             'https://via.placeholder.com/600x400/94A5A2/FFFFFF?text=ناص',

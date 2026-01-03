@@ -1197,10 +1197,7 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
         return JobsCreationForm(
           key: _jobsFormKey,
           fieldsConfig: fields,
-          mainSections: _config?.mainSections ?? [],
           labelStyle: labelStyle,
-          onMainCategoryChanged: (v) => _mainCategory = v,
-          onSubCategoryChanged: (v) => _subCategory = v,
         );
 
       default:
@@ -1361,8 +1358,15 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
     } else if (slug == 'jobs') {
       final j = _jobsFormKey.currentState?.getAttributes() ??
           const <String, String?>{};
-      if ((j['salary'] ?? '').toString().trim().isEmpty) {
-        errors.add('ادخل الراتب');
+
+      // Check required fields from config
+      final fields = _config?.categoryFields ?? const <CategoryFieldConfig>[];
+      for (final f in fields) {
+        if (!f.isRequired) continue;
+        final value = j[f.fieldName]?.toString().trim() ?? '';
+        if (value.isEmpty) {
+          errors.add('حقل ${f.displayName} مطلوب');
+        }
       }
     } else if (slug == 'doctors' || slug == 'teachers') {
       if (_specialization == null || _specialization!.isEmpty) {
@@ -1421,9 +1425,10 @@ class _AdCreationScreenState extends State<AdCreationScreen> {
               const <String, String?>{})
           : const <String, String?>{};
 
+      // Only set mainSectionId/subSectionId for spare-parts (still uses hierarchical structure)
       String? mainSecId;
       String? subSecId;
-      if (slug == 'jobs') {
+      if (slug == 'spare-parts') {
         final sections = _config?.mainSections ?? [];
         try {
           final m = sections.firstWhere((s) => s.name == _mainCategory);

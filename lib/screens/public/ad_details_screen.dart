@@ -320,7 +320,7 @@ class AdDetailsScreen extends StatelessWidget {
                                             ? 'https://via.placeholder.com/800x600/EEE/AAA?text=No+Image'
                                             : urls[index];
                                         return Container(
-                                          color: const Color(0xFFE6E6E6),
+                                          color: Colors.white,
                                           child: CachedNetworkImage(
                                             imageUrl: url,
                                             fit: BoxFit.contain,
@@ -1003,7 +1003,7 @@ class AdDetailsScreen extends StatelessWidget {
                                     ),
                                   )
                                 : Transform.scale(
-                                    scale: 1.08,
+                                    scale: 1,
                                     child: CachedNetworkImage(
                                       imageUrl: bannerUrl,
                                       fit: BoxFit.cover,

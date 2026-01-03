@@ -71,8 +71,7 @@ class _ChoseCategoryCreateAdsState extends State<ChoseCategoryCreateAds> {
                       padding: const EdgeInsets.only(left: 12),
                       child: InkWell(
                         onTap: () => context.pushNamed('notifications'),
-                           child: NotificationsBadgeIcon(isLand: isLand),
-                  
+                        child: NotificationsBadgeIcon(isLand: isLand),
                       ),
                     ),
                   ],
@@ -98,7 +97,8 @@ class _ChoseCategoryCreateAdsState extends State<ChoseCategoryCreateAds> {
                       SizedBox(height: isLand ? 1.h : 4.h),
                       SizedBox(height: 8.h),
                       _BannerSection(
-                          bannerUrl: home.bannerUrl, loading: home.loading),
+                          bannerUrl: home.homeAdsBannerUrl,
+                          loading: home.loading),
                       SizedBox(height: 12.h),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),

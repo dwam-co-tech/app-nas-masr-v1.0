@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 // البانر بعرض الصفحة كامل بدون هوامش جانبية
                 SizedBox(height: isLand ? 1.h : 4.h),
                 _BannerSection(
-                    bannerUrl: home.bannerUrl, loading: home.loading),
+                    bannerUrl: home.homeBannerUrl, loading: home.loading),
                 SizedBox(height: 12.h),
                 // بقية المحتوى مع هوامش جانبية
                 Padding(

@@ -2,10 +2,30 @@ import 'package:nas_masr_app/core/constatants/string.dart';
 import 'package:nas_masr_app/core/data/web_services/api_services.dart';
 import 'package:nas_masr_app/core/data/models/category_home.dart';
 import 'package:nas_masr_app/core/data/models/home_banar_model.dart';
+import 'package:nas_masr_app/core/data/models/banner_model.dart';
 
 class HomeRepository {
   final ApiService _api;
   HomeRepository({ApiService? api}) : _api = api ?? ApiService();
+
+  /// جلب البانرات من الـ API الجديد
+  Future<BannersResponse> getBanners() async {
+    final res = await _api.get('/api/banners');
+    if (res is Map<String, dynamic>) {
+      return BannersResponse.fromMap(res);
+    }
+    return const BannersResponse(success: false, banners: []);
+  }
+
+  /// جلب banner معين بواسطة slug
+  Future<String?> getBannerBySlug(String slug) async {
+    try {
+      final bannersResponse = await getBanners();
+      return bannersResponse.getBannerUrl(slug);
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// جلب إعدادات النظام Typed
   Future<HomeModel> getSystemSettings() async {
@@ -18,7 +38,8 @@ class HomeRepository {
     return const HomeModel();
   }
 
-  /// جلب إعدادات النظام لاستخراج صورة البنر
+  /// جلب إعدادات النظام لاستخراج صورة البنر (DEPRECATED - use getBannerBySlug instead)
+  @Deprecated('Use getBannerBySlug("home") instead')
   Future<String?> getBannerImageUrl() async {
     final settings = await getSystemSettings();
     return settings.bannerUrl;

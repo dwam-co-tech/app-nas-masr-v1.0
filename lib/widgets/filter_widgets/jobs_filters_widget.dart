@@ -41,13 +41,30 @@ class JobsFiltersWidget extends StatelessWidget {
     );
   }
 
+  // Helper method to get custom field by name
+  List<String> _getFieldOptions(String fieldName) {
+    try {
+      final field = config.categoryFields.firstWhere(
+        (f) => f.fieldName == fieldName,
+        orElse: () => config.categoryFields.first,
+      );
+
+      if (field.fieldName == fieldName && field.options.isNotEmpty) {
+        return field.options.map((opt) => opt.toString()).toList();
+      }
+    } catch (e) {
+      print('Error getting field options for $fieldName: $e');
+    }
+    return [];
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider =
         Provider.of<CategoryListingProvider>(context, listen: true);
 
     print(
-        'DEBUG: JobsFiltersWidget build. Govs: ${config.governorates.length}, SupportsSections: ${config.supportsSections}');
+        'DEBUG: JobsFiltersWidget build. Govs: ${config.governorates.length}, Fields: ${config.categoryFields.length}');
 
     // 1. Location Filters
     final governorates = config.governorates;
@@ -87,40 +104,9 @@ class JobsFiltersWidget extends StatelessWidget {
       }
     }
 
-    // 2. Dynamic Category Filters (Main/Sub Sections)
-    // For Jobs: Classification (Main Section) & Specialization (Sub Section)
-    final mainSections = config.mainSections;
-
-    // Logic for Sub Sections: Dependent on Main Section
-    List<dynamic> subSections = [];
-    final selectedMainSectionId = provider.selectedFilters['main_section_id'];
-    bool isSubSectionEnabled = false;
-
-    if (selectedMainSectionId != null) {
-      try {
-        final mainIdInt = int.tryParse(selectedMainSectionId.toString());
-        if (mainIdInt != null) {
-          final selectedMain = mainSections.firstWhere((m) => m.id == mainIdInt,
-              orElse: () => mainSections.first);
-          if (selectedMain.id == mainIdInt) {
-            subSections = selectedMain.subSections;
-            isSubSectionEnabled = true;
-          }
-        }
-
-        if (!isSubSectionEnabled) {
-          final selectedMain = mainSections.firstWhere(
-              (m) => m.name == selectedMainSectionId.toString(),
-              orElse: () => mainSections.first);
-          if (selectedMain.name == selectedMainSectionId.toString()) {
-            subSections = selectedMain.subSections;
-            isSubSectionEnabled = true;
-          }
-        }
-      } catch (e) {
-        subSections = [];
-      }
-    }
+    // 2. Get Custom Fields Options (Independent Fields)
+    final jobTypeOptions = _getFieldOptions('job_type');
+    final specializationOptions = _getFieldOptions('specialization');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -149,36 +135,39 @@ class JobsFiltersWidget extends StatelessWidget {
             ],
           ),
 
-          // Row 2: Categories (Classification & Specialization)
-          if (config.supportsSections)
+          // Row 2: Job Type & Specialization (Independent Custom Fields)
+          if (jobTypeOptions.isNotEmpty || specializationOptions.isNotEmpty)
             Row(
               children: [
-                FilterDropdownButton(
-                  label: 'التصنيف',
-                  onTap: () => _openFilterModal(
-                    context,
-                    'main_section_id', // Using _id as per requirement
-                    'التصنيف',
-                    mainSections,
+                // Job Type Filter
+                if (jobTypeOptions.isNotEmpty)
+                  FilterDropdownButton(
+                    label: 'التصنيف',
+                    onTap: () => _openFilterModal(
+                      context,
+                      'job_type',
+                      'التصنيف',
+                      jobTypeOptions,
+                    ),
+                    isSelected: provider.isFilterSelected('job_type'),
+                    selectedValue:
+                        provider.selectedFilters['job_type']?.toString(),
                   ),
-                  isSelected: provider.isFilterSelected('main_section_id'),
-                  selectedValue:
-                      provider.selectedFilters['main_section_id']?.toString(),
-                ),
-                FilterDropdownButton(
-                  label: 'التخصص',
-                  onTap: isSubSectionEnabled
-                      ? () => _openFilterModal(
-                            context,
-                            'sub_section_id', // Using _id as per requirement
-                            'التخصص',
-                            subSections,
-                          )
-                      : null,
-                  isSelected: provider.isFilterSelected('sub_section_id'),
-                  selectedValue:
-                      provider.selectedFilters['sub_section_id']?.toString(),
-                ),
+
+                // Specialization Filter (Independent - Always Enabled)
+                if (specializationOptions.isNotEmpty)
+                  FilterDropdownButton(
+                    label: 'التخصص',
+                    onTap: () => _openFilterModal(
+                      context,
+                      'specialization',
+                      'التخصص',
+                      specializationOptions,
+                    ),
+                    isSelected: provider.isFilterSelected('specialization'),
+                    selectedValue:
+                        provider.selectedFilters['specialization']?.toString(),
+                  ),
               ],
             ),
 

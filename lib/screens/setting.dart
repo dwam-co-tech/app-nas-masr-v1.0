@@ -40,120 +40,6 @@ class _SettingState extends State<Setting> {
     super.dispose();
   }
 
-  Future<void> _handleContactAction(String type, String title) async {
-    final home = context.read<HomeProvider>();
-    String? number;
-
-    if (type == 'support') {
-      number = home.supportNumber ?? await home.ensureSupportNumber();
-    } else {
-      number = home.emergencyNumber ?? await home.ensureEmergencyNumber();
-    }
-
-    if (!mounted) return;
-
-    if (number == null || number.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Directionality(
-            textDirection: TextDirection.rtl,
-            child:
-                const Text('تعذر الحصول على الرقم', textAlign: TextAlign.right),
-          ),
-        ),
-      );
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                number!,
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
-                textDirection: TextDirection.ltr,
-              ),
-              SizedBox(height: 20.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        _launchWhatsApp(number!);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF25D366),
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      icon: const Icon(Icons.chat),
-                      label: const Text('واتساب'),
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        _makePhoneCall(number!);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      icon: const Icon(Icons.phone),
-                      label: const Text('اتصال'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _makePhoneCall(String number) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: number,
-    );
-    try {
-      if (await canLaunchUrl(launchUri)) {
-        await launchUrl(launchUri);
-      } else {
-        throw 'Could not launch $launchUri';
-      }
-    } catch (e) {
-      foundation.debugPrint('Error making phone call: $e');
-    }
-  }
-
   Future<void> _launchWhatsApp(String number) async {
     // إزالة جميع الرموز غير الرقمية ثم تطبيع الرقم لصيغة دولية إن لزم (EG: +20)
     var sanitized = number.replaceAll(RegExp(r'[^0-9]'), '');
@@ -413,16 +299,58 @@ class _SettingState extends State<Setting> {
                           title: 'تواصل لإضافة منتج أو خدمة',
                           leadingSvgAsset: 'assets/svg/contact.svg',
                           iconSize: tileIconSize,
-                          onTap: () => _handleContactAction(
-                              'support', 'تواصل لإضافة خدمة'),
+                          onTap: () async {
+                            // فتح واتساب مباشرة بدون dialog
+                            final home = context.read<HomeProvider>();
+                            final number = home.supportNumber ??
+                                await home.ensureSupportNumber();
+
+                            if (!mounted) return;
+
+                            if (number == null || number.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Directionality(
+                                    textDirection: TextDirection.rtl,
+                                    child: const Text('تعذر الحصول على الرقم',
+                                        textAlign: TextAlign.right),
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            _launchWhatsApp(number);
+                          },
                         ),
                         SizedBox(height: 3.h),
                         _SettingTile(
                           title: 'تواصل للاستفسارات',
                           leadingSvgAsset: 'assets/svg/asking.svg',
                           iconSize: tileIconSize,
-                          onTap: () => _handleContactAction(
-                              'emergency', 'تواصل للاستفسارات'),
+                          onTap: () async {
+                            // فتح واتساب مباشرة بدون dialog
+                            final home = context.read<HomeProvider>();
+                            final number = home.emergencyNumber ??
+                                await home.ensureEmergencyNumber();
+
+                            if (!mounted) return;
+
+                            if (number == null || number.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Directionality(
+                                    textDirection: TextDirection.rtl,
+                                    child: const Text('تعذر الحصول على الرقم',
+                                        textAlign: TextAlign.right),
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            _launchWhatsApp(number);
+                          },
                         ),
                         SizedBox(height: 3.h),
                         _SettingTile(

@@ -111,7 +111,7 @@ class GeneralGridPremiumSellersWidget extends StatelessWidget {
                                 children: [
                                   Positioned.fill(
                                     child: Container(
-                                      color: const Color(0xFFE6E6E6),
+                                      color: Colors.white,
                                       child: CachedNetworkImage(
                                         imageUrl: item.mainImageUrl ??
                                             'assets/images/logo.png',

@@ -11,7 +11,8 @@ class HomeProvider with ChangeNotifier {
 
   bool _loading = false;
   String? _error;
-  String? _bannerUrl;
+  String? _homeBannerUrl;
+  String? _homeAdsBannerUrl;
   List<Models.Category> _categories = const [];
   String? _supportNumber;
   String? _emergencyNumber;
@@ -19,7 +20,13 @@ class HomeProvider with ChangeNotifier {
 
   bool get loading => _loading;
   String? get error => _error;
-  String? get bannerUrl => _bannerUrl;
+  String? get homeBannerUrl => _homeBannerUrl;
+  String? get homeAdsBannerUrl => _homeAdsBannerUrl;
+
+  // للتوافق مع الكود القديم - يرجع banner الصفحة الرئيسية
+  @Deprecated('Use homeBannerUrl instead')
+  String? get bannerUrl => _homeBannerUrl;
+
   List<Models.Category> get categories => _categories;
   String? get supportNumber => _supportNumber;
   String? get emergencyNumber => _emergencyNumber;
@@ -30,14 +37,22 @@ class HomeProvider with ChangeNotifier {
     _setError(null);
     try {
       final results = await Future.wait([
-        _repo.getBannerImageUrl(),
+        _repo.getBannerBySlug('home'),
+        _repo.getBannerBySlug('home_ads'),
         _repo.getCategories(),
       ]);
-      _bannerUrl = results[0] as String?;
-      _categories = (results[1] as List<Models.Category>);
-      if (_bannerUrl != null && _bannerUrl!.isNotEmpty) {
-        DefaultCacheManager().getSingleFile(_bannerUrl!);
+      _homeBannerUrl = results[0] as String?;
+      _homeAdsBannerUrl = results[1] as String?;
+      _categories = (results[2] as List<Models.Category>);
+
+      // Cache the banners
+      if (_homeBannerUrl != null && _homeBannerUrl!.isNotEmpty) {
+        DefaultCacheManager().getSingleFile(_homeBannerUrl!);
       }
+      if (_homeAdsBannerUrl != null && _homeAdsBannerUrl!.isNotEmpty) {
+        DefaultCacheManager().getSingleFile(_homeAdsBannerUrl!);
+      }
+
       for (final c in _categories) {
         if (c.iconUrl.isNotEmpty) {
           DefaultCacheManager().getSingleFile(c.iconUrl);
