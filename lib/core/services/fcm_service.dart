@@ -7,6 +7,24 @@ import 'package:nas_masr_app/core/data/web_services/api_services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Helper to remove duplicate title from the beginning of body
+String _cleanNotificationBody(String title, String body) {
+  if (title.isEmpty || body.isEmpty) return body;
+  String cleanedBody = body.trim();
+  String cleanedTitle = title.trim();
+
+  // Check if body starts with the title
+  if (cleanedBody.startsWith(cleanedTitle)) {
+    cleanedBody = cleanedBody.substring(cleanedTitle.length).trim();
+    // Remove leading newlines
+    while (cleanedBody.startsWith('\n') || cleanedBody.startsWith('\r')) {
+      cleanedBody = cleanedBody.substring(1);
+    }
+  }
+
+  return cleanedBody.trim();
+}
+
 Future<void> _maybeShowBackgroundLocalNotification(
     RemoteMessage message) async {
   // If Firebase already handled the notification (notification object exists), don't show it again
@@ -17,9 +35,10 @@ Future<void> _maybeShowBackgroundLocalNotification(
   final title = (message.data['title'] ?? message.data['notification_title'])
           ?.toString() ??
       '';
-  final body =
+  final rawBody =
       (message.data['body'] ?? message.data['notification_body'])?.toString() ??
           '';
+  final body = _cleanNotificationBody(title, rawBody);
   if (title.isEmpty && body.isEmpty) return;
 
   final localNotifications = FlutterLocalNotificationsPlugin();
@@ -285,7 +304,8 @@ class FCMService {
 
     // Get title and body from notification object
     final title = message.notification?.title ?? 'إشعار جديد';
-    final body = message.notification?.body ?? '';
+    final rawBody = message.notification?.body ?? '';
+    final body = _cleanNotificationBody(title, rawBody);
 
     await _localNotifications.show(
       message.hashCode, // notification ID

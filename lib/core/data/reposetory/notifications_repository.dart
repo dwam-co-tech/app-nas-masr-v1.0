@@ -41,6 +41,24 @@ class NotificationItem {
   });
 }
 
+/// Helper to remove duplicate title from the beginning of body
+String _cleanBody(String title, String body) {
+  if (title.isEmpty || body.isEmpty) return body;
+  String cleanedBody = body.trim();
+  String cleanedTitle = title.trim();
+
+  // Check if body starts with the title (with or without newline)
+  if (cleanedBody.startsWith(cleanedTitle)) {
+    cleanedBody = cleanedBody.substring(cleanedTitle.length).trim();
+    // Remove leading newlines or separators
+    while (cleanedBody.startsWith('\n') || cleanedBody.startsWith('\r')) {
+      cleanedBody = cleanedBody.substring(1);
+    }
+  }
+
+  return cleanedBody.trim();
+}
+
 class NotificationsRepository {
   final ApiService _api;
   NotificationsRepository({ApiService? api}) : _api = api ?? ApiService();
@@ -62,10 +80,12 @@ class NotificationsRepository {
           : (res is List ? res : const []);
       return list.map((e) {
         final m = e as Map<String, dynamic>;
+        final rawTitle = m['title']?.toString() ?? '';
+        final rawBody = m['body']?.toString() ?? '';
         return NotificationItem(
           id: (m['id'] as num?)?.toInt() ?? 0,
-          title: m['title']?.toString() ?? '',
-          body: m['body']?.toString() ?? '',
+          title: rawTitle,
+          body: _cleanBody(rawTitle, rawBody),
           category: m['category']?.toString(),
           type: m['type']?.toString(),
           data: m['data'] is Map<String, dynamic>
@@ -110,10 +130,12 @@ class NotificationsRepository {
 
     final items = list.map((e) {
       final m = e as Map<String, dynamic>;
+      final rawTitle = m['title']?.toString() ?? '';
+      final rawBody = m['body']?.toString() ?? '';
       return NotificationItem(
         id: (m['id'] as num?)?.toInt() ?? 0,
-        title: m['title']?.toString() ?? '',
-        body: m['body']?.toString() ?? '',
+        title: rawTitle,
+        body: _cleanBody(rawTitle, rawBody),
         category: m['category']?.toString(),
         type: m['type']?.toString(),
         data: m['data'] is Map<String, dynamic>
