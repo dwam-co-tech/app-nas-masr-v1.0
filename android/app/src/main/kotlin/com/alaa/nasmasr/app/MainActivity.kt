@@ -1,4 +1,4 @@
-package com.example.nas_masr_app
+package com.alaa.nasmasr.app
 
 import io.flutter.embedding.android.FlutterActivity
 

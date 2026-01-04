@@ -86,4 +86,13 @@ class ProfileProvider with ChangeNotifier {
     _error = msg;
     notifyListeners();
   }
+
+  /// Clear all profile data (useful for logout)
+  void clearProfile() {
+    _profile = null;
+    _error = null;
+    _loading = false;
+    notifyListeners();
+    print('✅ ProfileProvider: All profile data cleared');
+  }
 }

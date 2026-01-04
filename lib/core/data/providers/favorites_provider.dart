@@ -112,4 +112,16 @@ class FavoritesProvider with ChangeNotifier {
     _error = msg;
     notifyListeners();
   }
+
+  /// Clear all favorites data (useful for logout)
+  void clearData() {
+    _items = const [];
+    _categories = const {};
+    _allCategories = const {};
+    _selectedSlug = null;
+    _error = null;
+    _loading = false;
+    notifyListeners();
+    print('✅ FavoritesProvider: All data cleared');
+  }
 }

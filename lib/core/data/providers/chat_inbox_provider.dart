@@ -71,4 +71,16 @@ class ChatInboxProvider with ChangeNotifier {
     _error = msg;
     notifyListeners();
   }
+
+  /// Clear all inbox data (useful for logout)
+  void clearData() {
+    _items.clear();
+    _selected = 'peer';
+    _query = '';
+    _unreadTotal = 0;
+    _error = null;
+    _loading = false;
+    notifyListeners();
+    print('✅ ChatInboxProvider: All data cleared');
+  }
 }

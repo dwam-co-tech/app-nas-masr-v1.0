@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:194491953970:android:7de1920ef1b17e7cd8dd2b",
+        "mobilesdk_app_id": "1:194491953970:android:cefbbc6539b1271ad8dd2b",
         "android_client_info": {
-          "package_name": "com.example.nas_masr_app"
+          "package_name": "com.alaa.nasmasr.app"
         }
       },
       "oauth_client": [],

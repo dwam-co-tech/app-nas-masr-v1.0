@@ -123,4 +123,17 @@ class NotificationsProvider with ChangeNotifier {
     _error = msg;
     notifyListeners();
   }
+
+  /// Clear all notifications data (useful for logout)
+  void clearData() {
+    _items = const [];
+    _selected = null;
+    _page = 1;
+    _lastPage = 1;
+    _loadingMore = false;
+    _error = null;
+    _loading = false;
+    notifyListeners();
+    print('✅ NotificationsProvider: All data cleared');
+  }
 }

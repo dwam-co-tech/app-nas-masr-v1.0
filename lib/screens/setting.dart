@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:nas_masr_app/core/data/providers/auth_provider.dart';
 import 'package:nas_masr_app/core/data/providers/home_provider.dart';
+import 'package:nas_masr_app/core/data/providers/profile_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nas_masr_app/core/data/web_services/api_services.dart';
@@ -381,10 +382,22 @@ class _SettingState extends State<Setting> {
                           useGradientIcon: false,
                           centerContent: true,
                           onTap: () async {
-                            // امسح التوكن ثم اذهب لشاشة تسجيل الدخول
-                            await context.read<AuthProvider>().logout();
+                            // Clear all user data from providers
+                            try {
+                              // Clear profile data
+                              context.read<ProfileProvider>().clearProfile();
+
+                              // Clear auth data and SharedPreferences
+                              await context.read<AuthProvider>().logout();
+
+                              print(
+                                  '✅ Logout: All user data cleared from all providers');
+                            } catch (e) {
+                              print('❌ Logout error: $e');
+                            }
+
                             if (!mounted) return;
-                            // استخدم go_router للانتقال وإفراغ المكدس
+                            // Navigate to login screen and clear navigation stack
                             context.go('/login');
                           },
                           showArrow: false,
